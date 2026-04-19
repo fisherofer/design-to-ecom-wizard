@@ -9,8 +9,38 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TerminalRouteImport } from './routes/terminal'
+import { Route as StrategyRouteImport } from './routes/strategy'
+import { Route as IntelligenceRouteImport } from './routes/intelligence'
+import { Route as ConfigRouteImport } from './routes/config'
+import { Route as ApiVaultRouteImport } from './routes/api-vault'
 import { Route as IndexRouteImport } from './routes/index'
 
+const TerminalRoute = TerminalRouteImport.update({
+  id: '/terminal',
+  path: '/terminal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StrategyRoute = StrategyRouteImport.update({
+  id: '/strategy',
+  path: '/strategy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntelligenceRoute = IntelligenceRouteImport.update({
+  id: '/intelligence',
+  path: '/intelligence',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfigRoute = ConfigRouteImport.update({
+  id: '/config',
+  path: '/config',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVaultRoute = ApiVaultRouteImport.update({
+  id: '/api-vault',
+  path: '/api-vault',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +49,102 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api-vault': typeof ApiVaultRoute
+  '/config': typeof ConfigRoute
+  '/intelligence': typeof IntelligenceRoute
+  '/strategy': typeof StrategyRoute
+  '/terminal': typeof TerminalRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api-vault': typeof ApiVaultRoute
+  '/config': typeof ConfigRoute
+  '/intelligence': typeof IntelligenceRoute
+  '/strategy': typeof StrategyRoute
+  '/terminal': typeof TerminalRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api-vault': typeof ApiVaultRoute
+  '/config': typeof ConfigRoute
+  '/intelligence': typeof IntelligenceRoute
+  '/strategy': typeof StrategyRoute
+  '/terminal': typeof TerminalRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/api-vault'
+    | '/config'
+    | '/intelligence'
+    | '/strategy'
+    | '/terminal'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/api-vault'
+    | '/config'
+    | '/intelligence'
+    | '/strategy'
+    | '/terminal'
+  id:
+    | '__root__'
+    | '/'
+    | '/api-vault'
+    | '/config'
+    | '/intelligence'
+    | '/strategy'
+    | '/terminal'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiVaultRoute: typeof ApiVaultRoute
+  ConfigRoute: typeof ConfigRoute
+  IntelligenceRoute: typeof IntelligenceRoute
+  StrategyRoute: typeof StrategyRoute
+  TerminalRoute: typeof TerminalRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terminal': {
+      id: '/terminal'
+      path: '/terminal'
+      fullPath: '/terminal'
+      preLoaderRoute: typeof TerminalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/strategy': {
+      id: '/strategy'
+      path: '/strategy'
+      fullPath: '/strategy'
+      preLoaderRoute: typeof StrategyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/intelligence': {
+      id: '/intelligence'
+      path: '/intelligence'
+      fullPath: '/intelligence'
+      preLoaderRoute: typeof IntelligenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/config': {
+      id: '/config'
+      path: '/config'
+      fullPath: '/config'
+      preLoaderRoute: typeof ConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api-vault': {
+      id: '/api-vault'
+      path: '/api-vault'
+      fullPath: '/api-vault'
+      preLoaderRoute: typeof ApiVaultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +157,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiVaultRoute: ApiVaultRoute,
+  ConfigRoute: ConfigRoute,
+  IntelligenceRoute: IntelligenceRoute,
+  StrategyRoute: StrategyRoute,
+  TerminalRoute: TerminalRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
