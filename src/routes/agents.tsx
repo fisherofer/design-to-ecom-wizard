@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Bot, Plus, Activity, Pause, Rss, Youtube, Newspaper, Whale, Globe, Brain } from "lucide-react";
+import { Bot, Plus, Activity, Pause, Rss, Youtube, Newspaper, Fish, Globe, Brain } from "lucide-react";
 
 export const Route = createFileRoute("/agents")({
   head: () => ({
@@ -14,7 +14,7 @@ export const Route = createFileRoute("/agents")({
 const SOURCES = [
   { name: "Bloomberg RSS", icon: Rss, status: "live", count: "312/day" },
   { name: "YouTube Channels", icon: Youtube, status: "live", count: "47 subs" },
-  { name: "SEC 13F Filings", icon: Whale, status: "live", count: "184 funds" },
+  { name: "SEC 13F Filings", icon: Fish, status: "live", count: "184 funds" },
   { name: "Reuters Wire", icon: Newspaper, status: "live", count: "1.2k/day" },
   { name: "X / Twitter", icon: Globe, status: "paused", count: "128 lists" },
   { name: "Reddit r/wsb", icon: Globe, status: "live", count: "real-time" },
