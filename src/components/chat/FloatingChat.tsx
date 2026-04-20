@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { MessageSquare, X, Send, Bot, User as UserIcon, Sparkles, Eye, EyeOff, Trash2 } from "lucide-react";
+import { MessageSquare, X, Send, Bot, User as UserIcon, Sparkles, Eye, EyeOff, Trash2, Crosshair } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { api, type ChatMessage, type EngineId } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -26,11 +26,89 @@ export function FloatingChat() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [focused, setFocused] = useState(false);
+  const [inspecting, setInspecting] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const chatRootRef = useRef<HTMLDivElement>(null);
+  const lastHoveredRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, chatOpen]);
+
+  // -------- Inspector Mode (element picker) --------
+  useEffect(() => {
+    if (!inspecting) return;
+
+    const OUTLINE = "2px solid hsl(var(--primary, 190 95% 55%))";
+    const SHADOW = "0 0 0 4px color-mix(in oklab, var(--primary) 25%, transparent)";
+
+    const isInsideChat = (el: HTMLElement | null) =>
+      !!el && !!chatRootRef.current && chatRootRef.current.contains(el);
+
+    const clearLast = () => {
+      if (lastHoveredRef.current) {
+        lastHoveredRef.current.style.outline = "";
+        lastHoveredRef.current.style.outlineOffset = "";
+        lastHoveredRef.current.style.boxShadow = "";
+        lastHoveredRef.current = null;
+      }
+    };
+
+    const onMove = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target || isInsideChat(target)) {
+        clearLast();
+        return;
+      }
+      if (lastHoveredRef.current === target) return;
+      clearLast();
+      target.style.outline = OUTLINE;
+      target.style.outlineOffset = "2px";
+      target.style.boxShadow = SHADOW;
+      lastHoveredRef.current = target;
+    };
+
+    const describe = (el: HTMLElement) => {
+      const tag = el.tagName.toLowerCase();
+      const id = el.id ? `#${el.id}` : "";
+      const cls = typeof el.className === "string" && el.className
+        ? "." + el.className.trim().split(/\s+/).slice(0, 2).join(".")
+        : "";
+      const text = (el.innerText || "").trim().replace(/\s+/g, " ").slice(0, 80);
+      return `<${tag}${id}${cls}>${text ? ` "${text}"` : ""}`;
+    };
+
+    const onClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target || isInsideChat(target)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const ctx = describe(target);
+      setInput(`I want to edit this element: ${ctx}`);
+      clearLast();
+      setInspecting(false);
+    };
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        clearLast();
+        setInspecting(false);
+      }
+    };
+
+    document.body.style.cursor = "crosshair";
+    document.addEventListener("mousemove", onMove, true);
+    document.addEventListener("click", onClick, true);
+    document.addEventListener("keydown", onKey, true);
+
+    return () => {
+      document.body.style.cursor = "";
+      document.removeEventListener("mousemove", onMove, true);
+      document.removeEventListener("click", onClick, true);
+      document.removeEventListener("keydown", onKey, true);
+      clearLast();
+    };
+  }, [inspecting]);
 
   async function send() {
     const text = input.trim();
