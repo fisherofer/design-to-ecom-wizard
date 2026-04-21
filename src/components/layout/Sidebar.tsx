@@ -8,11 +8,22 @@ import {
   Terminal,
   Activity,
   Bot,
+  Users,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
-  to: "/" | "/intelligence" | "/strategy" | "/api-vault" | "/config" | "/terminal" | "/agents";
+  to:
+    | "/"
+    | "/intelligence"
+    | "/strategy"
+    | "/api-vault"
+    | "/config"
+    | "/terminal"
+    | "/agents"
+    | "/personas"
+    | "/system";
   label: string;
   icon: typeof LayoutDashboard;
   end?: boolean;
@@ -21,10 +32,12 @@ type NavItem = {
 export const NAV_ITEMS: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/intelligence", label: "Intelligence Hub", icon: Brain },
+  { to: "/personas", label: "Personas · Meta-Agent", icon: Users },
   { to: "/agents", label: "Agent Studio", icon: Bot },
   { to: "/strategy", label: "Strategy Builder", icon: Layers },
   { to: "/api-vault", label: "API Vault", icon: KeyRound },
   { to: "/config", label: "System Config", icon: Settings },
+  { to: "/system", label: "System Health", icon: ShieldCheck },
   { to: "/terminal", label: "Terminal Logs", icon: Terminal },
 ];
 

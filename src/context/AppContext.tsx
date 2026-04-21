@@ -11,6 +11,9 @@ interface AppContextValue {
   setChatOpen: (b: boolean) => void;
   chatTransparent: boolean;
   setChatTransparent: (b: boolean) => void;
+  /** 0 = invisible, 100 = fully solid */
+  chatOpacity: number;
+  setChatOpacity: (n: number) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -21,6 +24,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [activeEngine, setActiveEngine] = useState<EngineId>("gemini");
   const [chatOpen, setChatOpen] = useState(false);
   const [chatTransparent, setChatTransparent] = useState(false);
+  const [chatOpacity, setChatOpacityState] = useState<number>(() => {
+    if (typeof window === "undefined") return 90;
+    const saved = window.localStorage.getItem("chatOpacity");
+    const n = saved ? Number(saved) : 90;
+    return Number.isFinite(n) ? Math.min(100, Math.max(5, n)) : 90;
+  });
+
+  const setChatOpacity = useCallback((n: number) => {
+    const clamped = Math.min(100, Math.max(5, Math.round(n)));
+    setChatOpacityState(clamped);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("chatOpacity", String(clamped));
+    }
+  }, []);
 
   const refresh = useCallback(async () => {
     setRefreshing(true);
@@ -49,6 +66,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setChatOpen,
         chatTransparent,
         setChatTransparent,
+        chatOpacity,
+        setChatOpacity,
       }}
     >
       {children}
