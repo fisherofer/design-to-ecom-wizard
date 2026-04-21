@@ -10,7 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TerminalRouteImport } from './routes/terminal'
+import { Route as SystemRouteImport } from './routes/system'
 import { Route as StrategyRouteImport } from './routes/strategy'
+import { Route as PersonasRouteImport } from './routes/personas'
 import { Route as IntelligenceRouteImport } from './routes/intelligence'
 import { Route as ConfigRouteImport } from './routes/config'
 import { Route as ApiVaultRouteImport } from './routes/api-vault'
@@ -22,9 +24,19 @@ const TerminalRoute = TerminalRouteImport.update({
   path: '/terminal',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SystemRoute = SystemRouteImport.update({
+  id: '/system',
+  path: '/system',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StrategyRoute = StrategyRouteImport.update({
   id: '/strategy',
   path: '/strategy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PersonasRoute = PersonasRouteImport.update({
+  id: '/personas',
+  path: '/personas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IntelligenceRoute = IntelligenceRouteImport.update({
@@ -59,7 +71,9 @@ export interface FileRoutesByFullPath {
   '/api-vault': typeof ApiVaultRoute
   '/config': typeof ConfigRoute
   '/intelligence': typeof IntelligenceRoute
+  '/personas': typeof PersonasRoute
   '/strategy': typeof StrategyRoute
+  '/system': typeof SystemRoute
   '/terminal': typeof TerminalRoute
 }
 export interface FileRoutesByTo {
@@ -68,7 +82,9 @@ export interface FileRoutesByTo {
   '/api-vault': typeof ApiVaultRoute
   '/config': typeof ConfigRoute
   '/intelligence': typeof IntelligenceRoute
+  '/personas': typeof PersonasRoute
   '/strategy': typeof StrategyRoute
+  '/system': typeof SystemRoute
   '/terminal': typeof TerminalRoute
 }
 export interface FileRoutesById {
@@ -78,7 +94,9 @@ export interface FileRoutesById {
   '/api-vault': typeof ApiVaultRoute
   '/config': typeof ConfigRoute
   '/intelligence': typeof IntelligenceRoute
+  '/personas': typeof PersonasRoute
   '/strategy': typeof StrategyRoute
+  '/system': typeof SystemRoute
   '/terminal': typeof TerminalRoute
 }
 export interface FileRouteTypes {
@@ -89,7 +107,9 @@ export interface FileRouteTypes {
     | '/api-vault'
     | '/config'
     | '/intelligence'
+    | '/personas'
     | '/strategy'
+    | '/system'
     | '/terminal'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -98,7 +118,9 @@ export interface FileRouteTypes {
     | '/api-vault'
     | '/config'
     | '/intelligence'
+    | '/personas'
     | '/strategy'
+    | '/system'
     | '/terminal'
   id:
     | '__root__'
@@ -107,7 +129,9 @@ export interface FileRouteTypes {
     | '/api-vault'
     | '/config'
     | '/intelligence'
+    | '/personas'
     | '/strategy'
+    | '/system'
     | '/terminal'
   fileRoutesById: FileRoutesById
 }
@@ -117,7 +141,9 @@ export interface RootRouteChildren {
   ApiVaultRoute: typeof ApiVaultRoute
   ConfigRoute: typeof ConfigRoute
   IntelligenceRoute: typeof IntelligenceRoute
+  PersonasRoute: typeof PersonasRoute
   StrategyRoute: typeof StrategyRoute
+  SystemRoute: typeof SystemRoute
   TerminalRoute: typeof TerminalRoute
 }
 
@@ -130,11 +156,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TerminalRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/system': {
+      id: '/system'
+      path: '/system'
+      fullPath: '/system'
+      preLoaderRoute: typeof SystemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/strategy': {
       id: '/strategy'
       path: '/strategy'
       fullPath: '/strategy'
       preLoaderRoute: typeof StrategyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/personas': {
+      id: '/personas'
+      path: '/personas'
+      fullPath: '/personas'
+      preLoaderRoute: typeof PersonasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/intelligence': {
@@ -181,7 +221,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiVaultRoute: ApiVaultRoute,
   ConfigRoute: ConfigRoute,
   IntelligenceRoute: IntelligenceRoute,
+  PersonasRoute: PersonasRoute,
   StrategyRoute: StrategyRoute,
+  SystemRoute: SystemRoute,
   TerminalRoute: TerminalRoute,
 }
 export const routeTree = rootRouteImport
