@@ -10,6 +10,7 @@ import {
   Bot,
   Users,
   ShieldCheck,
+  Archive,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,7 +24,8 @@ type NavItem = {
     | "/terminal"
     | "/agents"
     | "/personas"
-    | "/system";
+    | "/system"
+    | "/backup";
   label: string;
   icon: typeof LayoutDashboard;
   end?: boolean;
@@ -39,6 +41,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/config", label: "System Config", icon: Settings },
   { to: "/system", label: "System Health", icon: ShieldCheck },
   { to: "/terminal", label: "Terminal Logs", icon: Terminal },
+  { to: "/backup", label: "Backup & Restore", icon: Archive },
 ];
 
 export function Sidebar() {

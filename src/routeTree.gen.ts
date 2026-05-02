@@ -15,6 +15,7 @@ import { Route as StrategyRouteImport } from './routes/strategy'
 import { Route as PersonasRouteImport } from './routes/personas'
 import { Route as IntelligenceRouteImport } from './routes/intelligence'
 import { Route as ConfigRouteImport } from './routes/config'
+import { Route as BackupRouteImport } from './routes/backup'
 import { Route as ApiVaultRouteImport } from './routes/api-vault'
 import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as IndexRouteImport } from './routes/index'
@@ -49,6 +50,11 @@ const ConfigRoute = ConfigRouteImport.update({
   path: '/config',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BackupRoute = BackupRouteImport.update({
+  id: '/backup',
+  path: '/backup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiVaultRoute = ApiVaultRouteImport.update({
   id: '/api-vault',
   path: '/api-vault',
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
   '/api-vault': typeof ApiVaultRoute
+  '/backup': typeof BackupRoute
   '/config': typeof ConfigRoute
   '/intelligence': typeof IntelligenceRoute
   '/personas': typeof PersonasRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
   '/api-vault': typeof ApiVaultRoute
+  '/backup': typeof BackupRoute
   '/config': typeof ConfigRoute
   '/intelligence': typeof IntelligenceRoute
   '/personas': typeof PersonasRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
   '/api-vault': typeof ApiVaultRoute
+  '/backup': typeof BackupRoute
   '/config': typeof ConfigRoute
   '/intelligence': typeof IntelligenceRoute
   '/personas': typeof PersonasRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/'
     | '/agents'
     | '/api-vault'
+    | '/backup'
     | '/config'
     | '/intelligence'
     | '/personas'
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/'
     | '/agents'
     | '/api-vault'
+    | '/backup'
     | '/config'
     | '/intelligence'
     | '/personas'
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '/'
     | '/agents'
     | '/api-vault'
+    | '/backup'
     | '/config'
     | '/intelligence'
     | '/personas'
@@ -139,6 +151,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgentsRoute: typeof AgentsRoute
   ApiVaultRoute: typeof ApiVaultRoute
+  BackupRoute: typeof BackupRoute
   ConfigRoute: typeof ConfigRoute
   IntelligenceRoute: typeof IntelligenceRoute
   PersonasRoute: typeof PersonasRoute
@@ -191,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConfigRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/backup': {
+      id: '/backup'
+      path: '/backup'
+      fullPath: '/backup'
+      preLoaderRoute: typeof BackupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api-vault': {
       id: '/api-vault'
       path: '/api-vault'
@@ -219,6 +239,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgentsRoute: AgentsRoute,
   ApiVaultRoute: ApiVaultRoute,
+  BackupRoute: BackupRoute,
   ConfigRoute: ConfigRoute,
   IntelligenceRoute: IntelligenceRoute,
   PersonasRoute: PersonasRoute,
@@ -229,12 +250,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
