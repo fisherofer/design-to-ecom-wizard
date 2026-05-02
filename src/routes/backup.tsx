@@ -122,11 +122,6 @@ function BackupRestorePage() {
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const pushErr = (msg: string) => {
-    errorsAccumulator.push(msg);
-  };
-  const errorsAccumulator: string[] = [];
-
   const toggle = (k: SectionKey) => {
     const next = new Set(selected);
     if (next.has(k)) next.delete(k);
