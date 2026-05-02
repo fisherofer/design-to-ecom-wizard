@@ -160,7 +160,7 @@ function BackupRestorePage() {
       };
       zip.file("manifest.json", JSON.stringify(manifest, null, 2));
 
-      const fetches: Array<Promise<void>> = [];
+      const fetches: Array<Promise<unknown>> = [];
 
       if (selected.has("code")) {
         // Best-effort: real ZIP requires backend. We embed a manifest of
