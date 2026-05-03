@@ -1,10 +1,17 @@
+import { useEffect } from "react";
 import { Sidebar } from "./Sidebar";
 import { TopHeader } from "./TopHeader";
 import { StatusBar } from "./StatusBar";
 import { AppProvider } from "@/context/AppContext";
 import { FloatingChat } from "@/components/chat/FloatingChat";
+import { applyTheme, loadTheme } from "@/theme/tokens";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  // Apply theme tokens from localStorage on mount so user customizations survive reloads.
+  useEffect(() => {
+    applyTheme(loadTheme());
+  }, []);
+
   return (
     <AppProvider>
       <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">

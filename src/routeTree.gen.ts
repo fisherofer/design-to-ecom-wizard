@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TerminalRouteImport } from './routes/terminal'
 import { Route as SystemRouteImport } from './routes/system'
 import { Route as StrategyRouteImport } from './routes/strategy'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as PersonasRouteImport } from './routes/personas'
 import { Route as IntelligenceRouteImport } from './routes/intelligence'
 import { Route as ConfigRouteImport } from './routes/config'
@@ -33,6 +34,11 @@ const SystemRoute = SystemRouteImport.update({
 const StrategyRoute = StrategyRouteImport.update({
   id: '/strategy',
   path: '/strategy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PersonasRoute = PersonasRouteImport.update({
@@ -79,6 +85,7 @@ export interface FileRoutesByFullPath {
   '/config': typeof ConfigRoute
   '/intelligence': typeof IntelligenceRoute
   '/personas': typeof PersonasRoute
+  '/settings': typeof SettingsRoute
   '/strategy': typeof StrategyRoute
   '/system': typeof SystemRoute
   '/terminal': typeof TerminalRoute
@@ -91,6 +98,7 @@ export interface FileRoutesByTo {
   '/config': typeof ConfigRoute
   '/intelligence': typeof IntelligenceRoute
   '/personas': typeof PersonasRoute
+  '/settings': typeof SettingsRoute
   '/strategy': typeof StrategyRoute
   '/system': typeof SystemRoute
   '/terminal': typeof TerminalRoute
@@ -104,6 +112,7 @@ export interface FileRoutesById {
   '/config': typeof ConfigRoute
   '/intelligence': typeof IntelligenceRoute
   '/personas': typeof PersonasRoute
+  '/settings': typeof SettingsRoute
   '/strategy': typeof StrategyRoute
   '/system': typeof SystemRoute
   '/terminal': typeof TerminalRoute
@@ -118,6 +127,7 @@ export interface FileRouteTypes {
     | '/config'
     | '/intelligence'
     | '/personas'
+    | '/settings'
     | '/strategy'
     | '/system'
     | '/terminal'
@@ -130,6 +140,7 @@ export interface FileRouteTypes {
     | '/config'
     | '/intelligence'
     | '/personas'
+    | '/settings'
     | '/strategy'
     | '/system'
     | '/terminal'
@@ -142,6 +153,7 @@ export interface FileRouteTypes {
     | '/config'
     | '/intelligence'
     | '/personas'
+    | '/settings'
     | '/strategy'
     | '/system'
     | '/terminal'
@@ -155,6 +167,7 @@ export interface RootRouteChildren {
   ConfigRoute: typeof ConfigRoute
   IntelligenceRoute: typeof IntelligenceRoute
   PersonasRoute: typeof PersonasRoute
+  SettingsRoute: typeof SettingsRoute
   StrategyRoute: typeof StrategyRoute
   SystemRoute: typeof SystemRoute
   TerminalRoute: typeof TerminalRoute
@@ -181,6 +194,13 @@ declare module '@tanstack/react-router' {
       path: '/strategy'
       fullPath: '/strategy'
       preLoaderRoute: typeof StrategyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/personas': {
@@ -243,6 +263,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConfigRoute: ConfigRoute,
   IntelligenceRoute: IntelligenceRoute,
   PersonasRoute: PersonasRoute,
+  SettingsRoute: SettingsRoute,
   StrategyRoute: StrategyRoute,
   SystemRoute: SystemRoute,
   TerminalRoute: TerminalRoute,
@@ -250,3 +271,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

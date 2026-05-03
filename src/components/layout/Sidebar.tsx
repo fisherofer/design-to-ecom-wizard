@@ -11,6 +11,7 @@ import {
   Users,
   ShieldCheck,
   Archive,
+  SlidersHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +26,8 @@ type NavItem = {
     | "/agents"
     | "/personas"
     | "/system"
-    | "/backup";
+    | "/backup"
+    | "/settings";
   label: string;
   icon: typeof LayoutDashboard;
   end?: boolean;
@@ -42,6 +44,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/system", label: "System Health", icon: ShieldCheck },
   { to: "/terminal", label: "Terminal Logs", icon: Terminal },
   { to: "/backup", label: "Backup & Restore", icon: Archive },
+  { to: "/settings", label: "Settings", icon: SlidersHorizontal },
 ];
 
 export function Sidebar() {
