@@ -23,6 +23,7 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
+import { SourceBundleCard } from "@/components/backup/SourceBundleCard";
 
 export const Route = createFileRoute("/backup")({
   head: () => ({
@@ -520,6 +521,11 @@ function BackupRestorePage() {
           )}
         </Card>
       </div>
+
+      <Separator />
+
+      {/* Single-file CODE.json bundle (legacy MarketBrain compatible) */}
+      <SourceBundleCard />
 
       <Separator />
 
