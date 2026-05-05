@@ -12,6 +12,7 @@ import {
   Github,
   Palette,
   Activity,
+  RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GeneralTab } from "@/components/settings/GeneralTab";
@@ -20,6 +21,7 @@ import { OllamaTab } from "@/components/settings/OllamaTab";
 import { GithubTab } from "@/components/settings/GithubTab";
 import { ThemeTab } from "@/components/settings/ThemeTab";
 import { RateLimitsTab } from "@/components/settings/RateLimitsTab";
+import { RefreshTab } from "@/components/settings/RefreshTab";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -35,13 +37,14 @@ export const Route = createFileRoute("/settings")({
   component: SettingsPage,
 });
 
-type TabId = "general" | "api" | "ollama" | "limits" | "github" | "theme";
+type TabId = "general" | "api" | "ollama" | "limits" | "refresh" | "github" | "theme";
 
 const TABS: Array<{ id: TabId; label: string; Icon: typeof SettingsIcon }> = [
   { id: "general", label: "General", Icon: SettingsIcon },
   { id: "api", label: "API Providers", Icon: KeyRound },
   { id: "ollama", label: "Ollama Manager", Icon: Cpu },
   { id: "limits", label: "Rate Limits", Icon: Activity },
+  { id: "refresh", label: "Refresh", Icon: RefreshCw },
   { id: "github", label: "GitHub", Icon: Github },
   { id: "theme", label: "Theme", Icon: Palette },
 ];
@@ -82,6 +85,7 @@ function SettingsPage() {
       {tab === "api" && <ApiProvidersTab />}
       {tab === "ollama" && <OllamaTab />}
       {tab === "limits" && <RateLimitsTab />}
+      {tab === "refresh" && <RefreshTab />}
       {tab === "github" && <GithubTab />}
       {tab === "theme" && <ThemeTab />}
     </div>
