@@ -12,16 +12,20 @@ import {
   ShieldCheck,
   Archive,
   SlidersHorizontal,
+  TrendingUp,
+  Code2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
   to:
     | "/"
+    | "/trading"
     | "/intelligence"
     | "/strategy"
     | "/api-vault"
     | "/config"
+    | "/code-studio"
     | "/terminal"
     | "/agents"
     | "/personas"
@@ -35,10 +39,12 @@ type NavItem = {
 
 export const NAV_ITEMS: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
+  { to: "/trading", label: "Trading Hub", icon: TrendingUp },
   { to: "/intelligence", label: "Intelligence Hub", icon: Brain },
   { to: "/personas", label: "Personas · Meta-Agent", icon: Users },
   { to: "/agents", label: "Agent Studio", icon: Bot },
   { to: "/strategy", label: "Strategy Builder", icon: Layers },
+  { to: "/code-studio", label: "Code Studio", icon: Code2 },
   { to: "/api-vault", label: "API Vault", icon: KeyRound },
   { to: "/config", label: "System Config", icon: Settings },
   { to: "/system", label: "System Health", icon: ShieldCheck },
