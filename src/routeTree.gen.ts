@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TradingRouteImport } from './routes/trading'
 import { Route as TerminalRouteImport } from './routes/terminal'
 import { Route as SystemRouteImport } from './routes/system'
 import { Route as StrategyRouteImport } from './routes/strategy'
@@ -16,11 +17,17 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as PersonasRouteImport } from './routes/personas'
 import { Route as IntelligenceRouteImport } from './routes/intelligence'
 import { Route as ConfigRouteImport } from './routes/config'
+import { Route as CodeStudioRouteImport } from './routes/code-studio'
 import { Route as BackupRouteImport } from './routes/backup'
 import { Route as ApiVaultRouteImport } from './routes/api-vault'
 import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as IndexRouteImport } from './routes/index'
 
+const TradingRoute = TradingRouteImport.update({
+  id: '/trading',
+  path: '/trading',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TerminalRoute = TerminalRouteImport.update({
   id: '/terminal',
   path: '/terminal',
@@ -56,6 +63,11 @@ const ConfigRoute = ConfigRouteImport.update({
   path: '/config',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CodeStudioRoute = CodeStudioRouteImport.update({
+  id: '/code-studio',
+  path: '/code-studio',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BackupRoute = BackupRouteImport.update({
   id: '/backup',
   path: '/backup',
@@ -82,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/agents': typeof AgentsRoute
   '/api-vault': typeof ApiVaultRoute
   '/backup': typeof BackupRoute
+  '/code-studio': typeof CodeStudioRoute
   '/config': typeof ConfigRoute
   '/intelligence': typeof IntelligenceRoute
   '/personas': typeof PersonasRoute
@@ -89,12 +102,14 @@ export interface FileRoutesByFullPath {
   '/strategy': typeof StrategyRoute
   '/system': typeof SystemRoute
   '/terminal': typeof TerminalRoute
+  '/trading': typeof TradingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
   '/api-vault': typeof ApiVaultRoute
   '/backup': typeof BackupRoute
+  '/code-studio': typeof CodeStudioRoute
   '/config': typeof ConfigRoute
   '/intelligence': typeof IntelligenceRoute
   '/personas': typeof PersonasRoute
@@ -102,6 +117,7 @@ export interface FileRoutesByTo {
   '/strategy': typeof StrategyRoute
   '/system': typeof SystemRoute
   '/terminal': typeof TerminalRoute
+  '/trading': typeof TradingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -109,6 +125,7 @@ export interface FileRoutesById {
   '/agents': typeof AgentsRoute
   '/api-vault': typeof ApiVaultRoute
   '/backup': typeof BackupRoute
+  '/code-studio': typeof CodeStudioRoute
   '/config': typeof ConfigRoute
   '/intelligence': typeof IntelligenceRoute
   '/personas': typeof PersonasRoute
@@ -116,6 +133,7 @@ export interface FileRoutesById {
   '/strategy': typeof StrategyRoute
   '/system': typeof SystemRoute
   '/terminal': typeof TerminalRoute
+  '/trading': typeof TradingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -124,6 +142,7 @@ export interface FileRouteTypes {
     | '/agents'
     | '/api-vault'
     | '/backup'
+    | '/code-studio'
     | '/config'
     | '/intelligence'
     | '/personas'
@@ -131,12 +150,14 @@ export interface FileRouteTypes {
     | '/strategy'
     | '/system'
     | '/terminal'
+    | '/trading'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/agents'
     | '/api-vault'
     | '/backup'
+    | '/code-studio'
     | '/config'
     | '/intelligence'
     | '/personas'
@@ -144,12 +165,14 @@ export interface FileRouteTypes {
     | '/strategy'
     | '/system'
     | '/terminal'
+    | '/trading'
   id:
     | '__root__'
     | '/'
     | '/agents'
     | '/api-vault'
     | '/backup'
+    | '/code-studio'
     | '/config'
     | '/intelligence'
     | '/personas'
@@ -157,6 +180,7 @@ export interface FileRouteTypes {
     | '/strategy'
     | '/system'
     | '/terminal'
+    | '/trading'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -164,6 +188,7 @@ export interface RootRouteChildren {
   AgentsRoute: typeof AgentsRoute
   ApiVaultRoute: typeof ApiVaultRoute
   BackupRoute: typeof BackupRoute
+  CodeStudioRoute: typeof CodeStudioRoute
   ConfigRoute: typeof ConfigRoute
   IntelligenceRoute: typeof IntelligenceRoute
   PersonasRoute: typeof PersonasRoute
@@ -171,10 +196,18 @@ export interface RootRouteChildren {
   StrategyRoute: typeof StrategyRoute
   SystemRoute: typeof SystemRoute
   TerminalRoute: typeof TerminalRoute
+  TradingRoute: typeof TradingRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/trading': {
+      id: '/trading'
+      path: '/trading'
+      fullPath: '/trading'
+      preLoaderRoute: typeof TradingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terminal': {
       id: '/terminal'
       path: '/terminal'
@@ -224,6 +257,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConfigRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/code-studio': {
+      id: '/code-studio'
+      path: '/code-studio'
+      fullPath: '/code-studio'
+      preLoaderRoute: typeof CodeStudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/backup': {
       id: '/backup'
       path: '/backup'
@@ -260,6 +300,7 @@ const rootRouteChildren: RootRouteChildren = {
   AgentsRoute: AgentsRoute,
   ApiVaultRoute: ApiVaultRoute,
   BackupRoute: BackupRoute,
+  CodeStudioRoute: CodeStudioRoute,
   ConfigRoute: ConfigRoute,
   IntelligenceRoute: IntelligenceRoute,
   PersonasRoute: PersonasRoute,
@@ -267,7 +308,17 @@ const rootRouteChildren: RootRouteChildren = {
   StrategyRoute: StrategyRoute,
   SystemRoute: SystemRoute,
   TerminalRoute: TerminalRoute,
+  TradingRoute: TradingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
