@@ -10,11 +10,17 @@
  */
 
 // Eagerly inline every source file under src/ as a raw string.
-const RAW_MODULES = import.meta.glob("/src/**/*.{ts,tsx,js,jsx,css,json,md}", {
-  query: "?raw",
-  import: "default",
-  eager: true,
-}) as Record<string, string>;
+const RAW_MODULES = import.meta.glob(
+  [
+    "/src/**/*.{ts,tsx,js,jsx,css,json,md}",
+    "!/src/routeTree.gen.ts",
+  ],
+  {
+    query: "?raw",
+    import: "default",
+    eager: true,
+  },
+) as Record<string, string>;
 
 export interface SourceFile {
   name: string;          // e.g. "components/layout/Sidebar"
