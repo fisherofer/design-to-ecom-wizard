@@ -3,6 +3,7 @@ import { Activity, Gauge, Zap, CheckCircle2, Circle } from "lucide-react";
 import { Ticker } from "@/components/dashboard/Ticker";
 import { KpiCard } from "@/components/dashboard/KpiCard";
 import { FearGreedGauge } from "@/components/dashboard/FearGreedGauge";
+import { TrackedTickersTable } from "@/components/dashboard/TrackedTickersTable";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -126,6 +127,10 @@ function Dashboard() {
               <div className="text-[11px] text-success font-mono">↓ 38% vs cloud-only</div>
             </div>
           </div>
+        </div>
+
+        <div className="mt-6">
+          <TrackedTickersTable />
         </div>
       </div>
     </div>
