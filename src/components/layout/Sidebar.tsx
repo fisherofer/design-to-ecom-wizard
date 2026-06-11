@@ -14,6 +14,8 @@ import {
   SlidersHorizontal,
   TrendingUp,
   Code2,
+  Wallet,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +23,8 @@ type NavItem = {
   to:
     | "/"
     | "/trading"
+    | "/portfolio"
+    | "/triggers"
     | "/intelligence"
     | "/strategy"
     | "/api-vault"
@@ -40,6 +44,8 @@ type NavItem = {
 export const NAV_ITEMS: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/trading", label: "Trading Hub", icon: TrendingUp },
+  { to: "/portfolio", label: "Portfolio & Dividends", icon: Wallet },
+  { to: "/triggers", label: "AI Triggers", icon: Zap },
   { to: "/intelligence", label: "Intelligence Hub", icon: Brain },
   { to: "/personas", label: "Personas · Meta-Agent", icon: Users },
   { to: "/agents", label: "Agent Studio", icon: Bot },
