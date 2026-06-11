@@ -9,11 +9,13 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TriggersRouteImport } from './routes/triggers'
 import { Route as TradingRouteImport } from './routes/trading'
 import { Route as TerminalRouteImport } from './routes/terminal'
 import { Route as SystemRouteImport } from './routes/system'
 import { Route as StrategyRouteImport } from './routes/strategy'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PersonasRouteImport } from './routes/personas'
 import { Route as IntelligenceRouteImport } from './routes/intelligence'
 import { Route as ConfigRouteImport } from './routes/config'
@@ -23,6 +25,11 @@ import { Route as ApiVaultRouteImport } from './routes/api-vault'
 import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as IndexRouteImport } from './routes/index'
 
+const TriggersRoute = TriggersRouteImport.update({
+  id: '/triggers',
+  path: '/triggers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TradingRoute = TradingRouteImport.update({
   id: '/trading',
   path: '/trading',
@@ -46,6 +53,11 @@ const StrategyRoute = StrategyRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortfolioRoute = PortfolioRouteImport.update({
+  id: '/portfolio',
+  path: '/portfolio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PersonasRoute = PersonasRouteImport.update({
@@ -98,11 +110,13 @@ export interface FileRoutesByFullPath {
   '/config': typeof ConfigRoute
   '/intelligence': typeof IntelligenceRoute
   '/personas': typeof PersonasRoute
+  '/portfolio': typeof PortfolioRoute
   '/settings': typeof SettingsRoute
   '/strategy': typeof StrategyRoute
   '/system': typeof SystemRoute
   '/terminal': typeof TerminalRoute
   '/trading': typeof TradingRoute
+  '/triggers': typeof TriggersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -113,11 +127,13 @@ export interface FileRoutesByTo {
   '/config': typeof ConfigRoute
   '/intelligence': typeof IntelligenceRoute
   '/personas': typeof PersonasRoute
+  '/portfolio': typeof PortfolioRoute
   '/settings': typeof SettingsRoute
   '/strategy': typeof StrategyRoute
   '/system': typeof SystemRoute
   '/terminal': typeof TerminalRoute
   '/trading': typeof TradingRoute
+  '/triggers': typeof TriggersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -129,11 +145,13 @@ export interface FileRoutesById {
   '/config': typeof ConfigRoute
   '/intelligence': typeof IntelligenceRoute
   '/personas': typeof PersonasRoute
+  '/portfolio': typeof PortfolioRoute
   '/settings': typeof SettingsRoute
   '/strategy': typeof StrategyRoute
   '/system': typeof SystemRoute
   '/terminal': typeof TerminalRoute
   '/trading': typeof TradingRoute
+  '/triggers': typeof TriggersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -146,11 +164,13 @@ export interface FileRouteTypes {
     | '/config'
     | '/intelligence'
     | '/personas'
+    | '/portfolio'
     | '/settings'
     | '/strategy'
     | '/system'
     | '/terminal'
     | '/trading'
+    | '/triggers'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -161,11 +181,13 @@ export interface FileRouteTypes {
     | '/config'
     | '/intelligence'
     | '/personas'
+    | '/portfolio'
     | '/settings'
     | '/strategy'
     | '/system'
     | '/terminal'
     | '/trading'
+    | '/triggers'
   id:
     | '__root__'
     | '/'
@@ -176,11 +198,13 @@ export interface FileRouteTypes {
     | '/config'
     | '/intelligence'
     | '/personas'
+    | '/portfolio'
     | '/settings'
     | '/strategy'
     | '/system'
     | '/terminal'
     | '/trading'
+    | '/triggers'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -192,15 +216,24 @@ export interface RootRouteChildren {
   ConfigRoute: typeof ConfigRoute
   IntelligenceRoute: typeof IntelligenceRoute
   PersonasRoute: typeof PersonasRoute
+  PortfolioRoute: typeof PortfolioRoute
   SettingsRoute: typeof SettingsRoute
   StrategyRoute: typeof StrategyRoute
   SystemRoute: typeof SystemRoute
   TerminalRoute: typeof TerminalRoute
   TradingRoute: typeof TradingRoute
+  TriggersRoute: typeof TriggersRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/triggers': {
+      id: '/triggers'
+      path: '/triggers'
+      fullPath: '/triggers'
+      preLoaderRoute: typeof TriggersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/trading': {
       id: '/trading'
       path: '/trading'
@@ -234,6 +267,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portfolio': {
+      id: '/portfolio'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof PortfolioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/personas': {
@@ -304,11 +344,13 @@ const rootRouteChildren: RootRouteChildren = {
   ConfigRoute: ConfigRoute,
   IntelligenceRoute: IntelligenceRoute,
   PersonasRoute: PersonasRoute,
+  PortfolioRoute: PortfolioRoute,
   SettingsRoute: SettingsRoute,
   StrategyRoute: StrategyRoute,
   SystemRoute: SystemRoute,
   TerminalRoute: TerminalRoute,
   TradingRoute: TradingRoute,
+  TriggersRoute: TriggersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
