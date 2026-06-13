@@ -1,3 +1,9 @@
+import {
+  MOCK_GOOSE_STATUS,
+  type GooseStatus,
+  type GooseVerification,
+} from "./goose";
+
 /**
  * AI Executive OS — Local API Bridge
  * ==================================
@@ -146,12 +152,6 @@ export interface ChatMessage {
   engine?: EngineId;
   ts: number;
 }
-
-import {
-  MOCK_GOOSE_STATUS,
-  type GooseStatus,
-  type GooseVerification,
-} from "./goose";
 
 // -------- Persona / Alpha tracking --------
 export interface PersonaThesis {
