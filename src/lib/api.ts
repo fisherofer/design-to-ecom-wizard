@@ -7,7 +7,7 @@ import {
 /**
  * AI Executive OS — Local API Bridge
  * ==================================
- * All requests target the local Python backend at http://localhost:8000.
+ * All requests target the local Python backend at http://localhost:8050.
  * If the backend is unreachable, mock data is returned so the UI stays alive.
  *
  * Backend contract (FastAPI / api_bridge.py):
@@ -34,7 +34,7 @@ import {
 
 export const API_BASE =
   (typeof window !== "undefined" && (window as { __API_BASE__?: string }).__API_BASE__) ||
-  "http://localhost:8000";
+  "http://localhost:8050";
 
 const DEFAULT_TIMEOUT_MS = 8_000;
 
