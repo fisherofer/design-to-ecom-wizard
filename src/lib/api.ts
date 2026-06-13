@@ -147,6 +147,12 @@ export interface ChatMessage {
   ts: number;
 }
 
+import {
+  MOCK_GOOSE_STATUS,
+  type GooseStatus,
+  type GooseVerification,
+} from "./goose";
+
 // -------- Persona / Alpha tracking --------
 export interface PersonaThesis {
   ticker: string;
@@ -303,6 +309,31 @@ export const api = {
         reply: mockReply(messages.at(-1)?.content ?? ""),
         engine,
       },
+    ),
+
+  // ---------- Goose MCP bridge ----------
+  gooseStatus: () =>
+    request<GooseStatus>("/api/goose/status", {}, MOCK_GOOSE_STATUS),
+  gooseVerify: () =>
+    request<GooseVerification>(
+      "/api/goose/verify",
+      { method: "POST" },
+      {
+        ok: false,
+        checkedAt: new Date().toISOString(),
+        checks: [
+          { id: "backend", label: "FastAPI bridge", state: "warn", detail: "Fallback פעיל — backend לא זמין" },
+          { id: "mcp", label: "Goose MCP extension", state: "fail", detail: "נדרשת התקנה/הפעלה ב-Goose" },
+          { id: "tools", label: "Tool manifest", state: "warn", detail: "5 מתוך 6 כלים זמינים במפרט" },
+          { id: "approval", label: "Code approval guardrail", state: "pass", detail: "שינויי קוד מחייבים אישור מפורש" },
+        ],
+      },
+    ),
+  gooseUpdateCode: (description: string, instructionAudit: unknown) =>
+    request<{ ok: boolean; jobId?: string; message: string }>(
+      "/api/goose/update-code",
+      { method: "POST", body: JSON.stringify({ description, instruction_audit: instructionAudit }) },
+      { ok: true, jobId: `mock_${Date.now()}`, message: "בקשת שינוי הוכנה במצב הדגמה; חבר את FastAPI לביצוע אמיתי." },
     ),
 
   // ---------- Infra ----------
