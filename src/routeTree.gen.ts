@@ -18,6 +18,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PersonasRouteImport } from './routes/personas'
 import { Route as IntelligenceRouteImport } from './routes/intelligence'
+import { Route as GooseRouteImport } from './routes/goose'
 import { Route as ConfigRouteImport } from './routes/config'
 import { Route as CodeStudioRouteImport } from './routes/code-studio'
 import { Route as BackupRouteImport } from './routes/backup'
@@ -70,6 +71,11 @@ const IntelligenceRoute = IntelligenceRouteImport.update({
   path: '/intelligence',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GooseRoute = GooseRouteImport.update({
+  id: '/goose',
+  path: '/goose',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConfigRoute = ConfigRouteImport.update({
   id: '/config',
   path: '/config',
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/backup': typeof BackupRoute
   '/code-studio': typeof CodeStudioRoute
   '/config': typeof ConfigRoute
+  '/goose': typeof GooseRoute
   '/intelligence': typeof IntelligenceRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
@@ -125,6 +132,7 @@ export interface FileRoutesByTo {
   '/backup': typeof BackupRoute
   '/code-studio': typeof CodeStudioRoute
   '/config': typeof ConfigRoute
+  '/goose': typeof GooseRoute
   '/intelligence': typeof IntelligenceRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/backup': typeof BackupRoute
   '/code-studio': typeof CodeStudioRoute
   '/config': typeof ConfigRoute
+  '/goose': typeof GooseRoute
   '/intelligence': typeof IntelligenceRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
@@ -162,6 +171,7 @@ export interface FileRouteTypes {
     | '/backup'
     | '/code-studio'
     | '/config'
+    | '/goose'
     | '/intelligence'
     | '/personas'
     | '/portfolio'
@@ -179,6 +189,7 @@ export interface FileRouteTypes {
     | '/backup'
     | '/code-studio'
     | '/config'
+    | '/goose'
     | '/intelligence'
     | '/personas'
     | '/portfolio'
@@ -196,6 +207,7 @@ export interface FileRouteTypes {
     | '/backup'
     | '/code-studio'
     | '/config'
+    | '/goose'
     | '/intelligence'
     | '/personas'
     | '/portfolio'
@@ -214,6 +226,7 @@ export interface RootRouteChildren {
   BackupRoute: typeof BackupRoute
   CodeStudioRoute: typeof CodeStudioRoute
   ConfigRoute: typeof ConfigRoute
+  GooseRoute: typeof GooseRoute
   IntelligenceRoute: typeof IntelligenceRoute
   PersonasRoute: typeof PersonasRoute
   PortfolioRoute: typeof PortfolioRoute
@@ -290,6 +303,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IntelligenceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/goose': {
+      id: '/goose'
+      path: '/goose'
+      fullPath: '/goose'
+      preLoaderRoute: typeof GooseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/config': {
       id: '/config'
       path: '/config'
@@ -342,6 +362,7 @@ const rootRouteChildren: RootRouteChildren = {
   BackupRoute: BackupRoute,
   CodeStudioRoute: CodeStudioRoute,
   ConfigRoute: ConfigRoute,
+  GooseRoute: GooseRoute,
   IntelligenceRoute: IntelligenceRoute,
   PersonasRoute: PersonasRoute,
   PortfolioRoute: PortfolioRoute,
@@ -355,3 +376,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
