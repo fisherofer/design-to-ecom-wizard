@@ -111,9 +111,9 @@ function SettingsPage() {
       {tab === "github" && <GithubTab />}
       {tab === "theme" && <ThemeTab />}
 
-      <div className="fixed inset-x-0 bottom-7 z-20 border-t border-border bg-background/90 p-3 backdrop-blur-xl md:left-[240px] sm:px-6">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
-          <span className="truncate text-xs text-muted-foreground">Changes are kept locally in this browser.</span>
+      <div className="fixed inset-x-0 bottom-7 z-20 border-t border-border bg-background/90 py-3 pl-3 pr-20 backdrop-blur-xl sm:px-6 md:left-[240px]">
+        <div className="mx-auto flex max-w-7xl items-center justify-end gap-3 sm:justify-between">
+          <span className="hidden truncate text-xs text-muted-foreground sm:block">Changes are kept locally in this browser.</span>
           <Button onClick={saveSettings} className="shrink-0">
             {saved ? <Check /> : <Save />}
             {saved ? "Saved" : "Save settings"}
