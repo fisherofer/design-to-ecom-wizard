@@ -18,7 +18,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <TopHeader />
-          <main className="relative flex-1 overflow-y-auto">
+          <main className="relative min-w-0 flex-1 overflow-x-hidden overflow-y-auto">
             <div className="pointer-events-none absolute inset-x-0 top-0 h-64 grid-bg opacity-40" />
             <div className="relative">{children}</div>
           </main>

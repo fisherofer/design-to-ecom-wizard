@@ -15,8 +15,11 @@ import {
   RefreshCw,
   Globe,
   ShieldCheck,
+  Save,
+  Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { GeneralTab } from "@/components/settings/GeneralTab";
 import { ApiProvidersTab } from "@/components/settings/ApiProvidersTab";
 import { OllamaTab } from "@/components/settings/OllamaTab";
@@ -57,25 +60,36 @@ const TABS: Array<{ id: TabId; label: string; Icon: typeof SettingsIcon }> = [
 
 function SettingsPage() {
   const [tab, setTab] = useState<TabId>("api");
+  const [saved, setSaved] = useState(false);
+
+  function saveSettings() {
+    localStorage.setItem("ai-os.settings.lastSaved", new Date().toISOString());
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 1800);
+  }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-6">
-      <header className="flex items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl font-semibold tracking-tight">Settings</h1>
+    <div className="mx-auto max-w-7xl space-y-5 p-3 pb-24 sm:space-y-6 sm:p-6 sm:pb-24">
+      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3">
+        <div className="min-w-0">
+          <h1 className="truncate font-display text-2xl font-semibold tracking-tight sm:text-3xl">Settings</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Providers · Local Models · Rate Limits · GitHub · Theme Engine
           </p>
         </div>
+        <Button onClick={saveSettings} className="hidden sm:inline-flex">
+          {saved ? <Check /> : <Save />}
+          {saved ? "Saved" : "Save settings"}
+        </Button>
       </header>
 
-      <div className="flex flex-wrap gap-2 border-b border-border">
+      <div className="-mx-3 flex gap-1 overflow-x-auto border-b border-border px-3 sm:mx-0 sm:flex-wrap sm:gap-2 sm:px-0">
         {TABS.map(({ id, label, Icon }) => (
           <button
             key={id}
             onClick={() => setTab(id)}
             className={cn(
-              "flex items-center gap-2 rounded-t-md border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
+              "flex shrink-0 items-center gap-2 rounded-t-md border-b-2 px-3 py-2.5 text-sm font-medium transition-colors sm:px-4",
               tab === id
                 ? "border-primary text-primary"
                 : "border-transparent text-muted-foreground hover:text-foreground",
@@ -96,6 +110,16 @@ function SettingsPage() {
       {tab === "refresh" && <RefreshTab />}
       {tab === "github" && <GithubTab />}
       {tab === "theme" && <ThemeTab />}
+
+      <div className="fixed inset-x-0 bottom-7 z-20 border-t border-border bg-background/90 py-3 pl-3 pr-20 backdrop-blur-xl sm:px-6 md:left-[240px]">
+        <div className="mx-auto flex max-w-7xl items-center justify-start gap-3 sm:justify-between">
+          <span className="hidden truncate text-xs text-muted-foreground sm:block">Changes are kept locally in this browser.</span>
+          <Button onClick={saveSettings} className="shrink-0">
+            {saved ? <Check /> : <Save />}
+            {saved ? "Saved" : "Save settings"}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
