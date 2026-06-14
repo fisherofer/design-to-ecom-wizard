@@ -1,9 +1,47 @@
-import { Search, Bell, Smartphone, User } from "lucide-react";
+import { Link, useLocation } from "@tanstack/react-router";
+import { Search, Bell, Smartphone, User, Menu, Activity } from "lucide-react";
+import { NAV_ITEMS } from "./Sidebar";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 export function TopHeader() {
+  const { pathname } = useLocation();
+
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-background/70 px-6 backdrop-blur-xl">
-      <div className="relative flex-1 max-w-xl">
+    <header className="sticky top-0 z-30 grid h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-b border-border bg-background/70 px-3 backdrop-blur-xl sm:gap-4 sm:px-6">
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button variant="outline" size="icon" className="md:hidden" aria-label="Open navigation">
+            <Menu />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="flex w-[min(88vw,320px)] flex-col overflow-hidden bg-sidebar p-0">
+          <SheetHeader className="border-b border-sidebar-border p-5 text-left">
+            <SheetTitle className="flex items-center gap-3">
+              <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground"><Activity className="h-5 w-5" /></span>
+              AI Executive OS
+            </SheetTitle>
+            <SheetDescription>Trading command center</SheetDescription>
+          </SheetHeader>
+          <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto p-3">
+            {NAV_ITEMS.map((item) => {
+              const active = item.end ? pathname === item.to : pathname.startsWith(item.to);
+              const Icon = item.icon;
+              return (
+                <SheetClose asChild key={item.to}>
+                  <Link to={item.to} className={cn("flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium", active ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground")}>
+                    <Icon className={cn("h-4 w-4 shrink-0", active && "text-primary")} />
+                    <span className="truncate">{item.label}</span>
+                  </Link>
+                </SheetClose>
+              );
+            })}
+          </nav>
+        </SheetContent>
+      </Sheet>
+
+      <div className="relative min-w-0 max-w-xl">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input
           type="text"
@@ -15,24 +53,24 @@ export function TopHeader() {
         </kbd>
       </div>
 
-      <div className="flex items-center gap-2">
-        <button className="flex h-9 items-center gap-2 rounded-md border border-border bg-card/50 px-3 text-xs font-mono text-muted-foreground hover:border-border-strong hover:text-foreground transition-colors">
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+        <Button variant="outline" className="hidden gap-2 bg-card/50 px-3 font-mono text-xs text-muted-foreground sm:flex">
           <Smartphone className="h-3.5 w-3.5" />
           <span className="hidden lg:inline">+972 · DEVICE LINKED</span>
           <span className="h-1.5 w-1.5 rounded-full bg-success pulse-dot" />
-        </button>
+        </Button>
 
-        <button className="relative flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card/50 hover:border-border-strong transition-colors">
+        <Button variant="outline" size="icon" className="relative bg-card/50" aria-label="Notifications">
           <Bell className="h-4 w-4 text-muted-foreground" />
           <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-destructive ring-2 ring-background" />
-        </button>
+        </Button>
 
-        <button className="flex h-9 items-center gap-2 rounded-md border border-border bg-card/50 px-2 hover:border-border-strong transition-colors">
+        <Button variant="outline" className="hidden gap-2 bg-card/50 px-2 sm:flex">
           <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent">
             <User className="h-3.5 w-3.5 text-primary-foreground" />
           </div>
           <span className="hidden md:inline text-xs font-medium">Operator</span>
-        </button>
+        </Button>
       </div>
     </header>
   );

@@ -69,9 +69,9 @@ export function ApiProvidersTab() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-lg border border-border bg-card p-6">
-        <div className="flex items-center justify-between">
-          <div>
+      <section className="rounded-lg border border-border bg-card p-4 sm:p-6">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+          <div className="min-w-0">
             <h2 className="font-display text-lg font-semibold">Provider API Keys</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Keys are stored in your browser only. "Discover" asks each provider which models its key supports.
@@ -79,7 +79,7 @@ export function ApiProvidersTab() {
           </div>
           <button
             onClick={discoverAll}
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 sm:w-auto"
           >
             <Sparkles className="h-4 w-4" /> Discover All
           </button>
@@ -91,8 +91,8 @@ export function ApiProvidersTab() {
             const isOllama = p === "ollama";
             return (
               <div key={p} className="rounded-md border border-border bg-surface p-4">
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="min-w-[160px]">
+                <div className="grid grid-cols-1 items-center gap-3 sm:grid-cols-[160px_minmax(0,1fr)_auto]">
+                  <div className="min-w-0">
                     <div className="font-medium">{PROVIDER_LABELS[p]}</div>
                     <div className="mt-0.5 text-[11px] font-mono uppercase text-muted-foreground">{p}</div>
                   </div>
@@ -102,7 +102,7 @@ export function ApiProvidersTab() {
                     value={keys[p] ?? ""}
                     disabled={isOllama}
                     onChange={(e) => persistKeys({ ...keys, [p]: e.target.value })}
-                    className="flex-1 rounded-md border border-border bg-background px-3 py-2 font-mono text-xs focus:border-primary focus:outline-none disabled:opacity-50"
+                    className="min-w-0 w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-xs focus:border-primary focus:outline-none disabled:opacity-50"
                   />
                   <button
                     onClick={() => runDiscovery(p)}
@@ -128,8 +128,8 @@ export function ApiProvidersTab() {
         </div>
       </section>
 
-      {allModels.length > 0 && (
-        <section className="rounded-lg border border-border bg-card p-6">
+       {allModels.length > 0 && (
+        <section className="rounded-lg border border-border bg-card p-4 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="font-display text-lg font-semibold">Discovered Models ({allModels.length})</h2>
