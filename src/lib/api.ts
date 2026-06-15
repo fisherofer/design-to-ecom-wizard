@@ -65,7 +65,7 @@ async function request<T>(
 }
 
 // -------------------- Types --------------------
-export type EngineId = "gemini" | "ollama" | "groq" | "claude" | "perplexity";
+export type EngineId = "gemini" | "ollama" | "groq" | "claude" | "perplexity" | "goose";
 
 export interface SystemStatus {
   cloudEngine: { id: EngineId; label: string; online: boolean };
@@ -149,8 +149,15 @@ export interface ChatMessage {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
-  engine?: EngineId;
+  engine?: EngineId | "goose";
   ts: number;
+}
+
+export interface ChatResponse {
+  reply: string;
+  engine: EngineId | "goose";
+  route?: "llm" | "goose" | "fallback";
+  toolsUsed?: string[];
 }
 
 // -------- Persona / Alpha tracking --------
@@ -301,13 +308,14 @@ export const api = {
   chat: (
     messages: ChatMessage[],
     engine: EngineId = "gemini",
-  ): Promise<{ reply: string; engine: EngineId }> =>
+  ): Promise<ChatResponse> =>
     request(
       "/chat",
       { method: "POST", body: JSON.stringify({ messages, engine }) },
       {
         reply: mockReply(messages.at(-1)?.content ?? ""),
         engine,
+        route: "fallback",
       },
     ),
 
@@ -334,6 +342,19 @@ export const api = {
       "/api/goose/update-code",
       { method: "POST", body: JSON.stringify({ description, instruction_audit: instructionAudit }) },
       { ok: true, jobId: `mock_${Date.now()}`, message: "בקשת שינוי הוכנה במצב הדגמה; חבר את FastAPI לביצוע אמיתי." },
+    ),
+  gooseChat: (messages: ChatMessage[], fallbackEngine: EngineId): Promise<ChatResponse> =>
+    request<ChatResponse>(
+      "/api/goose/chat",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          messages,
+          fallback_engine: fallbackEngine,
+          use_tools: true,
+          approval_mode: "guarded",
+        }),
+      },
     ),
 
   // ---------- Infra ----------

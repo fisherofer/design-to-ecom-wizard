@@ -23,6 +23,7 @@ const ENGINES: { id: EngineId; label: string }[] = [
   { id: "ollama", label: "Ollama 8B (local)" },
   { id: "claude", label: "Claude 3.5" },
   { id: "groq", label: "Groq Llama-70B" },
+  { id: "goose", label: "Goose (MCP)" },
 ];
 
 const PANEL_W = 420;
