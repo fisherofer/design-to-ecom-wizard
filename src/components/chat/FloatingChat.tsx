@@ -256,7 +256,7 @@ export function FloatingChat() {
       let response;
       if (gooseEnabled && gooseStatus?.connected && gooseStatus.extensionOk) {
         try {
-          response = await api.gooseChat(next, activeEngine);
+          response = await api.chat(next, "goose");
         } catch {
           response = await api.chat(next, activeEngine);
           response.route = "fallback";

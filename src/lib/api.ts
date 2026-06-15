@@ -320,8 +320,6 @@ export const api = {
       },
     );
   },
-    );
-  },
 
   // ---------- Goose MCP bridge ----------
   gooseStatus: () =>
