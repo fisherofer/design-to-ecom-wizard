@@ -254,7 +254,7 @@ export function FloatingChat() {
     setSending(true);
     try {
       let response;
-      if (gooseEnabled && gooseStatus?.connected && gooseStatus.extensionOk) {
+      if (activeEngine === "goose") {
         try {
           response = await api.chat(next, "goose");
         } catch {
