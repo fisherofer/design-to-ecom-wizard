@@ -77,6 +77,12 @@ export function FloatingChat() {
   const [sending, setSending] = useState(false);
   const [focused, setFocused] = useState(false);
   const [inspecting, setInspecting] = useState(false);
+  const [gooseEnabled, setGooseEnabledState] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.localStorage.getItem("chatGooseEnabled") !== "false";
+  });
+  const [gooseStatus, setGooseStatus] = useState<GooseStatus | null>(null);
+  const [lastRoute, setLastRoute] = useState<"goose" | "llm" | "fallback">("llm");
 
   // Drag state
   const [pos, setPos] = useState<Pos | null>(loadPos);
