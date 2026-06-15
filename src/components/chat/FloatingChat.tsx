@@ -77,12 +77,6 @@ export function FloatingChat() {
   const [sending, setSending] = useState(false);
   const [focused, setFocused] = useState(false);
   const [inspecting, setInspecting] = useState(false);
-  const [gooseEnabled, setGooseEnabledState] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return window.localStorage.getItem("chatGooseEnabled") !== "false";
-  });
-  const [gooseStatus, setGooseStatus] = useState<GooseStatus | null>(null);
-  const [lastRoute, setLastRoute] = useState<"goose" | "llm" | "fallback">("llm");
 
   // Drag state
   const [pos, setPos] = useState<Pos | null>(loadPos);
@@ -265,8 +259,7 @@ export function FloatingChat() {
         response = await api.chat(next, activeEngine);
       }
       const { reply, engine, toolsUsed = [] } = response;
-      const route = response.route ?? (engine === "goose" ? "goose" : "llm");
-      setLastRoute(route);
+      
       const toolSummary = toolsUsed.length ? `\n\nכלי Goose: ${toolsUsed.join(", ")}` : "";
       setMessages((m) => [
         ...m,
