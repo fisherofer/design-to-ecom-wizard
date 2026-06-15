@@ -13,9 +13,12 @@ import {
   GripHorizontal,
   Minus,
   Plus,
+  Bird,
+  Wrench,
 } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { api, type ChatMessage, type EngineId } from "@/lib/api";
+import type { GooseStatus } from "@/lib/goose";
 import { cn } from "@/lib/utils";
 
 const ENGINES: { id: EngineId; label: string }[] = [
@@ -74,6 +77,12 @@ export function FloatingChat() {
   const [sending, setSending] = useState(false);
   const [focused, setFocused] = useState(false);
   const [inspecting, setInspecting] = useState(false);
+  const [gooseEnabled, setGooseEnabledState] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.localStorage.getItem("chatGooseEnabled") !== "false";
+  });
+  const [gooseStatus, setGooseStatus] = useState<GooseStatus | null>(null);
+  const [lastRoute, setLastRoute] = useState<"goose" | "llm" | "fallback">("llm");
 
   // Drag state
   const [pos, setPos] = useState<Pos | null>(loadPos);
@@ -88,6 +97,27 @@ export function FloatingChat() {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, chatOpen]);
+
+  useEffect(() => {
+    if (!chatOpen || !gooseEnabled) return;
+    let active = true;
+    const refreshGoose = async () => {
+      const nextStatus = await api.gooseStatus();
+      if (active) setGooseStatus(nextStatus);
+    };
+    void refreshGoose();
+    const id = window.setInterval(refreshGoose, 15_000);
+    return () => {
+      active = false;
+      window.clearInterval(id);
+    };
+  }, [chatOpen, gooseEnabled]);
+
+  function setGooseEnabled(enabled: boolean) {
+    setGooseEnabledState(enabled);
+    window.localStorage.setItem("chatGooseEnabled", String(enabled));
+    if (!enabled) setLastRoute("llm");
+  }
 
   // -------- Drag logic --------
   useEffect(() => {
@@ -223,10 +253,24 @@ export function FloatingChat() {
     setInput("");
     setSending(true);
     try {
-      const { reply, engine } = await api.chat(next, activeEngine);
+      let response;
+      if (gooseEnabled && gooseStatus?.connected && gooseStatus.extensionOk) {
+        try {
+          response = await api.gooseChat(next, activeEngine);
+        } catch {
+          response = await api.chat(next, activeEngine);
+          response.route = "fallback";
+        }
+      } else {
+        response = await api.chat(next, activeEngine);
+      }
+      const { reply, engine, toolsUsed = [] } = response;
+      const route = response.route ?? (engine === "goose" ? "goose" : "llm");
+      setLastRoute(route);
+      const toolSummary = toolsUsed.length ? `\n\nכלי Goose: ${toolsUsed.join(", ")}` : "";
       setMessages((m) => [
         ...m,
-        { id: `a_${Date.now()}`, role: "assistant", content: reply, engine, ts: Date.now() },
+        { id: `a_${Date.now()}`, role: "assistant", content: `${reply}${toolSummary}`, engine, ts: Date.now() },
       ]);
     } catch {
       setMessages((m) => [
@@ -326,7 +370,11 @@ export function FloatingChat() {
               </select>
             </div>
             <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-              {chatTransparent ? "ghost" : "focus"} · {chatOpacity}%
+              {gooseEnabled
+                ? gooseStatus?.connected && gooseStatus.extensionOk
+                  ? `goose ${lastRoute === "fallback" ? "fallback" : "tools ready"}`
+                  : "goose waiting · llm fallback"
+                : `${chatTransparent ? "ghost" : "focus"} · ${chatOpacity}%`}
             </div>
           </div>
         </div>
@@ -357,6 +405,21 @@ export function FloatingChat() {
 
       {/* Opacity controls */}
       <div className="flex items-center gap-2 border-b border-primary/10 bg-card/20 px-3 py-1.5">
+        <button
+          onClick={() => setGooseEnabled(!gooseEnabled)}
+          title={gooseEnabled ? "Disable automatic Goose tool routing" : "Enable automatic Goose tool routing"}
+          aria-pressed={gooseEnabled}
+          className={cn(
+            "flex h-6 shrink-0 items-center gap-1 rounded-md border px-2 font-mono text-[9px] uppercase transition-colors",
+            gooseEnabled
+              ? "border-primary/40 bg-primary/10 text-primary"
+              : "border-border bg-card/40 text-muted-foreground",
+          )}
+        >
+          <Bird className="h-3 w-3" />
+          Goose
+          {gooseEnabled && gooseStatus?.connected && gooseStatus.extensionOk && <Wrench className="h-3 w-3" />}
+        </button>
         <button
           onClick={() => setChatOpacity(chatOpacity - 10)}
           disabled={chatOpacity <= 5}
@@ -457,7 +520,7 @@ export function FloatingChat() {
           </button>
         </div>
         <div className="mt-1.5 flex items-center justify-between px-1 text-[10px] font-mono text-muted-foreground/60">
-          <span>local · {activeEngine}</span>
+          <span>{gooseEnabled ? `auto · goose → ${activeEngine}` : `local · ${activeEngine}`}</span>
           <span>shift+⏎ for new line</span>
         </div>
       </div>

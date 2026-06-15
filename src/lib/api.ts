@@ -308,16 +308,20 @@ export const api = {
   chat: (
     messages: ChatMessage[],
     engine: EngineId = "gemini",
-  ): Promise<ChatResponse> =>
-    request(
-      "/chat",
+  ): Promise<ChatResponse> => {
+    const path = engine === "goose" ? "/api/goose/chat" : "/chat";
+    return request(
+      path,
       { method: "POST", body: JSON.stringify({ messages, engine }) },
       {
-        reply: mockReply(messages.at(-1)?.content ?? ""),
+        reply: mockReply(messages.at(-1)?.content ?? "", engine),
         engine,
         route: "fallback",
       },
-    ),
+    );
+  },
+    );
+  },
 
   // ---------- Goose MCP bridge ----------
   gooseStatus: () =>
@@ -380,8 +384,9 @@ export const api = {
     ),
 };
 
-function mockReply(prompt: string): string {
+function mockReply(prompt: string, engine?: EngineId): string {
   if (!prompt) return "Connected to local Python backend (mock fallback).";
+  if (engine === "goose") return "Goose (MCP) is currently in fallback mode. The local model is handling the request, but tools are limited until the bridge is active.";
   if (/docker/i.test(prompt))
     return "Docker is running v27.3.1. Use the **System Config** panel to restart or update the stack.";
   if (/ollama|local/i.test(prompt))
