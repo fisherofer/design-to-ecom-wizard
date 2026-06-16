@@ -45,14 +45,32 @@ export interface InstructionAudit {
 }
 
 const REQUIRED_AREAS = [
-  { label: "מטרת מוצר וקהל יעד", patterns: [/overview/i, /קהל יעד/, /מה האתר עושה/] },
-  { label: "ארכיטקטורה וחוזה API", patterns: [/architecture|ארכיטקטורה/i, /api contract|endpoints/i] },
-  { label: "מסכים וזרימות", patterns: [/screens|מסכים/i, /dashboard/i] },
-  { label: "רכיבי ממשק", patterns: [/components|רכיבים/i, /widget/i] },
-  { label: "מצבים, polling ושגיאות", patterns: [/polling|real-time|state/i, /שגיאות|errors/i] },
-  { label: "RTL ו-responsive", patterns: [/rtl/i, /responsive|מובייל/i] },
-  { label: "גבולות אחריות", patterns: [/מה לא לבנות|do not build/i, /frontend.*בלבד|frontend.*only/i] },
-  { label: "Goose ו-MCP", patterns: [/goose/i, /mcp/i] },
+  { label: "מטרת מוצר וקהל יעד", patterns: [/overview/i, /קהל יעד/, /מה האתר עושה/, /role:/i] },
+  {
+    label: "ארכיטקטורה וחוזה API",
+    patterns: [
+      /architecture|ארכיטקטורה/i,
+      /api contract|endpoints/i,
+      /fastapi|localhost:\d+|baseurl/i,
+      /\/api\/|\/health/i,
+    ],
+  },
+  { label: "מסכים וזרימות", patterns: [/screens|מסכים/i, /dashboard|tracker|editor/i] },
+  { label: "רכיבי ממשק", patterns: [/components|רכיבים/i, /widget|tailwind|recharts|lucide/i] },
+  {
+    label: "מצבים, polling ושגיאות",
+    patterns: [/polling|real-time|state/i, /שגיאות|errors|retry|backoff|interceptor/i],
+  },
+  { label: "RTL ו-responsive", patterns: [/rtl/i, /responsive|מובייל|grid|bento/i] },
+  {
+    label: "גבולות אחריות",
+    patterns: [
+      /מה לא לבנות|do not build/i,
+      /frontend.*בלבד|frontend.*only/i,
+      /frontend setup|react.*vite|frontend.*directory/i,
+    ],
+  },
+  { label: "Goose ו-MCP", patterns: [/goose/i, /mcp/i, /ai generator prompts|copy.*paste.*prompt/i] },
 ] as const;
 
 const UNSAFE_PATTERNS = [
@@ -74,7 +92,7 @@ export function auditExternalInstructions(content: string): InstructionAudit {
     ({ label }) => label,
   );
   const hasAcceptanceCriteria = /acceptance|קריטריוני קבלה|definition of done/i.test(normalized);
-  const hasDataExamples = /```json|דוגמת תגובת api|mock data/i.test(normalized);
+  const hasDataExamples = /```(json|ts|typescript|tsx|bash|sh)|דוגמת תגובת api|mock data|example|prompt:/i.test(normalized);
   const findings: InstructionFinding[] = [
     {
       id: "scope",
