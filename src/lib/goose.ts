@@ -92,7 +92,7 @@ export function auditExternalInstructions(content: string): InstructionAudit {
     ({ label }) => label,
   );
   const hasAcceptanceCriteria = /acceptance|קריטריוני קבלה|definition of done/i.test(normalized);
-  const hasDataExamples = /```json|דוגמת תגובת api|mock data/i.test(normalized);
+  const hasDataExamples = /```(json|ts|typescript|tsx|bash|sh)|דוגמת תגובת api|mock data|example|prompt:/i.test(normalized);
   const findings: InstructionFinding[] = [
     {
       id: "scope",
