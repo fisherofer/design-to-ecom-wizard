@@ -92,7 +92,7 @@ export function ServiceDiscovery() {
   async function scanAll() {
     setScanning(true);
     setNotice("");
-    setResults((r) => Object.fromEntries(probes.map((p) => [p.id, { state: "probing" as const, ...r[p.id] }])));
+    setResults((r) => Object.fromEntries(probes.map((p) => [p.id, { ...r[p.id], state: "probing" as const }])));
     const entries = await Promise.all(probes.map(async (p) => [p.id, await probeOne(p)] as const));
     const map = Object.fromEntries(entries);
     setResults(map);
