@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { ServiceDiscovery } from "@/components/goose/ServiceDiscovery";
 
 export const Route = createFileRoute("/goose")({
   head: () => ({
@@ -139,6 +140,9 @@ function GoosePage() {
           </Button>
         </div>
       </header>
+
+      <ServiceDiscovery />
+
 
       <section className="grid gap-4 lg:grid-cols-[1.15fr_1fr]">
         <div className="rounded-xl border border-border glass p-5">
