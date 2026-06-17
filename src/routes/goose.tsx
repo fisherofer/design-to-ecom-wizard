@@ -27,6 +27,7 @@ import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { ServiceDiscovery } from "@/components/goose/ServiceDiscovery";
+import { AiHandoffExport } from "@/components/goose/AiHandoffExport";
 
 export const Route = createFileRoute("/goose")({
   head: () => ({
@@ -142,6 +143,10 @@ function GoosePage() {
       </header>
 
       <ServiceDiscovery />
+
+      <AiHandoffExport />
+
+
 
 
       <section className="grid gap-4 lg:grid-cols-[1.15fr_1fr]">
