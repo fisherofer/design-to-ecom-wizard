@@ -1,6 +1,8 @@
 import { TRACKED_TICKERS } from "@/lib/trackedAssets";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+import { TickerLogo } from "@/components/tickers/TickerLogo";
 
 export function TrackedTickersTable() {
   return (
@@ -33,8 +35,17 @@ export function TrackedTickersTable() {
               return (
                 <tr key={t.symbol} className="border-b border-border/30 last:border-0 hover:bg-card/30 transition-colors">
                   <td className="py-2.5">
-                    <div className="font-mono font-semibold">{t.symbol}</div>
-                    <div className="text-[10px] text-muted-foreground truncate max-w-[140px]">{t.name}</div>
+                    <Link
+                      to="/ticker/$symbol"
+                      params={{ symbol: t.symbol }}
+                      className="flex items-center gap-2 hover:opacity-80"
+                    >
+                      <TickerLogo symbol={t.symbol} size="sm" linkTo={false} />
+                      <div className="min-w-0">
+                        <div className="font-mono font-semibold">{t.symbol}</div>
+                        <div className="text-[10px] text-muted-foreground truncate max-w-[140px]">{t.name}</div>
+                      </div>
+                    </Link>
                   </td>
                   <td className="py-2.5 text-right font-mono tabular-nums">${t.price.toFixed(2)}</td>
                   <td className={cn("py-2.5 text-right font-mono tabular-nums", up ? "text-success" : "text-destructive")}>

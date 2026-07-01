@@ -1,4 +1,6 @@
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { TickerLogo } from "@/components/tickers/TickerLogo";
 
 const TICKERS = [
   { sym: "NVDA", price: 945.32, chg: 4.12 },
@@ -19,12 +21,18 @@ export function Ticker() {
   const items = [...TICKERS, ...TICKERS];
   return (
     <div className="relative overflow-hidden border-y border-border bg-card/40">
-      <div className="ticker-scroll flex gap-8 py-2.5 whitespace-nowrap">
+      <div className="ticker-scroll flex gap-6 py-2 whitespace-nowrap">
         {items.map((t, i) => {
           const up = t.chg >= 0;
           const Icon = up ? TrendingUp : TrendingDown;
           return (
-            <div key={i} className="flex items-center gap-2 font-mono text-xs">
+            <Link
+              key={i}
+              to="/ticker/$symbol"
+              params={{ symbol: t.sym }}
+              className="flex items-center gap-2 font-mono text-xs hover:opacity-80 transition-opacity"
+            >
+              <TickerLogo symbol={t.sym} size="xs" linkTo={false} />
               <span className="font-semibold text-foreground">{t.sym}</span>
               <span className="text-muted-foreground tabular-nums">
                 {t.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -39,7 +47,7 @@ export function Ticker() {
                 {t.chg.toFixed(2)}%
               </span>
               <span className="text-border-strong">·</span>
-            </div>
+            </Link>
           );
         })}
       </div>
