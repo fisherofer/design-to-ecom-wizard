@@ -53,7 +53,7 @@ export function GoogleDriveTab() {
     setBusy("upload");
     try {
       await ensureFolder();
-      const bundle = await buildSourceBundle({ includeLogs: true });
+      const bundle = buildSourceBundle();
       const name = `ai-os-backup-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
       await uploadBackup(name, JSON.stringify(bundle, null, 2));
       toast.success(`Uploaded ${name}`);
