@@ -15,6 +15,8 @@ import {
   RefreshCw,
   Globe,
   ShieldCheck,
+  DollarSign,
+  Cloud,
   Save,
   Check,
 } from "lucide-react";
@@ -29,6 +31,8 @@ import { RateLimitsTab } from "@/components/settings/RateLimitsTab";
 import { RefreshTab } from "@/components/settings/RefreshTab";
 import { ModelHubTab } from "@/components/settings/ModelHubTab";
 import { ModelFiltersTab } from "@/components/settings/ModelFiltersTab";
+import { BudgetTab } from "@/components/settings/BudgetTab";
+import { GoogleDriveTab } from "@/components/settings/GoogleDriveTab";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -37,14 +41,14 @@ export const Route = createFileRoute("/settings")({
       {
         name: "description",
         content:
-          "Manage providers, discover models, configure Ollama, GitHub, theme tokens, and rate limits.",
+          "Manage providers, discover models, configure Ollama, GitHub, theme tokens, rate limits, budgets and Drive backups.",
       },
     ],
   }),
   component: SettingsPage,
 });
 
-type TabId = "general" | "api" | "ollama" | "hub" | "filters" | "limits" | "refresh" | "github" | "theme";
+type TabId = "general" | "api" | "ollama" | "hub" | "filters" | "limits" | "budget" | "refresh" | "github" | "drive" | "theme";
 
 const TABS: Array<{ id: TabId; label: string; Icon: typeof SettingsIcon }> = [
   { id: "general", label: "General", Icon: SettingsIcon },
@@ -53,8 +57,10 @@ const TABS: Array<{ id: TabId; label: string; Icon: typeof SettingsIcon }> = [
   { id: "hub", label: "Model Hub", Icon: Globe },
   { id: "filters", label: "Model Filters", Icon: ShieldCheck },
   { id: "limits", label: "Rate Limits", Icon: Activity },
+  { id: "budget", label: "Budget", Icon: DollarSign },
   { id: "refresh", label: "Refresh", Icon: RefreshCw },
   { id: "github", label: "GitHub", Icon: Github },
+  { id: "drive", label: "Google Drive", Icon: Cloud },
   { id: "theme", label: "Theme", Icon: Palette },
 ];
 
@@ -107,8 +113,10 @@ function SettingsPage() {
       {tab === "hub" && <ModelHubTab />}
       {tab === "filters" && <ModelFiltersTab />}
       {tab === "limits" && <RateLimitsTab />}
+      {tab === "budget" && <BudgetTab />}
       {tab === "refresh" && <RefreshTab />}
       {tab === "github" && <GithubTab />}
+      {tab === "drive" && <GoogleDriveTab />}
       {tab === "theme" && <ThemeTab />}
 
       <div className="fixed inset-x-0 bottom-7 z-20 border-t border-border bg-background/90 py-3 pl-3 pr-20 backdrop-blur-xl sm:px-6 md:left-[240px]">
