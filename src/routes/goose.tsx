@@ -28,6 +28,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { ServiceDiscovery } from "@/components/goose/ServiceDiscovery";
 import { AiHandoffExport } from "@/components/goose/AiHandoffExport";
+import { NotWiredBadge } from "@/components/common/NotWiredBadge";
 
 export const Route = createFileRoute("/goose")({
   head: () => ({
