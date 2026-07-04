@@ -229,7 +229,7 @@ export const api = {
   health: () => request<{ ok: boolean }>("/health", {}, { ok: false }),
 
   systemStatus: () =>
-    request<SystemStatus>("/system/status", {}, {
+    request<SystemStatus>("/api/status", {}, {
       cloudEngine: { id: "gemini", label: "Gemini 1.5 Pro", online: true },
       localEngine: { id: "ollama", label: "Ollama 8B", online: true },
       dbConnected: true,
