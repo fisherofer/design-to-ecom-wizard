@@ -69,7 +69,10 @@ function PersonasPage() {
             <Users className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold tracking-tight">Persona Trackers · Meta-Agent</h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="font-display text-2xl font-bold tracking-tight">Persona Trackers · Meta-Agent</h1>
+              <NotWiredBadge detail="Persona system + Meta-Agent evolution proposals are on the roadmap — showing mock data until /personas and /evolution/proposals ship on the backend." />
+            </div>
             <p className="text-sm text-muted-foreground font-mono">
               {personas.length} alpha creators tracked · {proposals.filter((p) => p.status === "pending").length} evolution proposals pending
             </p>
