@@ -384,27 +384,31 @@ export const api = {
       },
     ),
 
-  // ---------- Infra ----------
-  dockerRestart: () =>
-    request<{ ok: boolean }>("/docker/restart", { method: "POST" }, { ok: true }),
-  dockerUpdate: () =>
-    request<{ ok: boolean; version: string }>(
-      "/docker/update",
-      { method: "POST" },
-      { ok: true, version: "27.3.1" },
+  // ---------- Dashboard (WIRED to hub/api_server.py) ----------
+  recommendations: () =>
+    request<Recommendation[]>("/api/recommendations", {}, MOCK_RECOMMENDATIONS),
+  marketData: (symbols?: string[]) =>
+    request<MarketDataSnapshot[]>(
+      `/api/market-data${symbols?.length ? `?symbols=${symbols.join(",")}` : ""}`,
+      {},
+      MOCK_MARKET_DATA,
     ),
-  npmCheck: () =>
-    request<{ installed: boolean; version: string }>(
-      "/npm/check",
-      { method: "POST" },
-      { installed: true, version: "10.8.2" },
+  reportToday: () =>
+    request<TodayReport>("/api/reports/today", {}, MOCK_TODAY_REPORT),
+  listAgents: () => request<AgentInfo[]>("/api/agents", {}, MOCK_AGENTS),
+  agentStart: (id: string) =>
+    request<{ ok: boolean }>("/api/agent/start", { method: "POST", body: JSON.stringify({ id }) }, { ok: true }),
+  agentStop: (id: string) =>
+    request<{ ok: boolean }>("/api/agent/stop", { method: "POST", body: JSON.stringify({ id }) }, { ok: true }),
+  agentRunPipeline: (id: string) =>
+    request<{ ok: boolean; runId: string }>(
+      "/api/agent/run-pipeline",
+      { method: "POST", body: JSON.stringify({ id }) },
+      { ok: true, runId: `run_${Date.now()}` },
     ),
-  npmInstall: (pkg?: string) =>
-    request<{ ok: boolean; log: string }>(
-      "/npm/install",
-      { method: "POST", body: JSON.stringify({ pkg }) },
-      { ok: true, log: `mock install ${pkg ?? "all"} complete` },
-    ),
+  capabilities: () => request<Capability[]>("/api/capabilities", {}, MOCK_CAPABILITIES),
+  ports: () => request<PortInfo[]>("/api/ports", {}, MOCK_PORTS),
+  trayState: () => request<TrayState>("/api/tray/state", {}, MOCK_TRAY_STATE),
 };
 
 function mockReply(prompt: string, engine?: EngineId): string {
