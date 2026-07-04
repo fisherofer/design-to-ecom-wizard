@@ -114,7 +114,10 @@ function TerminalLogs() {
             <Terminal className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold tracking-tight">Deep Trace Terminal</h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="font-display text-2xl font-bold tracking-tight">Deep Trace Terminal</h1>
+              <NotWiredBadge detail="Log stream /logs is not yet exposed by the backend — showing fallback trace until it ships." />
+            </div>
             <p className="text-sm text-muted-foreground font-mono">
               {filtered.length} entries · {autoScroll ? "live tail" : "paused"}
               {lastFetch && ` · last fetch ${lastFetch.toLocaleTimeString()}`}
