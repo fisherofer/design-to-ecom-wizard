@@ -7,30 +7,55 @@ import {
 /**
  * AI Executive OS — Local API Bridge
  * ==================================
- * All requests target the local Python backend at http://localhost:8050.
- * If the backend is unreachable, mock data is returned so the UI stays alive.
+ * All requests target the local Python backend (QuantEngine `hub/api_server.py`)
+ * on http://localhost:8050. If the backend is unreachable, mock data is returned
+ * so the UI stays alive.
  *
- * Backend contract (FastAPI / api_bridge.py):
+ * WIRED (real backend endpoints):
  *   GET  /health
- *   GET  /system/status
- *   GET  /system/healthcheck         (deep — python/docker/ollama/npm versions)
- *   POST /system/repair              (AI-driven self-repair)
- *   GET  /vault/keys
- *   POST /vault/keys
- *   GET  /vault/categories
- *   GET  /config/params
- *   POST /config/params/:key         (Safe-Change Workflow)
- *   GET  /personas
- *   POST /personas/:id/extract       (run alpha extractor)
- *   GET  /evolution/proposals        (Meta-Agent suggestions)
- *   POST /evolution/proposals/:id/approve
- *   GET  /logs?level=&limit=
- *   POST /chat
- *   POST /docker/restart
- *   POST /docker/update
- *   POST /npm/check
- *   POST /npm/install
+ *   GET  /api/status                 (system status)
+ *   GET  /api/health/full            (deep health scan)
+ *   POST /api/health/doctor          (AI-driven self-repair)
+ *   GET  /api/keys                   (vault list)
+ *   POST /api/keys                   (add key)
+ *   DELETE /api/keys/:provider       (remove key)
+ *   GET  /api/recommendations        (dashboard signals)
+ *   GET  /api/market-data            (dashboard tickers)
+ *   GET  /api/reports/today          (dashboard KPIs)
+ *   GET  /api/agents                 (agent registry)
+ *   POST /api/agent/start | stop | run-pipeline
+ *   GET  /api/capabilities           (system capability map)
+ *   GET  /api/ports                  (dynamic service discovery)
+ *   GET  /api/tray/state             (tray/sidebar state)
+ *
+ * NOT YET WIRED — planned features, still returning mock data. Kept as
+ * roadmap; do NOT delete without discussion. Callers are marked visually
+ * with <NotWiredBadge/> in the UI.
+ *   GET  /personas                   (Persona tracker system)
+ *   POST /personas/:id/toggle
+ *   POST /personas/:id/extract
+ *   GET  /evolution/proposals        (Self-evolving Meta-Agent)
+ *   POST /evolution/proposals/:id/decide
+ *   GET  /logs                       (backend log stream)
+ *   POST /chat                       (LLM chat bridge)
+ *   POST /api/goose/verify
+ *   POST /api/goose/update-code
+ *   POST /api/goose/chat
  */
+
+/** Endpoints not yet wired to the real backend — see JSDoc above. */
+export const NOT_WIRED_ENDPOINTS = new Set<string>([
+  "listPersonas",
+  "togglePersona",
+  "rescanPersona",
+  "listProposals",
+  "decideProposal",
+  "listLogs",
+  "chat",
+  "gooseVerify",
+  "gooseUpdateCode",
+  "gooseChat",
+]);
 
 export const API_BASE =
   (typeof window !== "undefined" && (window as { __API_BASE__?: string }).__API_BASE__) ||
