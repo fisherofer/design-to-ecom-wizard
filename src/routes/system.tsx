@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   XCircle,
   CheckCircle2,
+  PackageX,
   Loader2,
 } from "lucide-react";
 import { api, type HealthReport, type HealthLevel } from "@/lib/api";
