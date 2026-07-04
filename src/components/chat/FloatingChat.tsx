@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { api, type ChatMessage, type EngineId } from "@/lib/api";
+import { NotWiredBadge } from "@/components/common/NotWiredBadge";
 import type { GooseStatus } from "@/lib/goose";
 import { cn } from "@/lib/utils";
 
