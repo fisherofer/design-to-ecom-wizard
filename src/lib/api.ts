@@ -473,6 +473,57 @@ function mockReply(prompt: string, engine?: EngineId): string {
 }
 
 // -------------------- MOCK DATA --------------------
+const NOW = () => new Date().toISOString();
+
+const MOCK_RECOMMENDATIONS: Recommendation[] = [
+  { id: "r1", ticker: "NVDA", action: "BUY", price: 945.32, confidence: 87, strategy: "Momentum · 5m breakout", ts: NOW() },
+  { id: "r2", ticker: "TSLA", action: "SELL", price: 178.9, confidence: 74, strategy: "Mean reversion · RSI overbought", ts: NOW() },
+  { id: "r3", ticker: "BTC-USD", action: "BUY", price: 71240, confidence: 91, strategy: "Ensemble vote · 4 of 5", ts: NOW() },
+  { id: "r4", ticker: "AAPL", action: "HOLD", price: 226.45, confidence: 52, strategy: "Low conviction · wait", ts: NOW() },
+  { id: "r5", ticker: "SOL-USD", action: "BUY", price: 168.22, confidence: 81, strategy: "Sentiment surge", ts: NOW() },
+];
+
+const MOCK_MARKET_DATA: MarketDataSnapshot[] = [
+  { symbol: "SPY", price: 548.12, changePct: 0.42, ts: NOW() },
+  { symbol: "QQQ", price: 471.88, changePct: 0.61, ts: NOW() },
+  { symbol: "BTC-USD", price: 71240, changePct: 1.24, ts: NOW() },
+  { symbol: "ETH-USD", price: 3820, changePct: 0.88, ts: NOW() },
+];
+
+const MOCK_TODAY_REPORT: TodayReport = {
+  date: new Date().toISOString().slice(0, 10),
+  pnl: 214.18,
+  trades: 12,
+  winRate: 0.66,
+  notes: "Within daily risk envelope.",
+};
+
+const MOCK_AGENTS: AgentInfo[] = [
+  { id: "ensemble", name: "Ensemble Voter", status: "running", lastRun: NOW(), pipeline: "vote" },
+  { id: "risk", name: "Risk Guard", status: "running", lastRun: NOW(), pipeline: "risk-check" },
+  { id: "executor", name: "Executor", status: "running", lastRun: NOW(), pipeline: "order-route" },
+];
+
+const MOCK_CAPABILITIES: Capability[] = [
+  { key: "trading.live", label: "Live Trading", available: true },
+  { key: "trading.paper", label: "Paper Trading", available: true },
+  { key: "ollama.local", label: "Local LLM (Ollama)", available: true, detail: "llama-3.1-8b" },
+  { key: "browser.playwright", label: "Playwright Browser Control", available: false, detail: "Not yet wired to UI" },
+];
+
+const MOCK_PORTS: PortInfo[] = [
+  { service: "api_server", port: 8050, status: "listening" },
+  { service: "ollama", port: 11434, status: "listening" },
+  { service: "quant_engine", port: 8000, status: "listening" },
+];
+
+const MOCK_TRAY_STATE: TrayState = {
+  mode: "trading",
+  message: "Session ACTIVE — 12 triggers armed",
+  lastUpdate: NOW(),
+};
+
+
 const MOCK_KEYS: ApiKey[] = [
   // Google — many keys, smart pool
   { id: "g1", provider: "Google Gemini", type: "LLM", maskedKey: "AIzaSy•••K2pQ", quotaTier: "Pro", tier: "primary", paid: false, status: "ok", rpmLimit: 60, rpmUsed: 22, useCases: ["trading_decisions", "market_analysis", "general_chat"] },
