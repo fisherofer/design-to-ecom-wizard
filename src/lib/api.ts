@@ -267,7 +267,7 @@ export const api = {
 
   systemRepair: (component?: string) =>
     request<{ ok: boolean; log: string[] }>(
-      "/system/repair",
+      "/api/health/doctor",
       { method: "POST", body: JSON.stringify({ component }) },
       {
         ok: true,
