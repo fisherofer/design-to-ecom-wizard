@@ -239,7 +239,7 @@ export const api = {
     }),
 
   healthCheck: () =>
-    request<HealthReport>("/system/healthcheck", {}, {
+    request<HealthReport>("/api/health/full", {}, {
       overall: "warn",
       ts: new Date().toISOString(),
       components: [
