@@ -24,6 +24,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { SourceBundleCard } from "@/components/backup/SourceBundleCard";
+import { getStoredToken as getDriveToken, uploadBlob as uploadToDrive } from "@/lib/googleDrive";
 
 export const Route = createFileRoute("/backup")({
   head: () => ({
@@ -256,6 +257,19 @@ function BackupRestorePage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
+      // Mirror to Google Drive when Settings → Google Drive is connected.
+      let driveNote = "";
+      if (getDriveToken()) {
+        try {
+          const f = await uploadToDrive(fileName, blob, "application/zip");
+          driveNote = ` · Drive: ${f.name}`;
+          toast.success(`Uploaded to Google Drive: ${f.name}`);
+        } catch (e) {
+          errors.push(`drive: ${(e as Error).message}`);
+          toast.warning(`Drive upload failed: ${(e as Error).message}`);
+        }
+      }
+
       setLastExport({
         ts,
         sizeKb: Math.round(blob.size / 1024),
@@ -265,7 +279,7 @@ function BackupRestorePage() {
       });
 
       if (errors.length === 0) {
-        toast.success(`Backup exported (${Math.round(blob.size / 1024)} KB)`);
+        toast.success(`Backup exported (${Math.round(blob.size / 1024)} KB)${driveNote}`);
       } else {
         toast.warning(`Exported with ${errors.length} warning(s)`);
       }

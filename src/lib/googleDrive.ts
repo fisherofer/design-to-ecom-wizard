@@ -79,13 +79,23 @@ export async function ensureFolder(): Promise<string> {
 }
 
 export async function uploadBackup(name: string, jsonContent: string): Promise<DriveFile> {
+  return uploadBlob(name, new Blob([jsonContent], { type: "application/json" }), "application/json");
+}
+
+/** Upload any Blob (e.g. a ZIP produced by the /backup route) into the shared folder. */
+export async function uploadBlob(name: string, blob: Blob, mimeType?: string): Promise<DriveFile> {
   const folderId = await ensureFolder();
   const token = getStoredToken();
+  const type = mimeType ?? blob.type ?? "application/octet-stream";
   const boundary = `----AIOS${Date.now()}`;
-  const metadata = { name, parents: [folderId], mimeType: "application/json" };
-  const body =
+  const enc = new TextEncoder();
+  const metadata = { name, parents: [folderId], mimeType: type };
+  const head = enc.encode(
     `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n` +
-    `--${boundary}\r\nContent-Type: application/json\r\n\r\n${jsonContent}\r\n--${boundary}--`;
+    `--${boundary}\r\nContent-Type: ${type}\r\n\r\n`,
+  );
+  const tail = enc.encode(`\r\n--${boundary}--`);
+  const body = new Blob([head, blob, tail]);
   const res = await fetch(
     "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,modifiedTime,size",
     {
