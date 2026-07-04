@@ -279,12 +279,12 @@ export const api = {
     ),
 
   // ---------- Vault ----------
-  listKeys: () => request<ApiKey[]>("/vault/keys", {}, MOCK_KEYS),
+  listKeys: () => request<ApiKey[]>("/api/keys", {}, MOCK_KEYS),
   addKey: (k: Omit<ApiKey, "id" | "status" | "rpmUsed">) =>
-    request<ApiKey>("/vault/keys", { method: "POST", body: JSON.stringify(k) }),
+    request<ApiKey>("/api/keys", { method: "POST", body: JSON.stringify(k) }),
   updateKey: (id: string, patch: Partial<ApiKey>) =>
     request<ApiKey>(
-      `/vault/keys/${encodeURIComponent(id)}`,
+      `/api/keys/${encodeURIComponent(id)}`,
       { method: "PATCH", body: JSON.stringify(patch) },
       { ...(MOCK_KEYS.find((k) => k.id === id) as ApiKey), ...patch },
     ),
