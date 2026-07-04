@@ -8,7 +8,6 @@ import {
   XCircle,
   CheckCircle2,
   PackageX,
-  Container,
   Loader2,
 } from "lucide-react";
 import { api, type HealthReport, type HealthLevel } from "@/lib/api";
@@ -109,49 +108,8 @@ function SystemHealth() {
         ))}
       </div>
 
-      {/* Docker / npm quick controls */}
-      <div className="mt-6 grid gap-3 md:grid-cols-2">
-        <div className="rounded-xl border border-border glass p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Container className="h-4 w-4 text-primary" />
-            <h3 className="font-display text-sm font-semibold uppercase tracking-wider">Docker</h3>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => api.dockerRestart()}
-              className="flex-1 rounded-md border border-border bg-card/40 px-3 py-2 text-xs font-mono hover:border-primary/40 transition-colors"
-            >
-              Restart Stack
-            </button>
-            <button
-              onClick={() => api.dockerUpdate()}
-              className="flex-1 rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-mono text-primary hover:bg-primary/20 transition-colors"
-            >
-              Pull & Update
-            </button>
-          </div>
-        </div>
-        <div className="rounded-xl border border-border glass p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <PackageX className="h-4 w-4 text-primary" />
-            <h3 className="font-display text-sm font-semibold uppercase tracking-wider">npm</h3>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => api.npmCheck()}
-              className="flex-1 rounded-md border border-border bg-card/40 px-3 py-2 text-xs font-mono hover:border-primary/40 transition-colors"
-            >
-              Check Packages
-            </button>
-            <button
-              onClick={() => api.npmInstall()}
-              className="flex-1 rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-mono text-primary hover:bg-primary/20 transition-colors"
-            >
-              Install Missing
-            </button>
-          </div>
-        </div>
-      </div>
+      {/* Docker / npm quick controls removed — endpoints not implemented on backend.
+          Use /api/health/doctor (Repair) above to auto-fix dependency issues. */}
 
       {/* Repair log */}
       {repairLog.length > 0 && (

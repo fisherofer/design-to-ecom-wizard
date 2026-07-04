@@ -7,30 +7,55 @@ import {
 /**
  * AI Executive OS — Local API Bridge
  * ==================================
- * All requests target the local Python backend at http://localhost:8050.
- * If the backend is unreachable, mock data is returned so the UI stays alive.
+ * All requests target the local Python backend (QuantEngine `hub/api_server.py`)
+ * on http://localhost:8050. If the backend is unreachable, mock data is returned
+ * so the UI stays alive.
  *
- * Backend contract (FastAPI / api_bridge.py):
+ * WIRED (real backend endpoints):
  *   GET  /health
- *   GET  /system/status
- *   GET  /system/healthcheck         (deep — python/docker/ollama/npm versions)
- *   POST /system/repair              (AI-driven self-repair)
- *   GET  /vault/keys
- *   POST /vault/keys
- *   GET  /vault/categories
- *   GET  /config/params
- *   POST /config/params/:key         (Safe-Change Workflow)
- *   GET  /personas
- *   POST /personas/:id/extract       (run alpha extractor)
- *   GET  /evolution/proposals        (Meta-Agent suggestions)
- *   POST /evolution/proposals/:id/approve
- *   GET  /logs?level=&limit=
- *   POST /chat
- *   POST /docker/restart
- *   POST /docker/update
- *   POST /npm/check
- *   POST /npm/install
+ *   GET  /api/status                 (system status)
+ *   GET  /api/health/full            (deep health scan)
+ *   POST /api/health/doctor          (AI-driven self-repair)
+ *   GET  /api/keys                   (vault list)
+ *   POST /api/keys                   (add key)
+ *   DELETE /api/keys/:provider       (remove key)
+ *   GET  /api/recommendations        (dashboard signals)
+ *   GET  /api/market-data            (dashboard tickers)
+ *   GET  /api/reports/today          (dashboard KPIs)
+ *   GET  /api/agents                 (agent registry)
+ *   POST /api/agent/start | stop | run-pipeline
+ *   GET  /api/capabilities           (system capability map)
+ *   GET  /api/ports                  (dynamic service discovery)
+ *   GET  /api/tray/state             (tray/sidebar state)
+ *
+ * NOT YET WIRED — planned features, still returning mock data. Kept as
+ * roadmap; do NOT delete without discussion. Callers are marked visually
+ * with <NotWiredBadge/> in the UI.
+ *   GET  /personas                   (Persona tracker system)
+ *   POST /personas/:id/toggle
+ *   POST /personas/:id/extract
+ *   GET  /evolution/proposals        (Self-evolving Meta-Agent)
+ *   POST /evolution/proposals/:id/decide
+ *   GET  /logs                       (backend log stream)
+ *   POST /chat                       (LLM chat bridge)
+ *   POST /api/goose/verify
+ *   POST /api/goose/update-code
+ *   POST /api/goose/chat
  */
+
+/** Endpoints not yet wired to the real backend — see JSDoc above. */
+export const NOT_WIRED_ENDPOINTS = new Set<string>([
+  "listPersonas",
+  "togglePersona",
+  "rescanPersona",
+  "listProposals",
+  "decideProposal",
+  "listLogs",
+  "chat",
+  "gooseVerify",
+  "gooseUpdateCode",
+  "gooseChat",
+]);
 
 export const API_BASE =
   (typeof window !== "undefined" && (window as { __API_BASE__?: string }).__API_BASE__) ||
@@ -198,13 +223,60 @@ export interface EvolutionProposal {
   createdAt: string;
 }
 
-// -------------------- API surface --------------------
+// -------- Dashboard (wired) --------
+export interface Recommendation {
+  id: string;
+  ticker: string;
+  action: "BUY" | "SELL" | "HOLD";
+  price: number;
+  confidence: number;
+  strategy: string;
+  ts: string;
+}
+export interface MarketDataSnapshot {
+  symbol: string;
+  price: number;
+  changePct: number;
+  volume?: number;
+  ts: string;
+}
+export interface TodayReport {
+  date: string;
+  pnl: number;
+  trades: number;
+  winRate: number;
+  notes?: string;
+}
+export interface AgentInfo {
+  id: string;
+  name: string;
+  status: "running" | "stopped" | "error";
+  lastRun?: string;
+  pipeline?: string;
+}
+export interface Capability {
+  key: string;
+  label: string;
+  available: boolean;
+  detail?: string;
+}
+export interface PortInfo {
+  service: string;
+  port: number;
+  status: "listening" | "unreachable" | "conflict";
+}
+export interface TrayState {
+  mode: "idle" | "trading" | "paused" | "error";
+  message?: string;
+  lastUpdate: string;
+}
+
 export const api = {
   // ---------- System ----------
   health: () => request<{ ok: boolean }>("/health", {}, { ok: false }),
 
   systemStatus: () =>
-    request<SystemStatus>("/system/status", {}, {
+    request<SystemStatus>("/api/status", {}, {
       cloudEngine: { id: "gemini", label: "Gemini 1.5 Pro", online: true },
       localEngine: { id: "ollama", label: "Ollama 8B", online: true },
       dbConnected: true,
@@ -214,7 +286,7 @@ export const api = {
     }),
 
   healthCheck: () =>
-    request<HealthReport>("/system/healthcheck", {}, {
+    request<HealthReport>("/api/health/full", {}, {
       overall: "warn",
       ts: new Date().toISOString(),
       components: [
@@ -242,7 +314,7 @@ export const api = {
 
   systemRepair: (component?: string) =>
     request<{ ok: boolean; log: string[] }>(
-      "/system/repair",
+      "/api/health/doctor",
       { method: "POST", body: JSON.stringify({ component }) },
       {
         ok: true,
@@ -254,12 +326,12 @@ export const api = {
     ),
 
   // ---------- Vault ----------
-  listKeys: () => request<ApiKey[]>("/vault/keys", {}, MOCK_KEYS),
+  listKeys: () => request<ApiKey[]>("/api/keys", {}, MOCK_KEYS),
   addKey: (k: Omit<ApiKey, "id" | "status" | "rpmUsed">) =>
-    request<ApiKey>("/vault/keys", { method: "POST", body: JSON.stringify(k) }),
+    request<ApiKey>("/api/keys", { method: "POST", body: JSON.stringify(k) }),
   updateKey: (id: string, patch: Partial<ApiKey>) =>
     request<ApiKey>(
-      `/vault/keys/${encodeURIComponent(id)}`,
+      `/api/keys/${encodeURIComponent(id)}`,
       { method: "PATCH", body: JSON.stringify(patch) },
       { ...(MOCK_KEYS.find((k) => k.id === id) as ApiKey), ...patch },
     ),
@@ -359,27 +431,31 @@ export const api = {
       },
     ),
 
-  // ---------- Infra ----------
-  dockerRestart: () =>
-    request<{ ok: boolean }>("/docker/restart", { method: "POST" }, { ok: true }),
-  dockerUpdate: () =>
-    request<{ ok: boolean; version: string }>(
-      "/docker/update",
-      { method: "POST" },
-      { ok: true, version: "27.3.1" },
+  // ---------- Dashboard (WIRED to hub/api_server.py) ----------
+  recommendations: () =>
+    request<Recommendation[]>("/api/recommendations", {}, MOCK_RECOMMENDATIONS),
+  marketData: (symbols?: string[]) =>
+    request<MarketDataSnapshot[]>(
+      `/api/market-data${symbols?.length ? `?symbols=${symbols.join(",")}` : ""}`,
+      {},
+      MOCK_MARKET_DATA,
     ),
-  npmCheck: () =>
-    request<{ installed: boolean; version: string }>(
-      "/npm/check",
-      { method: "POST" },
-      { installed: true, version: "10.8.2" },
+  reportToday: () =>
+    request<TodayReport>("/api/reports/today", {}, MOCK_TODAY_REPORT),
+  listAgents: () => request<AgentInfo[]>("/api/agents", {}, MOCK_AGENTS),
+  agentStart: (id: string) =>
+    request<{ ok: boolean }>("/api/agent/start", { method: "POST", body: JSON.stringify({ id }) }, { ok: true }),
+  agentStop: (id: string) =>
+    request<{ ok: boolean }>("/api/agent/stop", { method: "POST", body: JSON.stringify({ id }) }, { ok: true }),
+  agentRunPipeline: (id: string) =>
+    request<{ ok: boolean; runId: string }>(
+      "/api/agent/run-pipeline",
+      { method: "POST", body: JSON.stringify({ id }) },
+      { ok: true, runId: `run_${Date.now()}` },
     ),
-  npmInstall: (pkg?: string) =>
-    request<{ ok: boolean; log: string }>(
-      "/npm/install",
-      { method: "POST", body: JSON.stringify({ pkg }) },
-      { ok: true, log: `mock install ${pkg ?? "all"} complete` },
-    ),
+  capabilities: () => request<Capability[]>("/api/capabilities", {}, MOCK_CAPABILITIES),
+  ports: () => request<PortInfo[]>("/api/ports", {}, MOCK_PORTS),
+  trayState: () => request<TrayState>("/api/tray/state", {}, MOCK_TRAY_STATE),
 };
 
 function mockReply(prompt: string, engine?: EngineId): string {
@@ -397,6 +473,57 @@ function mockReply(prompt: string, engine?: EngineId): string {
 }
 
 // -------------------- MOCK DATA --------------------
+const NOW = () => new Date().toISOString();
+
+const MOCK_RECOMMENDATIONS: Recommendation[] = [
+  { id: "r1", ticker: "NVDA", action: "BUY", price: 945.32, confidence: 87, strategy: "Momentum · 5m breakout", ts: NOW() },
+  { id: "r2", ticker: "TSLA", action: "SELL", price: 178.9, confidence: 74, strategy: "Mean reversion · RSI overbought", ts: NOW() },
+  { id: "r3", ticker: "BTC-USD", action: "BUY", price: 71240, confidence: 91, strategy: "Ensemble vote · 4 of 5", ts: NOW() },
+  { id: "r4", ticker: "AAPL", action: "HOLD", price: 226.45, confidence: 52, strategy: "Low conviction · wait", ts: NOW() },
+  { id: "r5", ticker: "SOL-USD", action: "BUY", price: 168.22, confidence: 81, strategy: "Sentiment surge", ts: NOW() },
+];
+
+const MOCK_MARKET_DATA: MarketDataSnapshot[] = [
+  { symbol: "SPY", price: 548.12, changePct: 0.42, ts: NOW() },
+  { symbol: "QQQ", price: 471.88, changePct: 0.61, ts: NOW() },
+  { symbol: "BTC-USD", price: 71240, changePct: 1.24, ts: NOW() },
+  { symbol: "ETH-USD", price: 3820, changePct: 0.88, ts: NOW() },
+];
+
+const MOCK_TODAY_REPORT: TodayReport = {
+  date: new Date().toISOString().slice(0, 10),
+  pnl: 214.18,
+  trades: 12,
+  winRate: 0.66,
+  notes: "Within daily risk envelope.",
+};
+
+const MOCK_AGENTS: AgentInfo[] = [
+  { id: "ensemble", name: "Ensemble Voter", status: "running", lastRun: NOW(), pipeline: "vote" },
+  { id: "risk", name: "Risk Guard", status: "running", lastRun: NOW(), pipeline: "risk-check" },
+  { id: "executor", name: "Executor", status: "running", lastRun: NOW(), pipeline: "order-route" },
+];
+
+const MOCK_CAPABILITIES: Capability[] = [
+  { key: "trading.live", label: "Live Trading", available: true },
+  { key: "trading.paper", label: "Paper Trading", available: true },
+  { key: "ollama.local", label: "Local LLM (Ollama)", available: true, detail: "llama-3.1-8b" },
+  { key: "browser.playwright", label: "Playwright Browser Control", available: false, detail: "Not yet wired to UI" },
+];
+
+const MOCK_PORTS: PortInfo[] = [
+  { service: "api_server", port: 8050, status: "listening" },
+  { service: "ollama", port: 11434, status: "listening" },
+  { service: "quant_engine", port: 8000, status: "listening" },
+];
+
+const MOCK_TRAY_STATE: TrayState = {
+  mode: "trading",
+  message: "Session ACTIVE — 12 triggers armed",
+  lastUpdate: NOW(),
+};
+
+
 const MOCK_KEYS: ApiKey[] = [
   // Google — many keys, smart pool
   { id: "g1", provider: "Google Gemini", type: "LLM", maskedKey: "AIzaSy•••K2pQ", quotaTier: "Pro", tier: "primary", paid: false, status: "ok", rpmLimit: 60, rpmUsed: 22, useCases: ["trading_decisions", "market_analysis", "general_chat"] },

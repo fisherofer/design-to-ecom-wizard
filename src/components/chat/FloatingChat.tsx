@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { api, type ChatMessage, type EngineId } from "@/lib/api";
+import { NotWiredBadge } from "@/components/common/NotWiredBadge";
 import type { GooseStatus } from "@/lib/goose";
 import { cn } from "@/lib/utils";
 
@@ -376,6 +377,7 @@ export function FloatingChat() {
                 : `${chatTransparent ? "ghost" : "focus"} · ${chatOpacity}%`}
             </div>
           </div>
+          <NotWiredBadge label="Mock" detail="POST /chat is not wired to the backend yet — replies come from a local mock. Roadmap feature." className="hidden sm:inline-flex" />
         </div>
         <div className="flex items-center gap-1">
           <button
