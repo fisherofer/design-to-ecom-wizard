@@ -19,6 +19,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { api, type Persona, type PersonaThesis, type EvolutionProposal } from "@/lib/api";
+import { NotWiredBadge } from "@/components/common/NotWiredBadge";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/personas")({
