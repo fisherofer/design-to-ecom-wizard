@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Terminal, Trash2, RefreshCw, Filter, Loader2, Pause, Play } from "lucide-react";
 import { api, type LogEntry } from "@/lib/api";
+import { NotWiredBadge } from "@/components/common/NotWiredBadge";
 
 export const Route = createFileRoute("/terminal")({
   head: () => ({
