@@ -223,7 +223,54 @@ export interface EvolutionProposal {
   createdAt: string;
 }
 
-// -------------------- API surface --------------------
+// -------- Dashboard (wired) --------
+export interface Recommendation {
+  id: string;
+  ticker: string;
+  action: "BUY" | "SELL" | "HOLD";
+  price: number;
+  confidence: number;
+  strategy: string;
+  ts: string;
+}
+export interface MarketDataSnapshot {
+  symbol: string;
+  price: number;
+  changePct: number;
+  volume?: number;
+  ts: string;
+}
+export interface TodayReport {
+  date: string;
+  pnl: number;
+  trades: number;
+  winRate: number;
+  notes?: string;
+}
+export interface AgentInfo {
+  id: string;
+  name: string;
+  status: "running" | "stopped" | "error";
+  lastRun?: string;
+  pipeline?: string;
+}
+export interface Capability {
+  key: string;
+  label: string;
+  available: boolean;
+  detail?: string;
+}
+export interface PortInfo {
+  service: string;
+  port: number;
+  status: "listening" | "unreachable" | "conflict";
+}
+export interface TrayState {
+  mode: "idle" | "trading" | "paused" | "error";
+  message?: string;
+  lastUpdate: string;
+}
+
 export const api = {
   // ---------- System ----------
   health: () => request<{ ok: boolean }>("/health", {}, { ok: false }),
