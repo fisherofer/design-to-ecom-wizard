@@ -6,16 +6,21 @@
 // QuantEngine trading backend.
 
 import axios, { type AxiosInstance, type AxiosResponse, type AxiosError } from "axios";
+import { getQuantApiBase } from "@/lib/apiConfig";
 
-const API_BASE_URL =
-  (typeof window !== "undefined" && (window as { __QUANT_API_BASE__?: string }).__QUANT_API_BASE__) ||
-  "http://localhost:8000";
 const MAX_RETRIES = 3;
 
 export const apiClient: AxiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: getQuantApiBase(),
   timeout: 10_000,
   headers: { "Content-Type": "application/json" },
+});
+
+// Rewrite baseURL on every request so runtime updates via setQuantApiBase()
+// take effect without recreating the axios client.
+apiClient.interceptors.request.use((config) => {
+  config.baseURL = getQuantApiBase();
+  return config;
 });
 
 apiClient.interceptors.request.use(

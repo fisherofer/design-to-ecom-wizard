@@ -57,9 +57,10 @@ export const NOT_WIRED_ENDPOINTS = new Set<string>([
   "gooseChat",
 ]);
 
-export const API_BASE =
-  (typeof window !== "undefined" && (window as { __API_BASE__?: string }).__API_BASE__) ||
-  "http://localhost:8050";
+import { getApiBase } from "./apiConfig";
+
+/** @deprecated Use getApiBase() from ./apiConfig — dynamic port aware. */
+export const API_BASE = getApiBase();
 
 const DEFAULT_TIMEOUT_MS = 8_000;
 
@@ -71,7 +72,7 @@ async function request<T>(
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
   try {
-    const res = await fetch(`${API_BASE}${path}`, {
+    const res = await fetch(`${getApiBase()}${path}`, {
       ...init,
       signal: controller.signal,
       headers: {
