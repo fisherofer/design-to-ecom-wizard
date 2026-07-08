@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WatchlistsRouteImport } from './routes/watchlists'
 import { Route as TriggersRouteImport } from './routes/triggers'
 import { Route as TradingRouteImport } from './routes/trading'
 import { Route as TerminalRouteImport } from './routes/terminal'
@@ -27,6 +28,11 @@ import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TickerSymbolRouteImport } from './routes/ticker.$symbol'
 
+const WatchlistsRoute = WatchlistsRouteImport.update({
+  id: '/watchlists',
+  path: '/watchlists',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TriggersRoute = TriggersRouteImport.update({
   id: '/triggers',
   path: '/triggers',
@@ -130,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/terminal': typeof TerminalRoute
   '/trading': typeof TradingRoute
   '/triggers': typeof TriggersRoute
+  '/watchlists': typeof WatchlistsRoute
   '/ticker/$symbol': typeof TickerSymbolRoute
 }
 export interface FileRoutesByTo {
@@ -149,6 +156,7 @@ export interface FileRoutesByTo {
   '/terminal': typeof TerminalRoute
   '/trading': typeof TradingRoute
   '/triggers': typeof TriggersRoute
+  '/watchlists': typeof WatchlistsRoute
   '/ticker/$symbol': typeof TickerSymbolRoute
 }
 export interface FileRoutesById {
@@ -169,6 +177,7 @@ export interface FileRoutesById {
   '/terminal': typeof TerminalRoute
   '/trading': typeof TradingRoute
   '/triggers': typeof TriggersRoute
+  '/watchlists': typeof WatchlistsRoute
   '/ticker/$symbol': typeof TickerSymbolRoute
 }
 export interface FileRouteTypes {
@@ -190,6 +199,7 @@ export interface FileRouteTypes {
     | '/terminal'
     | '/trading'
     | '/triggers'
+    | '/watchlists'
     | '/ticker/$symbol'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -209,6 +219,7 @@ export interface FileRouteTypes {
     | '/terminal'
     | '/trading'
     | '/triggers'
+    | '/watchlists'
     | '/ticker/$symbol'
   id:
     | '__root__'
@@ -228,6 +239,7 @@ export interface FileRouteTypes {
     | '/terminal'
     | '/trading'
     | '/triggers'
+    | '/watchlists'
     | '/ticker/$symbol'
   fileRoutesById: FileRoutesById
 }
@@ -248,11 +260,19 @@ export interface RootRouteChildren {
   TerminalRoute: typeof TerminalRoute
   TradingRoute: typeof TradingRoute
   TriggersRoute: typeof TriggersRoute
+  WatchlistsRoute: typeof WatchlistsRoute
   TickerSymbolRoute: typeof TickerSymbolRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/watchlists': {
+      id: '/watchlists'
+      path: '/watchlists'
+      fullPath: '/watchlists'
+      preLoaderRoute: typeof WatchlistsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/triggers': {
       id: '/triggers'
       path: '/triggers'
@@ -392,6 +412,7 @@ const rootRouteChildren: RootRouteChildren = {
   TerminalRoute: TerminalRoute,
   TradingRoute: TradingRoute,
   TriggersRoute: TriggersRoute,
+  WatchlistsRoute: WatchlistsRoute,
   TickerSymbolRoute: TickerSymbolRoute,
 }
 export const routeTree = rootRouteImport

@@ -1,11 +1,14 @@
 /**
- * Ticker detail page — /ticker/:symbol
- * Shows logo, price snapshot, AI sentiment, recent context and quick actions.
- * Data source: tracked assets + ticker mock; wire to Bridge (/api/quote/:sym) when ready.
+ * Ticker detail — /ticker/:symbol
+ * Live quote from Alpaca + TradingView-grade candlestick chart with timeframe
+ * selector. Backend fallback keeps mock data flowing if Alpaca is offline.
  */
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, ExternalLink, TrendingUp, TrendingDown } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, ExternalLink, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
 import { TickerLogo } from "@/components/tickers/TickerLogo";
+import { CandlestickChart } from "@/components/charts/CandlestickChart";
+import { alpaca, type AlpacaBar, type AlpacaQuote, type Timeframe } from "@/lib/alpaca";
 import { TRACKED_TICKERS } from "@/lib/trackedAssets";
 import { tickerColor } from "@/lib/tickerLogo";
 import { cn } from "@/lib/utils";
@@ -13,24 +16,55 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/ticker/$symbol")({
   head: ({ params }) => ({
     meta: [
-      { title: `${params.symbol} — Ticker Detail` },
-      { name: "description", content: `Live snapshot, AI sentiment and news for ${params.symbol}.` },
+      { title: `${params.symbol} — Live Chart & Analysis` },
+      { name: "description", content: `Live candlestick chart, price snapshot, AI sentiment and research for ${params.symbol}.` },
     ],
   }),
   component: TickerDetail,
 });
 
+const TIMEFRAMES: { id: Timeframe; label: string; limit: number }[] = [
+  { id: "5Min", label: "1D", limit: 78 },
+  { id: "15Min", label: "1W", limit: 130 },
+  { id: "1H", label: "1M", limit: 160 },
+  { id: "1D", label: "1Y", limit: 260 },
+  { id: "1W", label: "5Y", limit: 260 },
+];
+
 function TickerDetail() {
   const { symbol } = Route.useParams();
   const sym = symbol.toUpperCase();
-  const asset = TRACKED_TICKERS.find((t) => t.symbol === sym);
+  const meta = TRACKED_TICKERS.find((t) => t.symbol === sym);
   const color = tickerColor(sym);
-  const up = (asset?.change24h ?? 0) >= 0;
+
+  const [tf, setTf] = useState<Timeframe>("1D");
+  const [bars, setBars] = useState<AlpacaBar[]>([]);
+  const [quote, setQuote] = useState<AlpacaQuote | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const load = () => {
+    setLoading(true);
+    const cfg = TIMEFRAMES.find((t) => t.id === tf)!;
+    Promise.all([alpaca.bars(sym, tf, cfg.limit), alpaca.quotes([sym])])
+      .then(([b, q]) => { setBars(b); setQuote(q[0] ?? null); })
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    load();
+    const id = setInterval(load, 30_000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sym, tf]);
+
+  const price = quote?.price ?? meta?.price ?? 0;
+  const chgPct = quote?.changePct ?? meta?.change24h ?? 0;
+  const up = chgPct >= 0;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
+    <div className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
       <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-3.5 w-3.5" /> Back
+        <ArrowLeft className="h-3.5 w-3.5" /> Back to Dashboard
       </Link>
 
       <header
@@ -40,30 +74,59 @@ function TickerDetail() {
         <TickerLogo symbol={sym} size="md" linkTo={false} />
         <div className="min-w-0 flex-1">
           <h1 className="font-display text-2xl font-bold">{sym}</h1>
-          <p className="truncate text-sm text-muted-foreground">{asset?.name ?? "Unknown security"}</p>
+          <p className="truncate text-sm text-muted-foreground">{meta?.name ?? "Live market data"}</p>
         </div>
         <div className="text-right">
-          <div className="font-mono text-2xl font-semibold tabular-nums">
-            ${asset?.price.toFixed(2) ?? "—"}
-          </div>
+          <div className="font-mono text-3xl font-semibold tabular-nums">${price.toFixed(2)}</div>
           <div className={cn("inline-flex items-center gap-1 font-mono text-sm", up ? "text-success" : "text-destructive")}>
             {up ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-            {up ? "+" : ""}{asset?.change24h.toFixed(2) ?? "0.00"}% · 24h
+            {up ? "+" : ""}{chgPct.toFixed(2)}% · today
           </div>
         </div>
       </header>
 
-      <section className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="AI Score" value={`${asset?.aiScore ?? "—"}`} tone={asset && asset.aiScore >= 70 ? "good" : "neutral"} />
-        <StatCard label="Sentiment" value={asset?.sentiment ?? "N/A"} tone={asset?.sentiment === "Bullish" ? "good" : asset?.sentiment === "Bearish" ? "bad" : "neutral"} />
-        <StatCard label="Source" value="Watchlist" tone="neutral" />
+      <section className="rounded-xl border border-border p-4">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <div className="inline-flex rounded-md border border-border bg-card p-1">
+            {TIMEFRAMES.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTf(t.id)}
+                className={cn(
+                  "rounded px-3 py-1 text-xs font-mono uppercase tracking-wider transition-colors",
+                  tf === t.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={load}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1 text-xs font-mono uppercase hover:bg-card/80"
+          >
+            <RefreshCw className={cn("h-3 w-3", loading && "animate-spin")} /> Refresh
+          </button>
+        </div>
+        {bars.length > 0 ? (
+          <CandlestickChart bars={bars} height={440} />
+        ) : (
+          <div className="flex h-[440px] items-center justify-center text-sm text-muted-foreground">Loading chart…</div>
+        )}
+      </section>
+
+      <section className="grid gap-4 sm:grid-cols-4">
+        <StatCard label="Open" value={bars[0]?.o.toFixed(2) ?? "—"} />
+        <StatCard label="High" value={Math.max(...(bars.length ? bars.map((b) => b.h) : [0])).toFixed(2)} />
+        <StatCard label="Low" value={Math.min(...(bars.length ? bars.map((b) => b.l) : [0])).toFixed(2)} />
+        <StatCard label="Volume" value={(bars.reduce((s, b) => s + b.v, 0) / 1e6).toFixed(1) + "M"} />
       </section>
 
       <section className="rounded-xl border border-border p-5">
         <h2 className="mb-3 font-display text-base font-semibold">External Research</h2>
         <div className="grid gap-2 sm:grid-cols-2">
-          <ExtLink href={`https://finance.yahoo.com/quote/${sym}`} label="Yahoo Finance" />
           <ExtLink href={`https://www.tradingview.com/symbols/${sym}/`} label="TradingView" />
+          <ExtLink href={`https://finance.yahoo.com/quote/${sym}`} label="Yahoo Finance" />
           <ExtLink href={`https://www.google.com/finance/quote/${sym}`} label="Google Finance" />
           <ExtLink href={`https://seekingalpha.com/symbol/${sym}`} label="Seeking Alpha" />
         </div>
@@ -72,15 +135,11 @@ function TickerDetail() {
   );
 }
 
-function StatCard({ label, value, tone }: { label: string; value: string; tone: "good" | "bad" | "neutral" }) {
+function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
+    <div className="rounded-lg border border-border bg-card p-3">
       <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className={cn(
-        "mt-1 font-display text-xl font-semibold",
-        tone === "good" && "text-success",
-        tone === "bad" && "text-destructive",
-      )}>{value}</div>
+      <div className="mt-1 font-mono text-lg font-semibold tabular-nums">{value}</div>
     </div>
   );
 }
