@@ -64,6 +64,31 @@ export interface Watchlist {
   updatedAt: string;
 }
 
+export interface NewsItem {
+  id: string;
+  headline: string;
+  summary: string;
+  source: string;
+  url?: string;
+  publishedAt: string;
+  symbols: string[];
+  /** -1 (bearish) .. +1 (bullish) */
+  sentiment: number;
+  impact: "low" | "medium" | "high";
+}
+
+export interface BreakoutCandidate {
+  symbol: string;
+  name?: string;
+  price: number;
+  changePct: number;
+  probability: number; // 0..1
+  pattern: string;     // e.g. "Bull Flag", "Cup & Handle"
+  reason: string;      // AI-generated rationale
+  targetPrice?: number;
+  stopLoss?: number;
+}
+
 export type Timeframe = "1Min" | "5Min" | "15Min" | "1H" | "1D" | "1W";
 
 const TIMEOUT_MS = 6_000;
