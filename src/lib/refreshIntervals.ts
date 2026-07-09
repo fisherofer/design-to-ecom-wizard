@@ -70,7 +70,7 @@ function read(): RefreshConfig {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT;
     const parsed = JSON.parse(raw);
-    return { globalMs: parsed.globalMs ?? DEFAULT.globalMs, overrides: parsed.overrides ?? {} };
+    return { globalMs: parsed.globalMs ?? DEFAULT.globalMs, overrides: parsed.overrides ?? {}, smart: parsed.smart ?? DEFAULT.smart };
   } catch {
     return DEFAULT;
   }
@@ -95,7 +95,16 @@ export const refreshConfig = {
     else next[id] = ms;
     write({ ...cur, overrides: next });
   },
+  setSmart(smart: boolean) {
+    const cur = read();
+    write({ ...cur, smart });
+  },
   effective(id: ComponentId): number {
+    const cur = read();
+    const base = cur.overrides[id] ?? cur.globalMs;
+    return cur.smart ? scaleForPhase(base) : base;
+  },
+  effectiveBase(id: ComponentId): number {
     const cur = read();
     return cur.overrides[id] ?? cur.globalMs;
   },
@@ -107,7 +116,7 @@ export const refreshConfig = {
   },
   importJson(json: string) {
     const parsed = JSON.parse(json);
-    write({ globalMs: parsed.globalMs ?? DEFAULT.globalMs, overrides: parsed.overrides ?? {} });
+    write({ globalMs: parsed.globalMs ?? DEFAULT.globalMs, overrides: parsed.overrides ?? {}, smart: parsed.smart ?? DEFAULT.smart });
   },
 };
 
