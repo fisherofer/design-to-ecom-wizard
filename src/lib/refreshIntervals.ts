@@ -10,6 +10,7 @@
  *   useEffect(() => { const id = setInterval(fetch, ms); return () => clearInterval(id); }, [ms]);
  */
 import { useEffect, useState } from "react";
+import { scaleForPhase } from "./marketPhase";
 
 const STORAGE_KEY = "ai-os.refresh.v1";
 const EVENT = "ai-os:refresh-changed";
@@ -22,13 +23,20 @@ export type ComponentId =
   | "agents"
   | "intelligence"
   | "rateLimits"
-  | "ollama";
+  | "ollama"
+  | "news"
+  | "breakouts";
 
 export interface RefreshConfig {
   /** Global default in milliseconds, used when a component has no override. */
   globalMs: number;
   /** Per-component overrides. 0 = paused, undefined = use global. */
   overrides: Partial<Record<ComponentId, number>>;
+  /**
+   * When true, the smart engine scales the effective interval based on the
+   * current market phase (regular / pre / post / closed) with a 90/5/5 budget.
+   */
+  smart: boolean;
 }
 
 export const COMPONENT_META: Record<ComponentId, { label: string; description: string }> = {
@@ -40,6 +48,8 @@ export const COMPONENT_META: Record<ComponentId, { label: string; description: s
   intelligence: { label: "Intelligence Feed", description: "AI-generated alerts" },
   rateLimits: { label: "Rate Limits", description: "API key usage snapshot" },
   ollama: { label: "Ollama Models", description: "Local model registry" },
+  news: { label: "Hot News", description: "Market-moving headlines" },
+  breakouts: { label: "Breakout Candidates", description: "AI-scored breakout picks" },
 };
 
 export const PRESETS = [
@@ -52,7 +62,7 @@ export const PRESETS = [
   { label: "Paused", ms: 0 },
 ];
 
-const DEFAULT: RefreshConfig = { globalMs: 30_000, overrides: {} };
+const DEFAULT: RefreshConfig = { globalMs: 30_000, overrides: {}, smart: true };
 
 function read(): RefreshConfig {
   if (typeof window === "undefined") return DEFAULT;
