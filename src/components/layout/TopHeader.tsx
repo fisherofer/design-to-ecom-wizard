@@ -1,5 +1,6 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Search, Bell, Smartphone, User, Menu, Activity } from "lucide-react";
+import { Search, Smartphone, User, Menu, Activity } from "lucide-react";
+import { NotificationsBell } from "./NotificationsBell";
 import { NAV_ITEMS } from "./Sidebar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -60,10 +61,7 @@ export function TopHeader() {
           <span className="h-1.5 w-1.5 rounded-full bg-success pulse-dot" />
         </Button>
 
-        <Button variant="outline" size="icon" className="relative bg-card/50" aria-label="Notifications">
-          <Bell className="h-4 w-4 text-muted-foreground" />
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-destructive ring-2 ring-background" />
-        </Button>
+        <NotificationsBell />
 
         <Button variant="outline" className="hidden gap-2 bg-card/50 px-2 sm:flex">
           <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent">

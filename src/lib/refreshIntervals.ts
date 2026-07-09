@@ -10,6 +10,7 @@
  *   useEffect(() => { const id = setInterval(fetch, ms); return () => clearInterval(id); }, [ms]);
  */
 import { useEffect, useState } from "react";
+import { scaleForPhase } from "./marketPhase";
 
 const STORAGE_KEY = "ai-os.refresh.v1";
 const EVENT = "ai-os:refresh-changed";
@@ -22,13 +23,20 @@ export type ComponentId =
   | "agents"
   | "intelligence"
   | "rateLimits"
-  | "ollama";
+  | "ollama"
+  | "news"
+  | "breakouts";
 
 export interface RefreshConfig {
   /** Global default in milliseconds, used when a component has no override. */
   globalMs: number;
   /** Per-component overrides. 0 = paused, undefined = use global. */
   overrides: Partial<Record<ComponentId, number>>;
+  /**
+   * When true, the smart engine scales the effective interval based on the
+   * current market phase (regular / pre / post / closed) with a 90/5/5 budget.
+   */
+  smart: boolean;
 }
 
 export const COMPONENT_META: Record<ComponentId, { label: string; description: string }> = {
@@ -40,6 +48,8 @@ export const COMPONENT_META: Record<ComponentId, { label: string; description: s
   intelligence: { label: "Intelligence Feed", description: "AI-generated alerts" },
   rateLimits: { label: "Rate Limits", description: "API key usage snapshot" },
   ollama: { label: "Ollama Models", description: "Local model registry" },
+  news: { label: "Hot News", description: "Market-moving headlines" },
+  breakouts: { label: "Breakout Candidates", description: "AI-scored breakout picks" },
 };
 
 export const PRESETS = [
@@ -52,7 +62,7 @@ export const PRESETS = [
   { label: "Paused", ms: 0 },
 ];
 
-const DEFAULT: RefreshConfig = { globalMs: 30_000, overrides: {} };
+const DEFAULT: RefreshConfig = { globalMs: 30_000, overrides: {}, smart: true };
 
 function read(): RefreshConfig {
   if (typeof window === "undefined") return DEFAULT;
@@ -60,7 +70,7 @@ function read(): RefreshConfig {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT;
     const parsed = JSON.parse(raw);
-    return { globalMs: parsed.globalMs ?? DEFAULT.globalMs, overrides: parsed.overrides ?? {} };
+    return { globalMs: parsed.globalMs ?? DEFAULT.globalMs, overrides: parsed.overrides ?? {}, smart: parsed.smart ?? DEFAULT.smart };
   } catch {
     return DEFAULT;
   }
@@ -85,7 +95,16 @@ export const refreshConfig = {
     else next[id] = ms;
     write({ ...cur, overrides: next });
   },
+  setSmart(smart: boolean) {
+    const cur = read();
+    write({ ...cur, smart });
+  },
   effective(id: ComponentId): number {
+    const cur = read();
+    const base = cur.overrides[id] ?? cur.globalMs;
+    return cur.smart ? scaleForPhase(base) : base;
+  },
+  effectiveBase(id: ComponentId): number {
     const cur = read();
     return cur.overrides[id] ?? cur.globalMs;
   },
@@ -97,7 +116,7 @@ export const refreshConfig = {
   },
   importJson(json: string) {
     const parsed = JSON.parse(json);
-    write({ globalMs: parsed.globalMs ?? DEFAULT.globalMs, overrides: parsed.overrides ?? {} });
+    write({ globalMs: parsed.globalMs ?? DEFAULT.globalMs, overrides: parsed.overrides ?? {}, smart: parsed.smart ?? DEFAULT.smart });
   },
 };
 

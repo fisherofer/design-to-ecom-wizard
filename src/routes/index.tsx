@@ -5,6 +5,9 @@ import { LiveTrackedTickers } from "@/components/dashboard/LiveTrackedTickers";
 import { TopMovers } from "@/components/dashboard/TopMovers";
 import { RefreshButton } from "@/components/dashboard/RefreshButton";
 import { MarketClock } from "@/components/dashboard/MarketClock";
+import { HotNews } from "@/components/dashboard/HotNews";
+import { BreakoutCandidates } from "@/components/dashboard/BreakoutCandidates";
+import { WatchlistPanel } from "@/components/dashboard/WatchlistPanel";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -37,6 +40,17 @@ function Dashboard() {
 
         <LiveKpis />
 
+        {/* Watchlist + Breakout side-by-side */}
+        <div className="mt-6 grid gap-6 xl:grid-cols-3">
+          <div className="xl:col-span-2">
+            <WatchlistPanel />
+          </div>
+          <div>
+            <BreakoutCandidates />
+          </div>
+        </div>
+
+        {/* Top Movers */}
         <div className="mt-6">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-display text-lg font-semibold">Top Movers</h2>
@@ -47,7 +61,9 @@ function Dashboard() {
           <TopMovers />
         </div>
 
-        <div className="mt-6">
+        {/* News + Tracked side-by-side */}
+        <div className="mt-6 grid gap-6 xl:grid-cols-2">
+          <HotNews />
           <LiveTrackedTickers />
         </div>
       </div>
