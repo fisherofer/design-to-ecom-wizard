@@ -263,7 +263,72 @@ export const alpaca = {
       { method: "DELETE" },
       { ok: true },
     ),
+
+  news: (limit = 12) =>
+    req<NewsItem[]>(`/api/alpaca/news?limit=${limit}`, undefined, mockNews(limit)),
+
+  breakouts: (limit = 8) =>
+    req<BreakoutCandidate[]>(`/api/alpaca/breakouts?limit=${limit}`, undefined, mockBreakouts(limit)),
 };
+
+// -------- Additional mock generators --------
+function mockNews(limit: number): NewsItem[] {
+  const seed = [
+    { headline: "Fed signals possible rate cut as inflation cools", symbols: ["SPY", "QQQ"], sentiment: 0.6, impact: "high" as const, source: "Reuters" },
+    { headline: "NVIDIA beats Q3 estimates, guides higher on AI demand", symbols: ["NVDA", "AMD"], sentiment: 0.85, impact: "high" as const, source: "Bloomberg" },
+    { headline: "Tesla recalls 2M vehicles over autopilot concerns", symbols: ["TSLA"], sentiment: -0.7, impact: "medium" as const, source: "WSJ" },
+    { headline: "Palantir wins $480M DoD contract extension", symbols: ["PLTR"], sentiment: 0.75, impact: "high" as const, source: "CNBC" },
+    { headline: "Oil rallies on Middle East supply concerns", symbols: ["XOM", "CVX"], sentiment: 0.4, impact: "medium" as const, source: "Reuters" },
+    { headline: "Bitcoin breaches $72k as ETF inflows surge", symbols: ["BTC", "COIN"], sentiment: 0.7, impact: "high" as const, source: "CoinDesk" },
+    { headline: "Meta unveils new Llama 4 model, stock jumps 3%", symbols: ["META"], sentiment: 0.6, impact: "medium" as const, source: "The Verge" },
+    { headline: "Apple faces EU antitrust probe over App Store fees", symbols: ["AAPL"], sentiment: -0.5, impact: "medium" as const, source: "FT" },
+    { headline: "ZIM Shipping raises dividend on freight-rate surge", symbols: ["ZIM"], sentiment: 0.65, impact: "medium" as const, source: "Seeking Alpha" },
+    { headline: "Elbit Systems secures $600M European defense order", symbols: ["ESLT"], sentiment: 0.7, impact: "high" as const, source: "Reuters" },
+    { headline: "Consumer confidence falls to 6-month low", symbols: ["SPY"], sentiment: -0.4, impact: "medium" as const, source: "Bloomberg" },
+    { headline: "AMD launches new MI350 AI chip, undercuts NVIDIA", symbols: ["AMD", "NVDA"], sentiment: 0.5, impact: "high" as const, source: "Tom's Hardware" },
+  ];
+  const now = Date.now();
+  return seed.slice(0, limit).map((s, i) => ({
+    id: `news_${i}`,
+    headline: s.headline,
+    summary: s.headline + ". Full analysis pending backend integration.",
+    source: s.source,
+    publishedAt: new Date(now - i * 7 * 60_000).toISOString(),
+    symbols: s.symbols,
+    sentiment: s.sentiment,
+    impact: s.impact,
+  }));
+}
+
+function mockBreakouts(limit: number): BreakoutCandidate[] {
+  const seed: Omit<BreakoutCandidate, "price" | "changePct">[] = [
+    { symbol: "NVDA", name: "NVIDIA", probability: 0.86, pattern: "Bull Flag", reason: "Consolidating above 200-EMA with rising volume; RSI 62; AI-demand narrative intact.", targetPrice: 1020, stopLoss: 905 },
+    { symbol: "PLTR", name: "Palantir", probability: 0.79, pattern: "Cup & Handle", reason: "6-week base breakout with 1.8× avg volume; DoD contract catalyst.", targetPrice: 32.4, stopLoss: 26.5 },
+    { symbol: "AMD", name: "AMD", probability: 0.71, pattern: "Ascending Triangle", reason: "Higher lows since Sep; MI350 launch this week; sector rotation into semis.", targetPrice: 178, stopLoss: 156 },
+    { symbol: "META", name: "Meta", probability: 0.68, pattern: "Breakaway Gap", reason: "Gap up on Llama 4 news, holding support; positive OI shift.", targetPrice: 540, stopLoss: 498 },
+    { symbol: "COIN", name: "Coinbase", probability: 0.74, pattern: "Bull Flag", reason: "BTC>72k with ETF inflows; COIN options skew bullish.", targetPrice: 265, stopLoss: 232 },
+    { symbol: "ESLT", name: "Elbit Systems", probability: 0.66, pattern: "Rounding Bottom", reason: "New EU defense order; defense-sector momentum; 50DMA reclaimed.", targetPrice: 268, stopLoss: 238 },
+    { symbol: "SMCI", name: "Super Micro", probability: 0.62, pattern: "Falling Wedge", reason: "Basing after Aug drawdown; positive divergence on RSI.", targetPrice: 62, stopLoss: 51 },
+    { symbol: "AVGO", name: "Broadcom", probability: 0.60, pattern: "Bull Flag", reason: "Post-split accumulation; AI-chip pricing tailwind.", targetPrice: 195, stopLoss: 172 },
+  ];
+  return seed.slice(0, limit).map((s) => {
+    const q = mockQuote(s.symbol);
+    return { ...s, price: q.price, changePct: q.changePct };
+  });
+}
+
+export function formatCountdown(ms: number): string {
+  if (ms <= 0) return "now";
+  const s = Math.floor(ms / 1000);
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  if (d > 0) return `${d}d ${h}h ${m}m`;
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${sec}s`;
+  return `${sec}s`;
+}
 
 export function formatCountdown(ms: number): string {
   if (ms <= 0) return "now";
