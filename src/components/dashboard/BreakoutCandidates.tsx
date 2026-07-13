@@ -12,6 +12,7 @@ import { alpaca, type BreakoutCandidate, type CapBucket } from "@/lib/alpaca";
 import { useWidgetData } from "@/hooks/useWidgetData";
 import { WidgetHeader } from "@/components/dashboard/WidgetHeader";
 import { TickerLogo } from "@/components/tickers/TickerLogo";
+import { PercentGauge } from "@/components/common/PercentGauge";
 import { cn } from "@/lib/utils";
 
 type BucketTab = "all" | "large" | "mid" | "small" | "micro";
@@ -128,8 +129,24 @@ function BreakoutRow({ row: r }: { row: BreakoutCandidate }) {
   const flowIn = r.netMoneyFlow === "in";
   const flowOut = r.netMoneyFlow === "out";
 
+  const tooltip = [
+    `${r.symbol} · ${r.pattern}`,
+    r.candlePattern ? `Candle: ${r.candlePattern}` : "",
+    r.catalyst ? `Catalyst: ${r.catalyst}` : "",
+    `Price: $${r.price.toFixed(2)}`,
+    r.targetPrice != null ? `Target: $${r.targetPrice.toFixed(2)}` : "",
+    r.stopLoss != null ? `Stop: $${r.stopLoss.toFixed(2)}` : "",
+    r.expectedMovePct != null ? `Projected: +${r.expectedMovePct.toFixed(1)}%` : "",
+    `Probability: ${prob}% · R/R ${(r.rewardToRisk ?? 0).toFixed(1)}×`,
+    r.reason ? `\n${r.reason}` : "",
+    `\nClick for full institutional analysis →`,
+  ].filter(Boolean).join("\n");
+
   return (
-    <li className="rounded-lg border border-border/60 bg-card/30 p-3 hover:bg-card/50 transition-colors">
+    <li
+      className="rounded-lg border border-border/60 bg-card/30 p-3 hover:bg-card/50 hover:border-primary/40 transition-colors"
+      title={tooltip}
+    >
       <div className="flex items-start gap-3">
         <TickerLogo symbol={r.symbol} size="sm" linkTo={false} />
         <div className="min-w-0 flex-1">
@@ -139,6 +156,7 @@ function BreakoutRow({ row: r }: { row: BreakoutCandidate }) {
                 to="/ticker/$symbol"
                 params={{ symbol: r.symbol }}
                 className="font-mono font-semibold hover:text-primary"
+                title={`Open full analysis for ${r.symbol}`}
               >
                 {r.symbol}
               </Link>
@@ -167,12 +185,20 @@ function BreakoutRow({ row: r }: { row: BreakoutCandidate }) {
             )}
           </div>
         </div>
-        <div className="text-right">
-          <div className="font-mono text-lg font-bold tabular-nums text-primary">{r.opportunityScore ?? prob}</div>
-          <div className="text-[9px] font-mono uppercase text-muted-foreground">opp score</div>
-          <div className="mt-0.5 text-[9px] font-mono text-muted-foreground">
-            R/R <span className="text-success">{(r.rewardToRisk ?? 0).toFixed(1)}×</span> · P {prob}%
-          </div>
+        <div className="flex items-center gap-2">
+          <PercentGauge
+            value={r.expectedMovePct ?? 0}
+            size={56}
+            label="proj move"
+            sublabel="EXP"
+          />
+          <PercentGauge
+            value={r.opportunityScore ?? prob}
+            size={56}
+            mode="unipolar"
+            label={`R/R ${(r.rewardToRisk ?? 0).toFixed(1)}×`}
+            sublabel="OPP"
+          />
         </div>
       </div>
 
