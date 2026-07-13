@@ -82,12 +82,12 @@ Return only the JSON object.`;
       return {
         family: json.family === "llm" ? "llm" : "data",
         category: String(json.category || "data.custom"),
-        costTier: (["free", "freemium", "paid"].includes(json.costTier) ? json.costTier : "freemium") as ProviderAnalysis["costTier"],
+        costTier: (["free", "freemium", "paid"].includes(json.costTier as string) ? json.costTier : "freemium") as ProviderAnalysis["costTier"],
         costPer1kUsd: Number(json.costPer1kUsd) || 0,
         freeRpm: Math.max(0, Number(json.freeRpm) || 60),
         freeRpd: Math.max(0, Number(json.freeRpd) || 500),
         suggestedModel: json.suggestedModel ? String(json.suggestedModel) : undefined,
-        authType: (["none","api_key","oauth","basic"].includes(json.authType) ? json.authType : "api_key") as ProviderAnalysis["authType"],
+        authType: (["none","api_key","oauth","basic"].includes(json.authType as string) ? json.authType : "api_key") as ProviderAnalysis["authType"],
         summary: String(json.summary ?? "").slice(0, 200),
         reasoning: String(json.reasoning ?? "").slice(0, 400),
       };
