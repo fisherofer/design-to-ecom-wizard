@@ -70,7 +70,7 @@ export function BreakoutCandidates() {
     <div className="rounded-xl border border-border glass p-5">
       <WidgetHeader
         title="AI Breakout Candidates"
-        subtitle="Ranked by breakout probability · candlestick + money-flow analysis"
+        subtitle="Scanning NYSE + NASDAQ · ranked by AI reward-to-risk × probability × flow"
         Icon={Rocket}
         accent="text-primary"
         kind="breakouts"
@@ -147,6 +147,11 @@ function BreakoutRow({ row: r }: { row: BreakoutCandidate }) {
                   {r.capBucket} · {fmtCap(r.marketCap)}
                 </span>
               )}
+              {r.exchange && (
+                <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[9px] font-mono uppercase text-primary/80">
+                  {r.exchange}
+                </span>
+              )}
             </div>
             <span className="text-xs font-mono tabular-nums text-muted-foreground">${r.price.toFixed(2)}</span>
           </div>
@@ -163,8 +168,11 @@ function BreakoutRow({ row: r }: { row: BreakoutCandidate }) {
           </div>
         </div>
         <div className="text-right">
-          <div className="font-mono text-lg font-bold tabular-nums">{prob}%</div>
-          <div className="text-[9px] font-mono uppercase text-muted-foreground">probability</div>
+          <div className="font-mono text-lg font-bold tabular-nums text-primary">{r.opportunityScore ?? prob}</div>
+          <div className="text-[9px] font-mono uppercase text-muted-foreground">opp score</div>
+          <div className="mt-0.5 text-[9px] font-mono text-muted-foreground">
+            R/R <span className="text-success">{(r.rewardToRisk ?? 0).toFixed(1)}×</span> · P {prob}%
+          </div>
         </div>
       </div>
 
