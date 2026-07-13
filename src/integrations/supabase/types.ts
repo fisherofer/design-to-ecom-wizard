@@ -14,7 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      code_findings: {
+        Row: {
+          created_at: string
+          file_path: string
+          id: string
+          language: string | null
+          model: string | null
+          owner_session: string
+          provider: string
+          recommendation: string | null
+          repo_url: string
+          reviewed: boolean
+          score: number
+          snippet: string | null
+          summary: string | null
+          tags: string[] | null
+          updated_at: string
+          verdict: string
+        }
+        Insert: {
+          created_at?: string
+          file_path: string
+          id?: string
+          language?: string | null
+          model?: string | null
+          owner_session: string
+          provider?: string
+          recommendation?: string | null
+          repo_url: string
+          reviewed?: boolean
+          score?: number
+          snippet?: string | null
+          summary?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          verdict?: string
+        }
+        Update: {
+          created_at?: string
+          file_path?: string
+          id?: string
+          language?: string | null
+          model?: string | null
+          owner_session?: string
+          provider?: string
+          recommendation?: string | null
+          repo_url?: string
+          reviewed?: boolean
+          score?: number
+          snippet?: string | null
+          summary?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          verdict?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
