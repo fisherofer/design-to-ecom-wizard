@@ -130,6 +130,7 @@ function RepoAnalyzerPage() {
   }
 
   return (
+    <div className="mx-auto max-w-7xl space-y-6 p-4 pb-16">
       <header className="space-y-1">
         <h1 className="font-display text-2xl font-semibold">Repo Analyzer</h1>
         <p className="text-sm text-muted-foreground">
@@ -157,16 +158,27 @@ function RepoAnalyzerPage() {
             placeholder="What are you looking for? (guides the AI)"
             className="sm:col-span-6 rounded-md border border-border bg-background px-2 py-1.5 text-sm" />
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button size="sm" onClick={onList} disabled={busy || !repoUrl}>
             {busy ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Search className="h-4 w-4 mr-1" />}
             List files
+          </Button>
+          <Button size="sm" variant="secondary" onClick={onBackup} disabled={backupBusy || !repoUrl}
+            title="Mirror GitHub repo to Google Drive AI/LOVEABLE/<repo>/…">
+            {backupBusy ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CloudUpload className="h-4 w-4 mr-1" />}
+            Backup to Drive
           </Button>
           <a href={repoUrl} target="_blank" rel="noreferrer"
             className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md border border-border ${repoUrl ? "hover:bg-muted" : "opacity-40 pointer-events-none"}`}>
             <ExternalLink className="h-3 w-3" /> Open
           </a>
         </div>
+        {backupResult && backupResult.ok && (
+          <div className="text-xs text-emerald-500">
+            Backed up {backupResult.uploaded} file(s) to Drive · {backupResult.skipped} skipped
+            {backupResult.errors.length > 0 && ` · ${backupResult.errors.length} error(s)`}
+          </div>
+        )}
         {err && <div className="text-xs text-red-500">{err}</div>}
       </section>
 
