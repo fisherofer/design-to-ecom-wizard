@@ -30,6 +30,7 @@ import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TickerSymbolRouteImport } from './routes/ticker.$symbol'
+import { Route as ApiPublicHooksDriveBackupDailyRouteImport } from './routes/api/public/hooks/drive-backup-daily'
 
 const WatchlistsRoute = WatchlistsRouteImport.update({
   id: '/watchlists',
@@ -136,6 +137,12 @@ const TickerSymbolRoute = TickerSymbolRouteImport.update({
   path: '/ticker/$symbol',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksDriveBackupDailyRoute =
+  ApiPublicHooksDriveBackupDailyRouteImport.update({
+    id: '/api/public/hooks/drive-backup-daily',
+    path: '/api/public/hooks/drive-backup-daily',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -159,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/triggers': typeof TriggersRoute
   '/watchlists': typeof WatchlistsRoute
   '/ticker/$symbol': typeof TickerSymbolRoute
+  '/api/public/hooks/drive-backup-daily': typeof ApiPublicHooksDriveBackupDailyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -182,6 +190,7 @@ export interface FileRoutesByTo {
   '/triggers': typeof TriggersRoute
   '/watchlists': typeof WatchlistsRoute
   '/ticker/$symbol': typeof TickerSymbolRoute
+  '/api/public/hooks/drive-backup-daily': typeof ApiPublicHooksDriveBackupDailyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -206,6 +215,7 @@ export interface FileRoutesById {
   '/triggers': typeof TriggersRoute
   '/watchlists': typeof WatchlistsRoute
   '/ticker/$symbol': typeof TickerSymbolRoute
+  '/api/public/hooks/drive-backup-daily': typeof ApiPublicHooksDriveBackupDailyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -231,6 +241,7 @@ export interface FileRouteTypes {
     | '/triggers'
     | '/watchlists'
     | '/ticker/$symbol'
+    | '/api/public/hooks/drive-backup-daily'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -254,6 +265,7 @@ export interface FileRouteTypes {
     | '/triggers'
     | '/watchlists'
     | '/ticker/$symbol'
+    | '/api/public/hooks/drive-backup-daily'
   id:
     | '__root__'
     | '/'
@@ -277,6 +289,7 @@ export interface FileRouteTypes {
     | '/triggers'
     | '/watchlists'
     | '/ticker/$symbol'
+    | '/api/public/hooks/drive-backup-daily'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -301,6 +314,7 @@ export interface RootRouteChildren {
   TriggersRoute: typeof TriggersRoute
   WatchlistsRoute: typeof WatchlistsRoute
   TickerSymbolRoute: typeof TickerSymbolRoute
+  ApiPublicHooksDriveBackupDailyRoute: typeof ApiPublicHooksDriveBackupDailyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -452,6 +466,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TickerSymbolRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/drive-backup-daily': {
+      id: '/api/public/hooks/drive-backup-daily'
+      path: '/api/public/hooks/drive-backup-daily'
+      fullPath: '/api/public/hooks/drive-backup-daily'
+      preLoaderRoute: typeof ApiPublicHooksDriveBackupDailyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -477,6 +498,7 @@ const rootRouteChildren: RootRouteChildren = {
   TriggersRoute: TriggersRoute,
   WatchlistsRoute: WatchlistsRoute,
   TickerSymbolRoute: TickerSymbolRoute,
+  ApiPublicHooksDriveBackupDailyRoute: ApiPublicHooksDriveBackupDailyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
