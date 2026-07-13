@@ -10,6 +10,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { generateText } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
+import { resolveModel } from "./aiModels.server";
 
 const Input = z.object({
   name: z.string().min(1),
@@ -55,7 +56,8 @@ export const analyzeProvider = createServerFn({ method: "POST" })
 
     try {
       const gateway = createLovableAiGatewayProvider(key);
-      const model = gateway("google/gemini-2.5-flash");
+      const modelId = await resolveModel("light");
+      const model = gateway(modelId);
       const prompt = `You classify third-party APIs for a trading & AI app.
 Given the provider below, return STRICT JSON with these fields:
 {

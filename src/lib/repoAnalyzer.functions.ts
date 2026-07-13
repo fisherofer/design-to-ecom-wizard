@@ -10,6 +10,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { generateText } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
+import { resolveModel, tierFor } from "./aiModels.server";
 
 // -------------------- provider parsing --------------------
 
@@ -87,7 +88,8 @@ const AnalyzeInput = z.object({
   filePath: z.string().min(1),
   token: z.string().optional(),
   goal: z.string().optional(),
-  model: z.string().default("google/gemini-2.5-flash"),
+  /** "auto" (default) resolves the best supported model at runtime. */
+  model: z.string().default("auto"),
 });
 
 export interface FindingRow {
@@ -131,9 +133,13 @@ export const analyzeFile = createServerFn({ method: "POST" })
       let tags: string[] = [];
       const language = guessLang(data.filePath);
 
+      let resolvedModelId = data.model;
       if (key) {
         const gateway = createLovableAiGatewayProvider(key);
-        const model = gateway(data.model);
+        if (data.model === "auto") {
+          resolvedModelId = await resolveModel(tierFor({ inputChars: truncated.length, difficulty: "medium" }));
+        }
+        const model = gateway(resolvedModelId);
         const prompt = `You review third-party OSS code for potential reuse in a trading & AI dashboard app.
 Goal (optional): ${data.goal || "General learnings for a TS/React trading dashboard."}
 File: ${data.filePath} (${language})
@@ -178,7 +184,7 @@ Return STRICT JSON only:
           file_path: data.filePath,
           language,
           verdict, score, summary, recommendation, snippet,
-          tags, model: data.model,
+          tags, model: resolvedModelId,
         })
         .select("*")
         .single();
