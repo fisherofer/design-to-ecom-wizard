@@ -50,12 +50,13 @@ function MoversCard({ kind, label, Icon, accent }: { kind: Kind; label: string; 
           {state.data.map((r) => {
             const up = r.changePct >= 0;
             return (
-              <tr key={r.symbol} className="border-b border-border/30 last:border-0">
+              <tr key={r.symbol} className="border-b border-border/30 last:border-0 hover:bg-card/40">
                 <td className="py-1.5">
                   <Link
                     to="/ticker/$symbol"
                     params={{ symbol: r.symbol }}
                     className="font-mono font-semibold hover:text-primary"
+                    title={`${r.symbol}${r.name ? ` — ${r.name}` : ""}\nPrice: $${r.price.toFixed(2)}\nChange: ${up ? "+" : ""}${r.changePct.toFixed(2)}%\nVolume: ${(r.volume ?? 0).toLocaleString()}\nClick for full analysis →`}
                   >
                     {r.symbol}
                   </Link>

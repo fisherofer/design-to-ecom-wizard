@@ -30,6 +30,7 @@ export function Ticker() {
               key={i}
               to="/ticker/$symbol"
               params={{ symbol: t.sym }}
+              title={`${t.sym}\nPrice: ${t.price.toLocaleString()}\nChange: ${up ? "+" : ""}${t.chg.toFixed(2)}%\nClick for full institutional analysis →`}
               className="flex items-center gap-2 font-mono text-xs hover:opacity-80 transition-opacity"
             >
               <TickerLogo symbol={t.sym} size="xs" linkTo={false} />
