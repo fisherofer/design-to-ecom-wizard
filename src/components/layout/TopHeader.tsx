@@ -3,12 +3,16 @@ import { Search, Smartphone, User, Menu, Activity } from "lucide-react";
 import { NotificationsBell } from "./NotificationsBell";
 import { PhaseBanner } from "./PhaseBanner";
 import { NAV_ITEMS } from "./Sidebar";
+import { TradingModeToggle } from "./TradingModeToggle";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { isTradingRoute, useTradingEnabled } from "@/lib/tradingMode";
 
 export function TopHeader() {
   const { pathname } = useLocation();
+  const [tradingEnabled] = useTradingEnabled();
+  const mobileItems = NAV_ITEMS.filter((i) => tradingEnabled || !isTradingRoute(i.to));
 
   return (
     <div className="sticky top-0 z-30">
@@ -29,7 +33,7 @@ export function TopHeader() {
             <SheetDescription>Trading command center</SheetDescription>
           </SheetHeader>
           <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto p-3">
-            {NAV_ITEMS.map((item) => {
+            {mobileItems.map((item) => {
               const active = item.end ? pathname === item.to : pathname.startsWith(item.to);
               const Icon = item.icon;
               return (
@@ -58,6 +62,8 @@ export function TopHeader() {
       </div>
 
       <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+        <TradingModeToggle />
+
         <Button variant="outline" className="hidden gap-2 bg-card/50 px-3 font-mono text-xs text-muted-foreground sm:flex">
           <Smartphone className="h-3.5 w-3.5" />
           <span className="hidden lg:inline">+972 · DEVICE LINKED</span>
