@@ -49,7 +49,7 @@ const CATEGORY_ICONS: Record<string, typeof Cpu> = {
   "data.custom": Globe,
 };
 
-const CATEGORIES: ConnectorCategory[] = [
+const BASE_CATEGORIES: ConnectorCategory[] = [
   "llm.local", "llm.cloud", "llm.custom",
   "data.market", "data.news", "data.custom",
 ];
@@ -57,14 +57,17 @@ const CATEGORIES: ConnectorCategory[] = [
 export function ProviderConnectorsTab() {
   const { connectors, health } = useProviderRegistry();
   const [simTask, setSimTask] = useState<TaskProfile>("reasoning");
-  const [simCat, setSimCat] = useState<ConnectorCategory>("llm.cloud");
+  const [simCat, setSimCat] = useState<string>("llm.cloud");
   const [simResult, setSimResult] = useState<ReturnType<typeof pickConnector> | null>(null);
   const [testOut, setTestOut] = useState<string>("");
+  const [addOpen, setAddOpen] = useState<{ category?: string } | null>(null);
 
-  const grouped = useMemo(() => {
+  const { allCategories, grouped } = useMemo(() => {
     const g: Record<string, ConnectorConfig[]> = {};
     for (const c of connectors) (g[c.category] ??= []).push(c);
-    return g;
+    const set = new Set<string>(BASE_CATEGORIES);
+    for (const c of connectors) set.add(c.category);
+    return { allCategories: Array.from(set), grouped: g };
   }, [connectors]);
 
   return (
