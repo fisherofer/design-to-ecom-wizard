@@ -8,13 +8,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Github, GitBranch, Loader2, Search, Sparkles, Trash2, CheckCircle2,
-  FolderOpen, ExternalLink, X, ShieldAlert,
+  FolderOpen, ExternalLink, X, ShieldAlert, CloudUpload, Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  listRepo, analyzeFile, listFindings, markReviewed, deleteFinding,
+  listRepo, analyzeFile, analyzeRepoBulk, listFindings, markReviewed, deleteFinding,
   type FindingRow, type RepoFile,
 } from "@/lib/repoAnalyzer.functions";
+import { syncRepoToDrive, type SyncResult } from "@/lib/driveBackup.functions";
 
 export const Route = createFileRoute("/repo-analyzer")({
   head: () => ({
@@ -43,9 +44,11 @@ function RepoAnalyzerPage() {
   const ownerSession = useOwnerSession();
   const list = useServerFn(listRepo);
   const analyze = useServerFn(analyzeFile);
+  const bulk = useServerFn(analyzeRepoBulk);
   const load = useServerFn(listFindings);
   const mark = useServerFn(markReviewed);
   const del = useServerFn(deleteFinding);
+  const backup = useServerFn(syncRepoToDrive);
 
   const [repoUrl, setRepoUrl] = useState("");
   const [token, setToken] = useState("");
@@ -57,6 +60,9 @@ function RepoAnalyzerPage() {
   const [findings, setFindings] = useState<FindingRow[]>([]);
   const [analyzing, setAnalyzing] = useState<Record<string, boolean>>({});
   const [confirmDel, setConfirmDel] = useState<FindingRow | null>(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [backupBusy, setBackupBusy] = useState(false);
+  const [backupResult, setBackupResult] = useState<SyncResult | null>(null);
 
   useEffect(() => {
     load({ data: { ownerSession } }).then(setFindings).catch(() => {});
@@ -100,6 +106,29 @@ function RepoAnalyzerPage() {
     setConfirmDel(null);
   }
 
+  async function onAnalyzeAll() {
+    if (!filtered.length) return;
+    setBulkBusy(true); setErr(null);
+    try {
+      const top = filtered.slice(0, 30).map((f) => f.path);
+      const r = await bulk({ data: { ownerSession, repoUrl, filePaths: top, token: token || undefined, goal } });
+      setFindings((cur) => [...r.findings, ...cur]);
+      if (r.errors.length) setErr(`${r.errors.length} file(s) failed — first: ${r.errors[0].path}`);
+    } catch (e) { setErr((e as Error).message); }
+    finally { setBulkBusy(false); }
+  }
+
+  async function onBackup() {
+    if (!repoUrl) return;
+    setBackupBusy(true); setBackupResult(null); setErr(null);
+    try {
+      const r = await backup({ data: { repoUrl, token: token || undefined } });
+      setBackupResult(r);
+      if (!r.ok && r.error) setErr(r.error);
+    } catch (e) { setErr((e as Error).message); }
+    finally { setBackupBusy(false); }
+  }
+
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-4 pb-16">
       <header className="space-y-1">
@@ -129,27 +158,46 @@ function RepoAnalyzerPage() {
             placeholder="What are you looking for? (guides the AI)"
             className="sm:col-span-6 rounded-md border border-border bg-background px-2 py-1.5 text-sm" />
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button size="sm" onClick={onList} disabled={busy || !repoUrl}>
             {busy ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Search className="h-4 w-4 mr-1" />}
             List files
+          </Button>
+          <Button size="sm" variant="secondary" onClick={onBackup} disabled={backupBusy || !repoUrl}
+            title="Mirror GitHub repo to Google Drive AI/LOVEABLE/<repo>/…">
+            {backupBusy ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CloudUpload className="h-4 w-4 mr-1" />}
+            Backup to Drive
           </Button>
           <a href={repoUrl} target="_blank" rel="noreferrer"
             className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md border border-border ${repoUrl ? "hover:bg-muted" : "opacity-40 pointer-events-none"}`}>
             <ExternalLink className="h-3 w-3" /> Open
           </a>
         </div>
+        {backupResult && backupResult.ok && (
+          <div className="text-xs text-emerald-500">
+            Backed up {backupResult.uploaded} file(s) to Drive · {backupResult.skipped} skipped
+            {backupResult.errors.length > 0 && ` · ${backupResult.errors.length} error(s)`}
+          </div>
+        )}
         {err && <div className="text-xs text-red-500">{err}</div>}
       </section>
 
       {files.length > 0 && (
         <section className="rounded-xl border border-border/60 bg-card/60 p-4 space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2 text-sm font-medium">
               <Github className="h-4 w-4" /> Files ({filtered.length}/{files.length})
             </div>
-            <input value={filter} onChange={(e) => setFilter(e.target.value)}
-              placeholder="filter…" className="rounded-md border border-border bg-background px-2 py-1 text-xs w-48" />
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="secondary" onClick={onAnalyzeAll}
+                disabled={bulkBusy || filtered.length === 0}
+                title="Analyze top 30 filtered files with AI (sequential)">
+                {bulkBusy ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Zap className="h-3 w-3 mr-1" />}
+                Analyze All ({Math.min(filtered.length, 30)})
+              </Button>
+              <input value={filter} onChange={(e) => setFilter(e.target.value)}
+                placeholder="filter…" className="rounded-md border border-border bg-background px-2 py-1 text-xs w-48" />
+            </div>
           </div>
           <div className="max-h-96 overflow-y-auto divide-y divide-border/40">
             {filtered.map((f) => (
