@@ -222,3 +222,105 @@ function Field({ label, value, onChange, type = "text" }: { label: string; value
     </label>
   );
 }
+
+function AddSourceDialog({ initial, onClose }: { initial?: string; onClose: () => void }) {
+  const analyze = useServerFn(analyzeProvider);
+  const [name, setName] = useState("");
+  const [baseUrl, setBaseUrl] = useState("");
+  const [apiKey, setApiKey] = useState("");
+  const [notes, setNotes] = useState("");
+  const [category, setCategory] = useState<string>(initial ?? "");
+  const [analysis, setAnalysis] = useState<ProviderAnalysis | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function runAnalyze() {
+    setBusy(true); setErr(null);
+    try {
+      const a = await analyze({ data: { name, baseUrl, notes } });
+      setAnalysis(a);
+      if (!category) setCategory(a.category);
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally { setBusy(false); }
+  }
+
+  function save() {
+    if (!name) { setErr("Name is required"); return; }
+    const id = name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
+    const cat = (category || analysis?.category || "data.custom");
+    const family: "llm" | "data" = cat.startsWith("llm.") ? "llm" : "data";
+    providerRegistry.upsert({
+      id, name, family, category: cat as ConnectorCategory, baseUrl,
+      apiKey: apiKey || undefined,
+      model: analysis?.suggestedModel,
+      enabled: true, priority: 5,
+      costPer1kUsd: analysis?.costPer1kUsd ?? 0,
+      notes: analysis?.summary,
+    });
+    // Wire free-tier limits + budget hint if AI provided them
+    if (analysis) {
+      if (analysis.freeRpm || analysis.freeRpd) {
+        rateLimits.setBudget?.(id, { rpm: analysis.freeRpm, rpd: analysis.freeRpd });
+      }
+      if (analysis.costTier !== "free" && analysis.costPer1kUsd > 0) {
+        // seed a small monthly cap so the router sees headroom
+        apiBudget.setProvider(id, 5);
+      }
+    }
+    onClose();
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-lg rounded-xl border border-border bg-card p-5 space-y-4 shadow-xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 font-medium">
+            <Wand2 className="h-4 w-4 text-primary" /> Add API source
+          </div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <Field label="Display name" value={name} onChange={setName} />
+          <Field label="Base URL" value={baseUrl} onChange={setBaseUrl} />
+          <Field label="API key (optional)" value={apiKey} onChange={setApiKey} type="password" />
+          <label className="block space-y-1">
+            <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Category</span>
+            <input list="cat-list" value={category} onChange={(e) => setCategory(e.target.value)}
+              className="w-full rounded-md border border-border bg-background px-2 py-1 text-xs"
+              placeholder="data.market · data.news · llm.cloud · data.crypto …" />
+            <datalist id="cat-list">
+              {["llm.local","llm.cloud","llm.custom","data.market","data.news","data.custom","data.crypto","data.macro","data.sentiment","data.fundamentals"].map((c) => <option key={c} value={c} />)}
+            </datalist>
+          </label>
+          <div className="sm:col-span-2">
+            <Field label="Notes for AI (what does it do?)" value={notes} onChange={setNotes} />
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={runAnalyze} disabled={busy || !name}>
+            <Sparkles className="h-4 w-4 mr-1" /> {busy ? "Analyzing…" : "Analyze with AI"}
+          </Button>
+          <Button size="sm" onClick={save} className="ml-auto">Save connector</Button>
+        </div>
+
+        {err && <div className="text-xs text-red-500">{err}</div>}
+
+        {analysis && (
+          <div className="rounded-md border border-border/50 bg-muted/30 p-3 text-xs space-y-1">
+            <div className="font-medium text-primary">AI classification</div>
+            <div>Family / Category: <span className="font-mono">{analysis.family} · {analysis.category}</span></div>
+            <div>Cost tier: <span className="font-mono">{analysis.costTier}</span> · ${analysis.costPer1kUsd}/1k</div>
+            <div>Free limits: <span className="font-mono">{analysis.freeRpm} rpm · {analysis.freeRpd} rpd</span></div>
+            <div>Auth: <span className="font-mono">{analysis.authType}</span>{analysis.suggestedModel ? ` · model: ${analysis.suggestedModel}` : ""}</div>
+            <div className="text-muted-foreground">{analysis.summary}</div>
+            <div className="text-muted-foreground italic">{analysis.reasoning}</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
