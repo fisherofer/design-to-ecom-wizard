@@ -38,6 +38,8 @@ import { ModelFiltersTab } from "@/components/settings/ModelFiltersTab";
 import { BudgetTab } from "@/components/settings/BudgetTab";
 import { GoogleDriveTab } from "@/components/settings/GoogleDriveTab";
 import { AlertChannelsTab } from "@/components/settings/AlertChannelsTab";
+import { ComputeRouterTab } from "@/components/settings/ComputeRouterTab";
+
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
