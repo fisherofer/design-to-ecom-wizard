@@ -16,6 +16,11 @@ import {
   type FindingRow, type RepoFile,
 } from "@/lib/repoAnalyzer.functions";
 import { syncRepoToDrive, type SyncResult } from "@/lib/driveBackup.functions";
+import {
+  listBackupTargets, upsertBackupTarget, deleteBackupTarget, runBackupTargetNow,
+  type DriveBackupTarget,
+} from "@/lib/driveBackupTargets.functions";
+import { Clock, PlayCircle } from "lucide-react";
 
 export const Route = createFileRoute("/repo-analyzer")({
   head: () => ({
@@ -49,9 +54,14 @@ function RepoAnalyzerPage() {
   const mark = useServerFn(markReviewed);
   const del = useServerFn(deleteFinding);
   const backup = useServerFn(syncRepoToDrive);
+  const loadTargets = useServerFn(listBackupTargets);
+  const upsertTarget = useServerFn(upsertBackupTarget);
+  const deleteTarget = useServerFn(deleteBackupTarget);
+  const runTarget = useServerFn(runBackupTargetNow);
 
   const [repoUrl, setRepoUrl] = useState("");
   const [token, setToken] = useState("");
+  const [rootFolder, setRootFolder] = useState("AI/LOVEABLE");
   const [goal, setGoal] = useState("Trading indicators, alerts and risk mgmt patterns");
   const [files, setFiles] = useState<RepoFile[]>([]);
   const [filter, setFilter] = useState("");
@@ -63,10 +73,13 @@ function RepoAnalyzerPage() {
   const [bulkBusy, setBulkBusy] = useState(false);
   const [backupBusy, setBackupBusy] = useState(false);
   const [backupResult, setBackupResult] = useState<SyncResult | null>(null);
+  const [targets, setTargets] = useState<DriveBackupTarget[]>([]);
+  const [targetBusy, setTargetBusy] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     load({ data: { ownerSession } }).then(setFindings).catch(() => {});
-  }, [ownerSession, load]);
+    loadTargets({ data: { ownerSession } }).then(setTargets).catch(() => {});
+  }, [ownerSession, load, loadTargets]);
 
   const filtered = useMemo(
     () => (!filter ? files : files.filter((f) => f.path.toLowerCase().includes(filter.toLowerCase()))),
@@ -122,11 +135,45 @@ function RepoAnalyzerPage() {
     if (!repoUrl) return;
     setBackupBusy(true); setBackupResult(null); setErr(null);
     try {
-      const r = await backup({ data: { repoUrl, token: token || undefined } });
+      const r = await backup({ data: { repoUrl, token: token || undefined, rootFolder } });
       setBackupResult(r);
       if (!r.ok && r.error) setErr(r.error);
     } catch (e) { setErr((e as Error).message); }
     finally { setBackupBusy(false); }
+  }
+
+  async function onScheduleTarget() {
+    if (!repoUrl) return;
+    try {
+      const row = await upsertTarget({
+        data: { ownerSession, repoUrl, token: token || undefined, rootFolder, enabled: true },
+      });
+      setTargets((cur) => [row, ...cur.filter((t) => t.id !== row.id)]);
+    } catch (e) { setErr((e as Error).message); }
+  }
+
+  async function onToggleTarget(t: DriveBackupTarget) {
+    const row = await upsertTarget({
+      data: {
+        ownerSession, repoUrl: t.repo_url, token: t.token ?? undefined,
+        rootFolder: t.root_folder, enabled: !t.enabled,
+      },
+    });
+    setTargets((cur) => cur.map((x) => x.id === row.id ? row : x));
+  }
+
+  async function onRunTarget(t: DriveBackupTarget) {
+    setTargetBusy((s) => ({ ...s, [t.id]: true }));
+    try {
+      await runTarget({ data: { ownerSession, id: t.id } });
+      const fresh = await loadTargets({ data: { ownerSession } });
+      setTargets(fresh);
+    } finally { setTargetBusy((s) => ({ ...s, [t.id]: false })); }
+  }
+
+  async function onDeleteTarget(t: DriveBackupTarget) {
+    await deleteTarget({ data: { ownerSession, id: t.id } });
+    setTargets((cur) => cur.filter((x) => x.id !== t.id));
   }
 
   return (
@@ -156,7 +203,10 @@ function RepoAnalyzerPage() {
             className="sm:col-span-2 rounded-md border border-border bg-background px-2 py-1.5 text-sm" />
           <input value={goal} onChange={(e) => setGoal(e.target.value)}
             placeholder="What are you looking for? (guides the AI)"
-            className="sm:col-span-6 rounded-md border border-border bg-background px-2 py-1.5 text-sm" />
+            className="sm:col-span-4 rounded-md border border-border bg-background px-2 py-1.5 text-sm" />
+          <input value={rootFolder} onChange={(e) => setRootFolder(e.target.value)}
+            placeholder="Drive folder (e.g. AI/LOVEABLE)"
+            className="sm:col-span-2 rounded-md border border-border bg-background px-2 py-1.5 text-sm" />
         </div>
         <div className="flex flex-wrap gap-2">
           <Button size="sm" onClick={onList} disabled={busy || !repoUrl}>
@@ -164,9 +214,13 @@ function RepoAnalyzerPage() {
             List files
           </Button>
           <Button size="sm" variant="secondary" onClick={onBackup} disabled={backupBusy || !repoUrl}
-            title="Mirror GitHub repo to Google Drive AI/LOVEABLE/<repo>/…">
+            title={`Mirror GitHub repo to Google Drive ${rootFolder}/<repo>/…`}>
             {backupBusy ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CloudUpload className="h-4 w-4 mr-1" />}
-            Backup to Drive
+            Backup now
+          </Button>
+          <Button size="sm" variant="outline" onClick={onScheduleTarget} disabled={!repoUrl}
+            title="Schedule this repo for the daily 03:00 UTC Drive mirror">
+            <Clock className="h-4 w-4 mr-1" /> Schedule daily
           </Button>
           <a href={repoUrl} target="_blank" rel="noreferrer"
             className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md border border-border ${repoUrl ? "hover:bg-muted" : "opacity-40 pointer-events-none"}`}>
@@ -181,6 +235,39 @@ function RepoAnalyzerPage() {
         )}
         {err && <div className="text-xs text-red-500">{err}</div>}
       </section>
+
+      {targets.length > 0 && (
+        <section className="rounded-xl border border-border/60 bg-card/60 p-4 space-y-3">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <Clock className="h-4 w-4 text-primary" /> Scheduled Drive backups ({targets.length})
+            <span className="text-[10px] font-normal text-muted-foreground">runs daily 03:00 UTC</span>
+          </div>
+          <div className="divide-y divide-border/40">
+            {targets.map((t) => (
+              <div key={t.id} className="flex items-center gap-2 py-2 text-xs">
+                <input type="checkbox" checked={t.enabled} onChange={() => onToggleTarget(t)} />
+                <div className="flex-1 min-w-0">
+                  <div className="font-mono truncate">{t.repo_url}</div>
+                  <div className="text-[10px] text-muted-foreground">
+                    → {t.root_folder} ·{" "}
+                    {t.last_run_at
+                      ? `last: ${new Date(t.last_run_at).toLocaleString()} · ${t.last_status} · ${t.last_uploaded} file(s)`
+                      : "never run"}
+                    {t.last_error && <span className="text-red-500"> · {t.last_error}</span>}
+                  </div>
+                </div>
+                <Button size="sm" variant="ghost" onClick={() => onRunTarget(t)} disabled={targetBusy[t.id]}>
+                  {targetBusy[t.id] ? <Loader2 className="h-3 w-3 animate-spin" /> : <PlayCircle className="h-3 w-3" />}
+                </Button>
+                <Button size="sm" variant="ghost" className="text-red-500" onClick={() => onDeleteTarget(t)}>
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
 
       {files.length > 0 && (
         <section className="rounded-xl border border-border/60 bg-card/60 p-4 space-y-3">

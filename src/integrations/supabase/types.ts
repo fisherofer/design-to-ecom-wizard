@@ -71,6 +71,51 @@ export type Database = {
         }
         Relationships: []
       }
+      drive_backup_targets: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          last_error: string | null
+          last_run_at: string | null
+          last_status: string | null
+          last_uploaded: number
+          owner_session: string
+          repo_url: string
+          root_folder: string
+          token: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_error?: string | null
+          last_run_at?: string | null
+          last_status?: string | null
+          last_uploaded?: number
+          owner_session: string
+          repo_url: string
+          root_folder?: string
+          token?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_error?: string | null
+          last_run_at?: string | null
+          last_status?: string | null
+          last_uploaded?: number
+          owner_session?: string
+          repo_url?: string
+          root_folder?: string
+          token?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
