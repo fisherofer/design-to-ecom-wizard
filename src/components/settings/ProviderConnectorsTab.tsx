@@ -3,6 +3,8 @@
  * =======================
  * Manage LLM + Data connectors by category, run a live pick simulation
  * against the Compute Router, and probe reachability.
+ * Includes an AI-assisted "Add source" flow that suggests category, cost
+ * tier, free-tier limits and default model from a name + URL.
  */
 import { useMemo, useState } from "react";
 import {
@@ -16,6 +18,8 @@ import {
   RefreshCw,
   Sparkles,
   Trash2,
+  Wand2,
+  X,
   Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,8 +35,12 @@ import {
   type ConnectorConfig,
 } from "@/lib/providerConnectors";
 import type { TaskProfile } from "@/lib/computeRouter";
+import { analyzeProvider, type ProviderAnalysis } from "@/lib/analyzeProvider.functions";
+import { useServerFn } from "@tanstack/react-start";
+import { rateLimits } from "@/lib/rateLimits";
+import { apiBudget } from "@/lib/apiBudget";
 
-const CATEGORY_ICONS: Record<ConnectorCategory, typeof Cpu> = {
+const CATEGORY_ICONS: Record<string, typeof Cpu> = {
   "llm.local":   Cpu,
   "llm.cloud":   Cloud,
   "llm.custom":  Globe,
@@ -41,7 +49,7 @@ const CATEGORY_ICONS: Record<ConnectorCategory, typeof Cpu> = {
   "data.custom": Globe,
 };
 
-const CATEGORIES: ConnectorCategory[] = [
+const BASE_CATEGORIES: ConnectorCategory[] = [
   "llm.local", "llm.cloud", "llm.custom",
   "data.market", "data.news", "data.custom",
 ];
@@ -49,14 +57,17 @@ const CATEGORIES: ConnectorCategory[] = [
 export function ProviderConnectorsTab() {
   const { connectors, health } = useProviderRegistry();
   const [simTask, setSimTask] = useState<TaskProfile>("reasoning");
-  const [simCat, setSimCat] = useState<ConnectorCategory>("llm.cloud");
+  const [simCat, setSimCat] = useState<string>("llm.cloud");
   const [simResult, setSimResult] = useState<ReturnType<typeof pickConnector> | null>(null);
   const [testOut, setTestOut] = useState<string>("");
+  const [addOpen, setAddOpen] = useState<{ category?: string } | null>(null);
 
-  const grouped = useMemo(() => {
+  const { allCategories, grouped } = useMemo(() => {
     const g: Record<string, ConnectorConfig[]> = {};
     for (const c of connectors) (g[c.category] ??= []).push(c);
-    return g;
+    const set = new Set<string>(BASE_CATEGORIES);
+    for (const c of connectors) set.add(c.category);
+    return { allCategories: Array.from(set), grouped: g };
   }, [connectors]);
 
   return (
@@ -70,6 +81,9 @@ export function ProviderConnectorsTab() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button size="sm" onClick={() => setAddOpen({})}>
+            <Wand2 className="h-4 w-4 mr-1" /> Add with AI
+          </Button>
           <Button variant="outline" size="sm" onClick={() => providerRegistry.probeAll()}>
             <Activity className="h-4 w-4 mr-1" /> Probe all
           </Button>
@@ -79,6 +93,8 @@ export function ProviderConnectorsTab() {
         </div>
       </header>
 
+      {addOpen && <AddSourceDialog initial={addOpen.category} onClose={() => setAddOpen(null)} />}
+
       {/* Live pick simulator */}
       <section className="rounded-xl border border-border/60 bg-card/60 p-4 space-y-3">
         <div className="flex items-center gap-2 text-sm font-medium">
@@ -86,8 +102,8 @@ export function ProviderConnectorsTab() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <select className="rounded-md border border-border bg-background px-2 py-1.5 text-sm"
-            value={simCat} onChange={(e) => setSimCat(e.target.value as ConnectorCategory)}>
-            {CATEGORIES.map((c) => <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>)}
+            value={simCat} onChange={(e) => setSimCat(e.target.value)}>
+            {allCategories.map((c) => <option key={c} value={c}>{CATEGORY_LABELS[c] ?? c}</option>)}
           </select>
           <select className="rounded-md border border-border bg-background px-2 py-1.5 text-sm"
             value={simTask} onChange={(e) => setSimTask(e.target.value as TaskProfile)}>
@@ -95,11 +111,11 @@ export function ProviderConnectorsTab() {
               .map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
           <div className="flex gap-2">
-            <Button size="sm" onClick={() => setSimResult(pickConnector(simCat, { task: simTask }))}>
+            <Button size="sm" onClick={() => setSimResult(pickConnector(simCat as ConnectorCategory, { task: simTask }))}>
               <Zap className="h-4 w-4 mr-1" /> Pick
             </Button>
             <Button size="sm" variant="outline" onClick={async () => {
-              const r = await execute(simCat, { prompt: "Say hello in 5 words.", symbol: "AAPL" }, { task: simTask });
+              const r = await execute(simCat as ConnectorCategory, { prompt: "Say hello in 5 words.", symbol: "AAPL" }, { task: simTask });
               setTestOut(JSON.stringify({ ok: r.ok, provider: r.provider, ms: r.latencyMs, cost: r.costUsd, text: r.text, error: r.error, data: r.data ? "…" : undefined }, null, 2));
             }}>
               Invoke
@@ -118,24 +134,17 @@ export function ProviderConnectorsTab() {
       </section>
 
       {/* Categories */}
-      {CATEGORIES.map((cat) => {
-        const Icon = CATEGORY_ICONS[cat];
+      {allCategories.map((cat: string) => {
+        const Icon = CATEGORY_ICONS[cat] ?? Globe;
         const items = grouped[cat] ?? [];
         return (
           <section key={cat} className="rounded-xl border border-border/60 bg-card/60 p-4 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm font-medium">
-                <Icon className="h-4 w-4" /> {CATEGORY_LABELS[cat]}
+                <Icon className="h-4 w-4" /> {CATEGORY_LABELS[cat] ?? cat}
                 <span className="text-xs text-muted-foreground">({items.length})</span>
               </div>
-              <Button size="sm" variant="ghost" onClick={() => {
-                const id = prompt("Connector id (unique):");
-                if (!id) return;
-                providerRegistry.upsert({
-                  id, name: id, family: cat.startsWith("llm.") ? "llm" : "data",
-                  category: cat, baseUrl: "", enabled: true, priority: 5,
-                });
-              }}>
+              <Button size="sm" variant="ghost" onClick={() => setAddOpen({ category: cat })}>
                 <Plus className="h-4 w-4 mr-1" /> Add
               </Button>
             </div>
@@ -211,5 +220,107 @@ function Field({ label, value, onChange, type = "text" }: { label: string; value
         className="w-full rounded-md border border-border bg-background px-2 py-1 text-xs"
       />
     </label>
+  );
+}
+
+function AddSourceDialog({ initial, onClose }: { initial?: string; onClose: () => void }) {
+  const analyze = useServerFn(analyzeProvider);
+  const [name, setName] = useState("");
+  const [baseUrl, setBaseUrl] = useState("");
+  const [apiKey, setApiKey] = useState("");
+  const [notes, setNotes] = useState("");
+  const [category, setCategory] = useState<string>(initial ?? "");
+  const [analysis, setAnalysis] = useState<ProviderAnalysis | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function runAnalyze() {
+    setBusy(true); setErr(null);
+    try {
+      const a = await analyze({ data: { name, baseUrl, notes } });
+      setAnalysis(a);
+      if (!category) setCategory(a.category);
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally { setBusy(false); }
+  }
+
+  function save() {
+    if (!name) { setErr("Name is required"); return; }
+    const id = name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
+    const cat = (category || analysis?.category || "data.custom");
+    const family: "llm" | "data" = cat.startsWith("llm.") ? "llm" : "data";
+    providerRegistry.upsert({
+      id, name, family, category: cat as ConnectorCategory, baseUrl,
+      apiKey: apiKey || undefined,
+      model: analysis?.suggestedModel,
+      enabled: true, priority: 5,
+      costPer1kUsd: analysis?.costPer1kUsd ?? 0,
+      notes: analysis?.summary,
+    });
+    // Wire free-tier limits + budget hint if AI provided them
+    if (analysis) {
+      if (analysis.freeRpm || analysis.freeRpd) {
+        rateLimits.setBudget?.(id, { rpm: analysis.freeRpm, rpd: analysis.freeRpd, tpd: analysis.freeRpd * 1000 });
+      }
+      if (analysis.costTier !== "free" && analysis.costPer1kUsd > 0) {
+        // seed a small monthly cap so the router sees headroom
+        apiBudget.setProvider(id, 5);
+      }
+    }
+    onClose();
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-lg rounded-xl border border-border bg-card p-5 space-y-4 shadow-xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 font-medium">
+            <Wand2 className="h-4 w-4 text-primary" /> Add API source
+          </div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <Field label="Display name" value={name} onChange={setName} />
+          <Field label="Base URL" value={baseUrl} onChange={setBaseUrl} />
+          <Field label="API key (optional)" value={apiKey} onChange={setApiKey} type="password" />
+          <label className="block space-y-1">
+            <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Category</span>
+            <input list="cat-list" value={category} onChange={(e) => setCategory(e.target.value)}
+              className="w-full rounded-md border border-border bg-background px-2 py-1 text-xs"
+              placeholder="data.market · data.news · llm.cloud · data.crypto …" />
+            <datalist id="cat-list">
+              {["llm.local","llm.cloud","llm.custom","data.market","data.news","data.custom","data.crypto","data.macro","data.sentiment","data.fundamentals"].map((c) => <option key={c} value={c} />)}
+            </datalist>
+          </label>
+          <div className="sm:col-span-2">
+            <Field label="Notes for AI (what does it do?)" value={notes} onChange={setNotes} />
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={runAnalyze} disabled={busy || !name}>
+            <Sparkles className="h-4 w-4 mr-1" /> {busy ? "Analyzing…" : "Analyze with AI"}
+          </Button>
+          <Button size="sm" onClick={save} className="ml-auto">Save connector</Button>
+        </div>
+
+        {err && <div className="text-xs text-red-500">{err}</div>}
+
+        {analysis && (
+          <div className="rounded-md border border-border/50 bg-muted/30 p-3 text-xs space-y-1">
+            <div className="font-medium text-primary">AI classification</div>
+            <div>Family / Category: <span className="font-mono">{analysis.family} · {analysis.category}</span></div>
+            <div>Cost tier: <span className="font-mono">{analysis.costTier}</span> · ${analysis.costPer1kUsd}/1k</div>
+            <div>Free limits: <span className="font-mono">{analysis.freeRpm} rpm · {analysis.freeRpd} rpd</span></div>
+            <div>Auth: <span className="font-mono">{analysis.authType}</span>{analysis.suggestedModel ? ` · model: ${analysis.suggestedModel}` : ""}</div>
+            <div className="text-muted-foreground">{analysis.summary}</div>
+            <div className="text-muted-foreground italic">{analysis.reasoning}</div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

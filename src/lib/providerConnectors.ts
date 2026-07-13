@@ -21,13 +21,15 @@
  */
 
 export type ConnectorFamily = "llm" | "data";
-export type ConnectorCategory =
+export type ConnectorCategoryKnown =
   | "llm.local"
   | "llm.cloud"
   | "llm.custom"
   | "data.market"
   | "data.news"
   | "data.custom";
+/** Widened so AI-suggested categories like "data.crypto" also fit. */
+export type ConnectorCategory = ConnectorCategoryKnown | (string & {});
 
 export interface ConnectorConfig {
   id: string;                       // stable id, e.g. "openai", "ollama", "alpaca"
@@ -226,7 +228,7 @@ export async function invoke(c: ConnectorConfig, input: InvokeInput): Promise<In
   return c.family === "llm" ? invokeLlm(c, input) : invokeData(c, input);
 }
 
-export const CATEGORY_LABELS: Record<ConnectorCategory, string> = {
+export const CATEGORY_LABELS: Record<string, string> = {
   "llm.local":   "LLM · Local",
   "llm.cloud":   "LLM · Cloud",
   "llm.custom":  "LLM · Custom URL",
@@ -234,3 +236,7 @@ export const CATEGORY_LABELS: Record<ConnectorCategory, string> = {
   "data.news":   "Data · News",
   "data.custom": "Data · Custom REST",
 };
+
+export function labelFor(cat: string) {
+  return CATEGORY_LABELS[cat] ?? cat.replace(/^([^.]+)\./, (_, f) => (f === "llm" ? "LLM · " : "Data · "));
+}
