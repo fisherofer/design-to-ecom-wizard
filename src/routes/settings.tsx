@@ -18,9 +18,11 @@ import {
   DollarSign,
   Cloud,
   BellRing,
+  Route as RouteIcon,
   Save,
   Check,
 } from "lucide-react";
+
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -36,6 +38,8 @@ import { ModelFiltersTab } from "@/components/settings/ModelFiltersTab";
 import { BudgetTab } from "@/components/settings/BudgetTab";
 import { GoogleDriveTab } from "@/components/settings/GoogleDriveTab";
 import { AlertChannelsTab } from "@/components/settings/AlertChannelsTab";
+import { ComputeRouterTab } from "@/components/settings/ComputeRouterTab";
+
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -51,7 +55,7 @@ export const Route = createFileRoute("/settings")({
   component: SettingsPage,
 });
 
-type TabId = "general" | "api" | "ollama" | "hub" | "filters" | "limits" | "budget" | "refresh" | "alerts" | "github" | "drive" | "theme";
+type TabId = "general" | "api" | "ollama" | "hub" | "filters" | "limits" | "budget" | "router" | "refresh" | "alerts" | "github" | "drive" | "theme";
 
 const TABS: Array<{ id: TabId; label: string; Icon: typeof SettingsIcon }> = [
   { id: "general", label: "General", Icon: SettingsIcon },
@@ -61,12 +65,14 @@ const TABS: Array<{ id: TabId; label: string; Icon: typeof SettingsIcon }> = [
   { id: "filters", label: "Model Filters", Icon: ShieldCheck },
   { id: "limits", label: "Rate Limits", Icon: Activity },
   { id: "budget", label: "Budget", Icon: DollarSign },
+  { id: "router", label: "Compute Router", Icon: RouteIcon },
   { id: "refresh", label: "Refresh", Icon: RefreshCw },
   { id: "alerts", label: "Alert Channels", Icon: BellRing },
   { id: "github", label: "GitHub", Icon: Github },
   { id: "drive", label: "Google Drive", Icon: Cloud },
   { id: "theme", label: "Theme", Icon: Palette },
 ];
+
 
 
 function SettingsPage() {
@@ -119,6 +125,8 @@ function SettingsPage() {
       {tab === "filters" && <ModelFiltersTab />}
       {tab === "limits" && <RateLimitsTab />}
       {tab === "budget" && <BudgetTab />}
+      {tab === "router" && <ComputeRouterTab />}
+
       {tab === "refresh" && <RefreshTab />}
       {tab === "alerts" && <AlertChannelsTab />}
       {tab === "github" && <GithubTab />}
