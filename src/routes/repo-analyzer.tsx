@@ -8,13 +8,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Github, GitBranch, Loader2, Search, Sparkles, Trash2, CheckCircle2,
-  FolderOpen, ExternalLink, X, ShieldAlert,
+  FolderOpen, ExternalLink, X, ShieldAlert, CloudUpload, Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  listRepo, analyzeFile, listFindings, markReviewed, deleteFinding,
+  listRepo, analyzeFile, analyzeRepoBulk, listFindings, markReviewed, deleteFinding,
   type FindingRow, type RepoFile,
 } from "@/lib/repoAnalyzer.functions";
+import { syncRepoToDrive, type SyncResult } from "@/lib/driveBackup.functions";
 
 export const Route = createFileRoute("/repo-analyzer")({
   head: () => ({
@@ -43,9 +44,11 @@ function RepoAnalyzerPage() {
   const ownerSession = useOwnerSession();
   const list = useServerFn(listRepo);
   const analyze = useServerFn(analyzeFile);
+  const bulk = useServerFn(analyzeRepoBulk);
   const load = useServerFn(listFindings);
   const mark = useServerFn(markReviewed);
   const del = useServerFn(deleteFinding);
+  const backup = useServerFn(syncRepoToDrive);
 
   const [repoUrl, setRepoUrl] = useState("");
   const [token, setToken] = useState("");
@@ -57,6 +60,9 @@ function RepoAnalyzerPage() {
   const [findings, setFindings] = useState<FindingRow[]>([]);
   const [analyzing, setAnalyzing] = useState<Record<string, boolean>>({});
   const [confirmDel, setConfirmDel] = useState<FindingRow | null>(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [backupBusy, setBackupBusy] = useState(false);
+  const [backupResult, setBackupResult] = useState<SyncResult | null>(null);
 
   useEffect(() => {
     load({ data: { ownerSession } }).then(setFindings).catch(() => {});
@@ -100,8 +106,30 @@ function RepoAnalyzerPage() {
     setConfirmDel(null);
   }
 
+  async function onAnalyzeAll() {
+    if (!filtered.length) return;
+    setBulkBusy(true); setErr(null);
+    try {
+      const top = filtered.slice(0, 30).map((f) => f.path);
+      const r = await bulk({ data: { ownerSession, repoUrl, filePaths: top, token: token || undefined, goal } });
+      setFindings((cur) => [...r.findings, ...cur]);
+      if (r.errors.length) setErr(`${r.errors.length} file(s) failed — first: ${r.errors[0].path}`);
+    } catch (e) { setErr((e as Error).message); }
+    finally { setBulkBusy(false); }
+  }
+
+  async function onBackup() {
+    if (!repoUrl) return;
+    setBackupBusy(true); setBackupResult(null); setErr(null);
+    try {
+      const r = await backup({ data: { repoUrl, token: token || undefined } });
+      setBackupResult(r);
+      if (!r.ok && r.error) setErr(r.error);
+    } catch (e) { setErr((e as Error).message); }
+    finally { setBackupBusy(false); }
+  }
+
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-4 pb-16">
       <header className="space-y-1">
         <h1 className="font-display text-2xl font-semibold">Repo Analyzer</h1>
         <p className="text-sm text-muted-foreground">

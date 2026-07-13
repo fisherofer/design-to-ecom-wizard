@@ -195,6 +195,37 @@ Return STRICT JSON only:
     }
   });
 
+// -------------------- analyzeRepoBulk --------------------
+
+const BulkInput = z.object({
+  ownerSession: z.string().min(6),
+  repoUrl: z.string().min(1),
+  filePaths: z.array(z.string()).min(1).max(60),
+  token: z.string().optional(),
+  goal: z.string().optional(),
+  model: z.string().default("auto"),
+});
+
+export const analyzeRepoBulk = createServerFn({ method: "POST" })
+  .inputValidator((raw: unknown) => BulkInput.parse(raw))
+  .handler(async ({ data }): Promise<{ findings: FindingRow[]; errors: Array<{ path: string; error: string }> }> => {
+    // Sequential to respect gateway rate limits; short-circuits on catastrophic failure.
+    const findings: FindingRow[] = [];
+    const errors: Array<{ path: string; error: string }> = [];
+    for (const filePath of data.filePaths) {
+      try {
+        const r = await analyzeFile({
+          data: { ownerSession: data.ownerSession, repoUrl: data.repoUrl, filePath, token: data.token, goal: data.goal, model: data.model },
+        });
+        if (r.finding) findings.push(r.finding);
+        if (r.error) errors.push({ path: filePath, error: r.error });
+      } catch (e) {
+        errors.push({ path: filePath, error: (e as Error).message });
+      }
+    }
+    return { findings, errors };
+  });
+
 // -------------------- list / update / delete --------------------
 
 export const listFindings = createServerFn({ method: "POST" })
