@@ -21,6 +21,7 @@ import {
   GitBranch,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { isTradingRoute, useTradingEnabled } from "@/lib/tradingMode";
 
 type NavItem = {
   to:
@@ -76,6 +77,8 @@ export const NAV_ITEMS: NavItem[] = [
 
 export function Sidebar() {
   const { pathname } = useLocation();
+  const [tradingEnabled] = useTradingEnabled();
+  const items = NAV_ITEMS.filter((i) => tradingEnabled || !isTradingRoute(i.to));
 
   return (
     <aside className="hidden md:flex w-[240px] shrink-0 flex-col border-r border-border bg-sidebar">
@@ -97,7 +100,7 @@ export function Sidebar() {
       </div>
 
       <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto p-3">
-        {NAV_ITEMS.map((item) => {
+        {items.map((item) => {
           const active = item.end
             ? pathname === item.to
             : pathname.startsWith(item.to);

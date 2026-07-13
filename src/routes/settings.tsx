@@ -22,6 +22,7 @@ import {
   Plug,
   Save,
   Check,
+  TrendingUp,
 } from "lucide-react";
 
 
@@ -41,6 +42,7 @@ import { GoogleDriveTab } from "@/components/settings/GoogleDriveTab";
 import { AlertChannelsTab } from "@/components/settings/AlertChannelsTab";
 import { ComputeRouterTab } from "@/components/settings/ComputeRouterTab";
 import { ProviderConnectorsTab } from "@/components/settings/ProviderConnectorsTab";
+import { TradingModeTab } from "@/components/settings/TradingModeTab";
 
 
 export const Route = createFileRoute("/settings")({
@@ -57,10 +59,11 @@ export const Route = createFileRoute("/settings")({
   component: SettingsPage,
 });
 
-type TabId = "general" | "api" | "ollama" | "hub" | "filters" | "limits" | "budget" | "router" | "connectors" | "refresh" | "alerts" | "github" | "drive" | "theme";
+type TabId = "general" | "trading" | "api" | "ollama" | "hub" | "filters" | "limits" | "budget" | "router" | "connectors" | "refresh" | "alerts" | "github" | "drive" | "theme";
 
 const TABS: Array<{ id: TabId; label: string; Icon: typeof SettingsIcon }> = [
   { id: "general", label: "General", Icon: SettingsIcon },
+  { id: "trading", label: "Trading Mode", Icon: TrendingUp },
   { id: "api", label: "API Providers", Icon: KeyRound },
   { id: "ollama", label: "Ollama Manager", Icon: Cpu },
   { id: "hub", label: "Model Hub", Icon: Globe },
@@ -122,6 +125,7 @@ function SettingsPage() {
       </div>
 
       {tab === "general" && <GeneralTab />}
+      {tab === "trading" && <TradingModeTab />}
       {tab === "api" && <ApiProvidersTab />}
       {tab === "ollama" && <OllamaTab />}
       {tab === "hub" && <ModelHubTab />}
