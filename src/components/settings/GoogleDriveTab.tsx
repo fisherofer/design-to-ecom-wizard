@@ -11,6 +11,7 @@ import {
 } from "@/lib/googleDrive";
 import { buildSourceBundle } from "@/lib/sourceExport";
 import { Field } from "@/components/settings/Field";
+import { DriveKnowledgeBrowser } from "@/components/settings/DriveKnowledgeBrowser";
 
 export function GoogleDriveTab() {
   const [token, setToken] = useState(() => getStoredToken() ?? "");
@@ -175,6 +176,8 @@ export function GoogleDriveTab() {
           </div>
         </section>
       )}
+
+      <DriveKnowledgeBrowser />
     </div>
   );
 }

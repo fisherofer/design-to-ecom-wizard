@@ -1,6 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { Search, Smartphone, User, Menu, Activity } from "lucide-react";
 import { NotificationsBell } from "./NotificationsBell";
+import { PhaseBanner } from "./PhaseBanner";
 import { NAV_ITEMS } from "./Sidebar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -10,7 +11,9 @@ export function TopHeader() {
   const { pathname } = useLocation();
 
   return (
-    <header className="sticky top-0 z-30 grid h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-b border-border bg-background/70 px-3 backdrop-blur-xl sm:gap-4 sm:px-6">
+    <div className="sticky top-0 z-30">
+    <PhaseBanner />
+    <header className="grid h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-b border-border bg-background/70 px-3 backdrop-blur-xl sm:gap-4 sm:px-6">
       <Sheet>
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" className="md:hidden" aria-label="Open navigation">
@@ -71,5 +74,6 @@ export function TopHeader() {
         </Button>
       </div>
     </header>
+    </div>
   );
 }
