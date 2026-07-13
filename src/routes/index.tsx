@@ -8,6 +8,7 @@ import { MarketClock } from "@/components/dashboard/MarketClock";
 import { HotNews } from "@/components/dashboard/HotNews";
 import { BreakoutCandidates } from "@/components/dashboard/BreakoutCandidates";
 import { MarketHeatmap } from "@/components/dashboard/MarketHeatmap";
+import { SectorsIndicesPanel } from "@/components/dashboard/SectorsIndicesPanel";
 import { WatchlistPanel } from "@/components/dashboard/WatchlistPanel";
 
 export const Route = createFileRoute("/")({
@@ -55,6 +56,12 @@ function Dashboard() {
         <div className="mt-6">
           <MarketHeatmap />
         </div>
+
+        {/* Sectors / Indices / Baskets / Funds */}
+        <div className="mt-6">
+          <SectorsIndicesPanel />
+        </div>
+
 
         {/* Top Movers */}
         <div className="mt-6">
