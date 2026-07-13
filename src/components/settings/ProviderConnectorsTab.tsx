@@ -261,7 +261,7 @@ function AddSourceDialog({ initial, onClose }: { initial?: string; onClose: () =
     // Wire free-tier limits + budget hint if AI provided them
     if (analysis) {
       if (analysis.freeRpm || analysis.freeRpd) {
-        rateLimits.setBudget?.(id, { rpm: analysis.freeRpm, rpd: analysis.freeRpd });
+        rateLimits.setBudget?.(id, { rpm: analysis.freeRpm, rpd: analysis.freeRpd, tpd: analysis.freeRpd * 1000 });
       }
       if (analysis.costTier !== "free" && analysis.costPer1kUsd > 0) {
         // seed a small monthly cap so the router sees headroom
