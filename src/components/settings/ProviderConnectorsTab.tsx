@@ -3,6 +3,8 @@
  * =======================
  * Manage LLM + Data connectors by category, run a live pick simulation
  * against the Compute Router, and probe reachability.
+ * Includes an AI-assisted "Add source" flow that suggests category, cost
+ * tier, free-tier limits and default model from a name + URL.
  */
 import { useMemo, useState } from "react";
 import {
@@ -16,6 +18,8 @@ import {
   RefreshCw,
   Sparkles,
   Trash2,
+  Wand2,
+  X,
   Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,8 +35,12 @@ import {
   type ConnectorConfig,
 } from "@/lib/providerConnectors";
 import type { TaskProfile } from "@/lib/computeRouter";
+import { analyzeProvider, type ProviderAnalysis } from "@/lib/analyzeProvider.functions";
+import { useServerFn } from "@tanstack/react-start";
+import { rateLimits } from "@/lib/rateLimits";
+import { apiBudget } from "@/lib/apiBudget";
 
-const CATEGORY_ICONS: Record<ConnectorCategory, typeof Cpu> = {
+const CATEGORY_ICONS: Record<string, typeof Cpu> = {
   "llm.local":   Cpu,
   "llm.cloud":   Cloud,
   "llm.custom":  Globe,
