@@ -122,6 +122,9 @@ function TickerDetail() {
         <StatCard label="Volume" value={(bars.reduce((s, b) => s + b.v, 0) / 1e6).toFixed(1) + "M"} />
       </section>
 
+      <InstitutionalAnalysis symbol={sym} bars={bars} price={price} chgPct={chgPct} />
+
+
       <section className="rounded-xl border border-border p-5">
         <h2 className="mb-3 font-display text-base font-semibold">External Research</h2>
         <div className="grid gap-2 sm:grid-cols-2">
