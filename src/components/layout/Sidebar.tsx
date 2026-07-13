@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 type NavItem = {
   to:
     | "/"
+    | "/command"
     | "/trading"
     | "/portfolio"
     | "/watchlists"
@@ -50,6 +51,8 @@ type NavItem = {
 
 export const NAV_ITEMS: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
+  { to: "/command", label: "Quant Command", icon: Activity },
+
   { to: "/trading", label: "Trading Hub", icon: TrendingUp },
   { to: "/portfolio", label: "Portfolio & Dividends", icon: Wallet },
   { to: "/watchlists", label: "Watchlists", icon: Layers },
