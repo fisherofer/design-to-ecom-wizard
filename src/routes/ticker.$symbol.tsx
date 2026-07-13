@@ -178,7 +178,12 @@ function deriveMarkers(bars: AlpacaBar[]): ChartMarker[] {
         color: up ? "#22c55e" : "#ef4444",
         text: `${up ? "▲" : "▼"} ${movePct.toFixed(1)}% · Vol×${volSurge.toFixed(1)}`,
       });
+    }
+  }
+  return out.slice(-12);
 }
+
+
 
 /** Institutional-style analysis: SMAs, momentum, RSI, ATR, volume regime, verdict. */
 function InstitutionalAnalysis({
@@ -316,6 +321,4 @@ function PlanCell({ label, value, tone }: { label: string; value: string; tone: 
     </div>
   );
 }
-  }
-  return out.slice(-12); // cap for legibility
-}
+
