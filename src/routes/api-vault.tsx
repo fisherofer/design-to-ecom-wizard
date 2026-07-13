@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { api, USE_CASE_LABELS, type ApiKey, type ApiKeyTier, type UseCase } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { ApiHealthPanel } from "@/components/vault/ApiHealthPanel";
 
 export const Route = createFileRoute("/api-vault")({
   head: () => ({
@@ -112,6 +113,9 @@ function ApiVault() {
           </button>
         </div>
       </div>
+
+      {/* Live provider health probe */}
+      <ApiHealthPanel />
 
       {/* Tier summary */}
       <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
