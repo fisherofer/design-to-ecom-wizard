@@ -53,7 +53,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/intelligence", label: "Intelligence Hub", icon: Brain },
   { to: "/personas", label: "Personas · Meta-Agent", icon: Users },
   { to: "/agents", label: "Agent Studio", icon: Bot },
-  { to: "/goose", label: "Goose Control", icon: Bird },
+  { to: "/goose", label: "MCP Control", icon: Bird },
   { to: "/strategy", label: "Strategy Builder", icon: Layers },
   { to: "/code-studio", label: "Code Studio", icon: Code2 },
   { to: "/api-vault", label: "API Vault", icon: KeyRound },

@@ -28,15 +28,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { ServiceDiscovery } from "@/components/goose/ServiceDiscovery";
 import { AiHandoffExport } from "@/components/goose/AiHandoffExport";
+import { McpProviders } from "@/components/goose/McpProviders";
 import { NotWiredBadge } from "@/components/common/NotWiredBadge";
 
 export const Route = createFileRoute("/goose")({
   head: () => ({
     meta: [
-      { title: "Goose Control — OferTradingBot" },
+      { title: "MCP Control — OferTradingBot" },
       {
         name: "description",
-        content: "Verify Goose MCP, audit external product instructions, and submit guarded code updates.",
+        content: "Detect and control MCP runtimes (Goose, OpenCode, Cline, bolt.diy, Ollama) with guarded code-update workflow.",
       },
     ],
   }),
@@ -126,12 +127,12 @@ function GoosePage() {
             <Bird className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary">MCP Integration</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary">MCP Integration Hub</p>
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="font-display text-2xl font-bold tracking-tight md:text-3xl">Goose Control</h1>
-              <NotWiredBadge detail="Goose verify / update-code / chat endpoints on the backend are still in progress — running in guarded mock mode." />
+              <h1 className="font-display text-2xl font-bold tracking-tight md:text-3xl">MCP Control</h1>
+              <NotWiredBadge detail="MCP provider discovery / update-code / chat endpoints on the backend are still in progress — running in guarded mock mode." />
             </div>
-            <p className="mt-1 text-sm text-muted-foreground">בדיקת חיבור, בקרת הוראות חיצוניות ועדכוני קוד עם guardrails</p>
+            <p className="mt-1 text-sm text-muted-foreground">Goose · OpenCode · Cline · bolt.diy · Ollama — זיהוי, בקרה ועדכוני קוד עם guardrails</p>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -141,10 +142,12 @@ function GoosePage() {
           </Button>
           <Button onClick={verify} disabled={busy !== null}>
             {busy === "verify" ? <Loader2 className="animate-spin" /> : <ShieldCheck />}
-            בדוק תצורת Goose
+            בדוק תצורת MCP
           </Button>
         </div>
       </header>
+
+      <McpProviders />
 
       <ServiceDiscovery />
 
