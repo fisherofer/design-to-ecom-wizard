@@ -17,6 +17,7 @@ import {
   Wallet,
   Zap,
   Bird,
+  BellRing,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +28,7 @@ type NavItem = {
     | "/portfolio"
     | "/watchlists"
     | "/triggers"
+    | "/alerts"
     | "/intelligence"
     | "/strategy"
     | "/api-vault"
@@ -49,7 +51,9 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/trading", label: "Trading Hub", icon: TrendingUp },
   { to: "/portfolio", label: "Portfolio & Dividends", icon: Wallet },
   { to: "/watchlists", label: "Watchlists", icon: Layers },
+  { to: "/alerts", label: "Alerts", icon: BellRing },
   { to: "/triggers", label: "AI Triggers", icon: Zap },
+
   { to: "/intelligence", label: "Intelligence Hub", icon: Brain },
   { to: "/personas", label: "Personas · Meta-Agent", icon: Users },
   { to: "/agents", label: "Agent Studio", icon: Bot },

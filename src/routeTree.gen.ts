@@ -24,6 +24,7 @@ import { Route as ConfigRouteImport } from './routes/config'
 import { Route as CodeStudioRouteImport } from './routes/code-studio'
 import { Route as BackupRouteImport } from './routes/backup'
 import { Route as ApiVaultRouteImport } from './routes/api-vault'
+import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TickerSymbolRouteImport } from './routes/ticker.$symbol'
@@ -103,6 +104,11 @@ const ApiVaultRoute = ApiVaultRouteImport.update({
   path: '/api-vault',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AlertsRoute = AlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AgentsRoute = AgentsRouteImport.update({
   id: '/agents',
   path: '/agents',
@@ -122,6 +128,7 @@ const TickerSymbolRoute = TickerSymbolRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
+  '/alerts': typeof AlertsRoute
   '/api-vault': typeof ApiVaultRoute
   '/backup': typeof BackupRoute
   '/code-studio': typeof CodeStudioRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
+  '/alerts': typeof AlertsRoute
   '/api-vault': typeof ApiVaultRoute
   '/backup': typeof BackupRoute
   '/code-studio': typeof CodeStudioRoute
@@ -163,6 +171,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
+  '/alerts': typeof AlertsRoute
   '/api-vault': typeof ApiVaultRoute
   '/backup': typeof BackupRoute
   '/code-studio': typeof CodeStudioRoute
@@ -185,6 +194,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/agents'
+    | '/alerts'
     | '/api-vault'
     | '/backup'
     | '/code-studio'
@@ -205,6 +215,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/agents'
+    | '/alerts'
     | '/api-vault'
     | '/backup'
     | '/code-studio'
@@ -225,6 +236,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/agents'
+    | '/alerts'
     | '/api-vault'
     | '/backup'
     | '/code-studio'
@@ -246,6 +258,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgentsRoute: typeof AgentsRoute
+  AlertsRoute: typeof AlertsRoute
   ApiVaultRoute: typeof ApiVaultRoute
   BackupRoute: typeof BackupRoute
   CodeStudioRoute: typeof CodeStudioRoute
@@ -371,6 +384,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiVaultRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/alerts': {
+      id: '/alerts'
+      path: '/alerts'
+      fullPath: '/alerts'
+      preLoaderRoute: typeof AlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/agents': {
       id: '/agents'
       path: '/agents'
@@ -398,6 +418,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgentsRoute: AgentsRoute,
+  AlertsRoute: AlertsRoute,
   ApiVaultRoute: ApiVaultRoute,
   BackupRoute: BackupRoute,
   CodeStudioRoute: CodeStudioRoute,
