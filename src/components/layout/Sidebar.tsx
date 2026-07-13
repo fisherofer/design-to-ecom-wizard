@@ -18,6 +18,7 @@ import {
   Zap,
   Bird,
   BellRing,
+  GitBranch,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -40,6 +41,7 @@ type NavItem = {
     | "/personas"
     | "/system"
     | "/backup"
+    | "/repo-analyzer"
     | "/settings";
   label: string;
   icon: typeof LayoutDashboard;
@@ -60,6 +62,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/goose", label: "MCP Control", icon: Bird },
   { to: "/strategy", label: "Strategy Builder", icon: Layers },
   { to: "/code-studio", label: "Code Studio", icon: Code2 },
+  { to: "/repo-analyzer", label: "Repo Analyzer", icon: GitBranch },
   { to: "/api-vault", label: "API Vault", icon: KeyRound },
   { to: "/config", label: "System Config", icon: Settings },
   { to: "/system", label: "System Health", icon: ShieldCheck },
