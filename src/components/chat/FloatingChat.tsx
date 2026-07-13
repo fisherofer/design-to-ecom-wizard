@@ -123,7 +123,6 @@ export function FloatingChat() {
   function setGooseEnabled(enabled: boolean) {
     setGooseEnabledState(enabled);
     window.localStorage.setItem("chatGooseEnabled", String(enabled));
-    if (!enabled) setLastRoute("llm");
   }
 
   // -------- Drag logic --------
@@ -259,33 +258,33 @@ export function FloatingChat() {
     setMessages(next);
     setInput("");
     setSending(true);
+    // If Goose is toggled on and user is on Auto, prefer Goose when available.
+    const effectiveMode: ChatMode =
+      mode === "auto" && gooseEnabled && gooseStatus?.connected && gooseStatus.extensionOk
+        ? "goose"
+        : mode;
     try {
-      let response;
-      if (activeEngine === "goose") {
-        try {
-          response = await api.chat(next, "goose");
-        } catch {
-          response = await api.chat(next, activeEngine);
-          response.route = "fallback";
-        }
-      } else {
-        response = await api.chat(next, activeEngine);
-      }
-      const { reply, engine, toolsUsed = [] } = response;
-      
-      const toolSummary = toolsUsed.length ? `\n\nכלי Goose: ${toolsUsed.join(", ")}` : "";
-      setMessages((m) => [
-        ...m,
-        { id: `a_${Date.now()}`, role: "assistant", content: `${reply}${toolSummary}`, engine, ts: Date.now() },
-      ]);
-    } catch {
+      const res = await runSmartChat(effectiveMode, next);
+      setLastTrace(res.trace);
+      setLastModel(res.modelId);
       setMessages((m) => [
         ...m,
         {
           id: `a_${Date.now()}`,
           role: "assistant",
-          content:
-            "⚠ Backend unreachable at `localhost:8000`. Start `api_bridge.py` to enable live routing.",
+          content: res.reply || "_(empty reply)_",
+          engine: (res.route === "goose" ? "goose" : (res.modelId as EngineId)) as ChatMessage["engine"],
+          ts: Date.now(),
+        },
+      ]);
+    } catch (err) {
+      const msg = (err as Error).message || "unknown error";
+      setMessages((m) => [
+        ...m,
+        {
+          id: `a_${Date.now()}`,
+          role: "assistant",
+          content: `⚠ Chat failed (${effectiveMode}): ${msg}`,
           ts: Date.now(),
         },
       ]);
@@ -364,26 +363,22 @@ export function FloatingChat() {
             <div className="flex items-center gap-1.5 text-xs font-mono">
               <span className="h-1.5 w-1.5 rounded-full bg-success pulse-dot shrink-0" />
               <select
-                value={activeEngine}
-                onChange={(e) => setActiveEngine(e.target.value as EngineId)}
+                value={mode}
+                onChange={(e) => setMode(e.target.value as ChatMode)}
                 className="bg-transparent text-foreground font-semibold outline-none cursor-pointer hover:text-primary transition-colors"
+                title={MODES.find((m) => m.id === mode)?.hint}
               >
-                {ENGINES.map((e) => (
-                  <option key={e.id} value={e.id} className="bg-background">
-                    {e.label}
+                {MODES.map((m) => (
+                  <option key={m.id} value={m.id} className="bg-background">
+                    {m.label}
                   </option>
                 ))}
               </select>
             </div>
-            <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-              {gooseEnabled
-                ? gooseStatus?.connected && gooseStatus.extensionOk
-                  ? `goose ${lastRoute === "fallback" ? "fallback" : "tools ready"}`
-                  : "goose waiting · llm fallback"
-                : `${chatTransparent ? "ghost" : "focus"} · ${chatOpacity}%`}
+            <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground truncate max-w-[220px]">
+              {lastModel ? `model · ${lastModel}` : MODES.find((m) => m.id === mode)?.hint}
             </div>
           </div>
-          <NotWiredBadge label="Mock" detail="POST /chat is not wired to the backend yet — replies come from a local mock. Roadmap feature." className="hidden sm:inline-flex" />
         </div>
         <div className="flex items-center gap-1">
           <button
@@ -527,7 +522,9 @@ export function FloatingChat() {
           </button>
         </div>
         <div className="mt-1.5 flex items-center justify-between px-1 text-[10px] font-mono text-muted-foreground/60">
-          <span>{gooseEnabled ? `auto · goose → ${activeEngine}` : `local · ${activeEngine}`}</span>
+          <span className="truncate max-w-[70%]" title={lastTrace.join(" → ")}>
+            {lastTrace.length ? lastTrace[lastTrace.length - 1] : `mode · ${mode}`}
+          </span>
           <span>shift+⏎ for new line</span>
         </div>
       </div>
