@@ -119,7 +119,16 @@ export type Timeframe = "1Min" | "5Min" | "15Min" | "1H" | "1D" | "1W";
 
 const TIMEOUT_MS = 6_000;
 
+// Circuit breaker: after 3 consecutive failures, skip network calls for 60s
+// and serve mocks silently. Prevents the console-spam we saw when the local
+// FastAPI backend isn't reachable from the hosted preview.
+const CB_FAIL_THRESHOLD = 3;
+const CB_COOLDOWN_MS = 60_000;
+let cbFailures = 0;
+let cbOpenUntil = 0;
+
 async function req<T>(path: string, init: RequestInit | undefined, fallback: T): Promise<T> {
+  if (Date.now() < cbOpenUntil) return fallback;
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
@@ -129,8 +138,14 @@ async function req<T>(path: string, init: RequestInit | undefined, fallback: T):
       headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    cbFailures = 0;
     return (await res.json()) as T;
   } catch {
+    cbFailures++;
+    if (cbFailures >= CB_FAIL_THRESHOLD) {
+      cbOpenUntil = Date.now() + CB_COOLDOWN_MS;
+      cbFailures = 0;
+    }
     return fallback;
   } finally {
     clearTimeout(timer);
