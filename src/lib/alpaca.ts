@@ -104,6 +104,14 @@ export interface BreakoutCandidate {
   expectedMovePct?: number;
   /** Short human catalyst tag (news / earnings / squeeze / etc). */
   catalyst?: string;
+  /** Reward-to-risk ratio = expectedMove / distance-to-stop, weighted by probability. */
+  rewardToRisk?: number;
+  /** Composite AI opportunity score 0..100 (higher = better risk-adjusted upside). */
+  opportunityScore?: number;
+  /** Exchange the ticker trades on. */
+  exchange?: "NYSE" | "NASDAQ" | "AMEX";
+  /** Sector tag for filtering. */
+  sector?: string;
 }
 
 
