@@ -147,6 +147,11 @@ function BreakoutRow({ row: r }: { row: BreakoutCandidate }) {
                   {r.capBucket} · {fmtCap(r.marketCap)}
                 </span>
               )}
+              {r.exchange && (
+                <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[9px] font-mono uppercase text-primary/80">
+                  {r.exchange}
+                </span>
+              )}
             </div>
             <span className="text-xs font-mono tabular-nums text-muted-foreground">${r.price.toFixed(2)}</span>
           </div>
