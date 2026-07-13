@@ -19,6 +19,7 @@ import {
   Cloud,
   BellRing,
   Route as RouteIcon,
+  Plug,
   Save,
   Check,
 } from "lucide-react";
@@ -39,6 +40,7 @@ import { BudgetTab } from "@/components/settings/BudgetTab";
 import { GoogleDriveTab } from "@/components/settings/GoogleDriveTab";
 import { AlertChannelsTab } from "@/components/settings/AlertChannelsTab";
 import { ComputeRouterTab } from "@/components/settings/ComputeRouterTab";
+import { ProviderConnectorsTab } from "@/components/settings/ProviderConnectorsTab";
 
 
 export const Route = createFileRoute("/settings")({
@@ -55,7 +57,7 @@ export const Route = createFileRoute("/settings")({
   component: SettingsPage,
 });
 
-type TabId = "general" | "api" | "ollama" | "hub" | "filters" | "limits" | "budget" | "router" | "refresh" | "alerts" | "github" | "drive" | "theme";
+type TabId = "general" | "api" | "ollama" | "hub" | "filters" | "limits" | "budget" | "router" | "connectors" | "refresh" | "alerts" | "github" | "drive" | "theme";
 
 const TABS: Array<{ id: TabId; label: string; Icon: typeof SettingsIcon }> = [
   { id: "general", label: "General", Icon: SettingsIcon },
@@ -66,6 +68,7 @@ const TABS: Array<{ id: TabId; label: string; Icon: typeof SettingsIcon }> = [
   { id: "limits", label: "Rate Limits", Icon: Activity },
   { id: "budget", label: "Budget", Icon: DollarSign },
   { id: "router", label: "Compute Router", Icon: RouteIcon },
+  { id: "connectors", label: "Provider Connectors", Icon: Plug },
   { id: "refresh", label: "Refresh", Icon: RefreshCw },
   { id: "alerts", label: "Alert Channels", Icon: BellRing },
   { id: "github", label: "GitHub", Icon: Github },
@@ -126,6 +129,7 @@ function SettingsPage() {
       {tab === "limits" && <RateLimitsTab />}
       {tab === "budget" && <BudgetTab />}
       {tab === "router" && <ComputeRouterTab />}
+      {tab === "connectors" && <ProviderConnectorsTab />}
 
       {tab === "refresh" && <RefreshTab />}
       {tab === "alerts" && <AlertChannelsTab />}
