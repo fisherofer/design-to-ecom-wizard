@@ -22,6 +22,7 @@ import { Route as PersonasRouteImport } from './routes/personas'
 import { Route as IntelligenceRouteImport } from './routes/intelligence'
 import { Route as GooseRouteImport } from './routes/goose'
 import { Route as ConfigRouteImport } from './routes/config'
+import { Route as CommandRouteImport } from './routes/command'
 import { Route as CodeStudioRouteImport } from './routes/code-studio'
 import { Route as BackupRouteImport } from './routes/backup'
 import { Route as ApiVaultRouteImport } from './routes/api-vault'
@@ -95,6 +96,11 @@ const ConfigRoute = ConfigRouteImport.update({
   path: '/config',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CommandRoute = CommandRouteImport.update({
+  id: '/command',
+  path: '/command',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CodeStudioRoute = CodeStudioRouteImport.update({
   id: '/code-studio',
   path: '/code-studio',
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/api-vault': typeof ApiVaultRoute
   '/backup': typeof BackupRoute
   '/code-studio': typeof CodeStudioRoute
+  '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
   '/goose': typeof GooseRoute
   '/intelligence': typeof IntelligenceRoute
@@ -160,6 +167,7 @@ export interface FileRoutesByTo {
   '/api-vault': typeof ApiVaultRoute
   '/backup': typeof BackupRoute
   '/code-studio': typeof CodeStudioRoute
+  '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
   '/goose': typeof GooseRoute
   '/intelligence': typeof IntelligenceRoute
@@ -183,6 +191,7 @@ export interface FileRoutesById {
   '/api-vault': typeof ApiVaultRoute
   '/backup': typeof BackupRoute
   '/code-studio': typeof CodeStudioRoute
+  '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
   '/goose': typeof GooseRoute
   '/intelligence': typeof IntelligenceRoute
@@ -207,6 +216,7 @@ export interface FileRouteTypes {
     | '/api-vault'
     | '/backup'
     | '/code-studio'
+    | '/command'
     | '/config'
     | '/goose'
     | '/intelligence'
@@ -229,6 +239,7 @@ export interface FileRouteTypes {
     | '/api-vault'
     | '/backup'
     | '/code-studio'
+    | '/command'
     | '/config'
     | '/goose'
     | '/intelligence'
@@ -251,6 +262,7 @@ export interface FileRouteTypes {
     | '/api-vault'
     | '/backup'
     | '/code-studio'
+    | '/command'
     | '/config'
     | '/goose'
     | '/intelligence'
@@ -274,6 +286,7 @@ export interface RootRouteChildren {
   ApiVaultRoute: typeof ApiVaultRoute
   BackupRoute: typeof BackupRoute
   CodeStudioRoute: typeof CodeStudioRoute
+  CommandRoute: typeof CommandRoute
   ConfigRoute: typeof ConfigRoute
   GooseRoute: typeof GooseRoute
   IntelligenceRoute: typeof IntelligenceRoute
@@ -383,6 +396,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConfigRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/command': {
+      id: '/command'
+      path: '/command'
+      fullPath: '/command'
+      preLoaderRoute: typeof CommandRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/code-studio': {
       id: '/code-studio'
       path: '/code-studio'
@@ -442,6 +462,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiVaultRoute: ApiVaultRoute,
   BackupRoute: BackupRoute,
   CodeStudioRoute: CodeStudioRoute,
+  CommandRoute: CommandRoute,
   ConfigRoute: ConfigRoute,
   GooseRoute: GooseRoute,
   IntelligenceRoute: IntelligenceRoute,
