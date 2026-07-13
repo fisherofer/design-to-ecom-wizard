@@ -16,6 +16,11 @@ import {
   type FindingRow, type RepoFile,
 } from "@/lib/repoAnalyzer.functions";
 import { syncRepoToDrive, type SyncResult } from "@/lib/driveBackup.functions";
+import {
+  listBackupTargets, upsertBackupTarget, deleteBackupTarget, runBackupTargetNow,
+  type DriveBackupTarget,
+} from "@/lib/driveBackupTargets.functions";
+import { Clock, PlayCircle } from "lucide-react";
 
 export const Route = createFileRoute("/repo-analyzer")({
   head: () => ({
@@ -49,9 +54,14 @@ function RepoAnalyzerPage() {
   const mark = useServerFn(markReviewed);
   const del = useServerFn(deleteFinding);
   const backup = useServerFn(syncRepoToDrive);
+  const loadTargets = useServerFn(listBackupTargets);
+  const upsertTarget = useServerFn(upsertBackupTarget);
+  const deleteTarget = useServerFn(deleteBackupTarget);
+  const runTarget = useServerFn(runBackupTargetNow);
 
   const [repoUrl, setRepoUrl] = useState("");
   const [token, setToken] = useState("");
+  const [rootFolder, setRootFolder] = useState("AI/LOVEABLE");
   const [goal, setGoal] = useState("Trading indicators, alerts and risk mgmt patterns");
   const [files, setFiles] = useState<RepoFile[]>([]);
   const [filter, setFilter] = useState("");
@@ -63,10 +73,13 @@ function RepoAnalyzerPage() {
   const [bulkBusy, setBulkBusy] = useState(false);
   const [backupBusy, setBackupBusy] = useState(false);
   const [backupResult, setBackupResult] = useState<SyncResult | null>(null);
+  const [targets, setTargets] = useState<DriveBackupTarget[]>([]);
+  const [targetBusy, setTargetBusy] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     load({ data: { ownerSession } }).then(setFindings).catch(() => {});
-  }, [ownerSession, load]);
+    loadTargets({ data: { ownerSession } }).then(setTargets).catch(() => {});
+  }, [ownerSession, load, loadTargets]);
 
   const filtered = useMemo(
     () => (!filter ? files : files.filter((f) => f.path.toLowerCase().includes(filter.toLowerCase()))),
@@ -122,11 +135,45 @@ function RepoAnalyzerPage() {
     if (!repoUrl) return;
     setBackupBusy(true); setBackupResult(null); setErr(null);
     try {
-      const r = await backup({ data: { repoUrl, token: token || undefined } });
+      const r = await backup({ data: { repoUrl, token: token || undefined, rootFolder } });
       setBackupResult(r);
       if (!r.ok && r.error) setErr(r.error);
     } catch (e) { setErr((e as Error).message); }
     finally { setBackupBusy(false); }
+  }
+
+  async function onScheduleTarget() {
+    if (!repoUrl) return;
+    try {
+      const row = await upsertTarget({
+        data: { ownerSession, repoUrl, token: token || undefined, rootFolder, enabled: true },
+      });
+      setTargets((cur) => [row, ...cur.filter((t) => t.id !== row.id)]);
+    } catch (e) { setErr((e as Error).message); }
+  }
+
+  async function onToggleTarget(t: DriveBackupTarget) {
+    const row = await upsertTarget({
+      data: {
+        ownerSession, repoUrl: t.repo_url, token: t.token ?? undefined,
+        rootFolder: t.root_folder, enabled: !t.enabled,
+      },
+    });
+    setTargets((cur) => cur.map((x) => x.id === row.id ? row : x));
+  }
+
+  async function onRunTarget(t: DriveBackupTarget) {
+    setTargetBusy((s) => ({ ...s, [t.id]: true }));
+    try {
+      await runTarget({ data: { ownerSession, id: t.id } });
+      const fresh = await loadTargets({ data: { ownerSession } });
+      setTargets(fresh);
+    } finally { setTargetBusy((s) => ({ ...s, [t.id]: false })); }
+  }
+
+  async function onDeleteTarget(t: DriveBackupTarget) {
+    await deleteTarget({ data: { ownerSession, id: t.id } });
+    setTargets((cur) => cur.filter((x) => x.id !== t.id));
   }
 
   return (
