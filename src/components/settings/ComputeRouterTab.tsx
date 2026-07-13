@@ -53,8 +53,60 @@ export function ComputeRouterTab() {
   const meta = MODE_META[decision.mode];
   const Icon = meta.icon;
 
+  const fetchModels = useServerFn(listAvailableModels);
+  const [models, setModels] = useState<AvailableModels | null>(null);
+  const [modelsBusy, setModelsBusy] = useState(false);
+  useEffect(() => {
+    setModelsBusy(true);
+    fetchModels().then(setModels).catch(() => {}).finally(() => setModelsBusy(false));
+  }, [fetchModels]);
+
   return (
     <div className="space-y-6">
+      <section className="rounded-lg border border-border bg-card p-4">
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <h3 className="text-sm font-medium flex items-center gap-2">
+              <Cloud className="h-4 w-4 text-primary" /> Live Cloud Models
+            </h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              Fetched from Lovable AI Gateway — auto-resolver only picks IDs listed here.
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              setModelsBusy(true);
+              fetchModels().then(setModels).finally(() => setModelsBusy(false));
+            }}
+            disabled={modelsBusy}
+            className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] hover:bg-muted disabled:opacity-50"
+          >
+            <RefreshCw className={cn("h-3 w-3", modelsBusy && "animate-spin")} /> Refresh
+          </button>
+        </div>
+        {models && (
+          <div className="mt-3 space-y-2 text-xs">
+            {!models.ok && <div className="text-red-500">Error: {models.error}</div>}
+            <div className="grid grid-cols-3 gap-2">
+              {(["light", "default", "heavy"] as const).map((tier) => (
+                <div key={tier} className="rounded-md border border-border/60 p-2">
+                  <div className="text-[10px] uppercase text-muted-foreground">{tier}</div>
+                  <div className="font-mono truncate">{models.picks[tier]}</div>
+                </div>
+              ))}
+            </div>
+            <details>
+              <summary className="cursor-pointer text-[11px] text-muted-foreground">
+                {models.ids.length} supported models
+              </summary>
+              <div className="mt-1 max-h-40 overflow-y-auto font-mono text-[10px] leading-relaxed">
+                {models.ids.map((id) => <div key={id}>{id}</div>)}
+              </div>
+            </details>
+          </div>
+        )}
+      </section>
+
       {/* Policy */}
       <section className="rounded-lg border border-border bg-card p-4 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
