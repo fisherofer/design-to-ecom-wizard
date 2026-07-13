@@ -125,45 +125,13 @@ export function FloatingChat() {
     window.localStorage.setItem("chatGooseEnabled", String(enabled));
   }
 
-  // -------- Drag logic --------
+  // -------- Drag logic (pointer events, works for mouse + touch) --------
+  const posRef = useRef<Pos | null>(pos);
   useEffect(() => {
-    if (!dragging) return;
-    const onMove = (e: MouseEvent) => {
-      const s = dragStartRef.current;
-      if (!s) return;
-      const dx = e.clientX - s.mx;
-      const dy = e.clientY - s.my;
-      const margin = 8;
-      const w = chatRootRef.current?.offsetWidth ?? PANEL_W;
-      const h = chatRootRef.current?.offsetHeight ?? PANEL_H_FOCUS;
-      const maxX = window.innerWidth - w - margin;
-      const maxY = window.innerHeight - h - margin;
-      const next = {
-        x: Math.min(maxX, Math.max(margin, s.px + dx)),
-        y: Math.min(maxY, Math.max(margin, s.py + dy)),
-      };
-      setPos(next);
-    };
-    const onUp = () => {
-      setDragging(false);
-      if (pos) {
-        try {
-          window.localStorage.setItem("chatPos", JSON.stringify(pos));
-        } catch {
-          /* ignore */
-        }
-      }
-    };
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
-    return () => {
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
-    };
-  }, [dragging, pos]);
+    posRef.current = pos;
+  }, [pos]);
 
-  function startDrag(e: React.MouseEvent) {
-    // ignore drags initiated from interactive elements (selects, buttons)
+  function startDrag(e: React.PointerEvent) {
     const tgt = e.target as HTMLElement;
     if (tgt.closest("select, button, input, textarea")) return;
     const rect = chatRootRef.current?.getBoundingClientRect();
@@ -171,7 +139,41 @@ export function FloatingChat() {
     dragStartRef.current = { mx: e.clientX, my: e.clientY, px: rect.left, py: rect.top };
     setPos({ x: rect.left, y: rect.top });
     setDragging(true);
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     e.preventDefault();
+  }
+
+  function onDragMove(e: React.PointerEvent) {
+    if (!dragging) return;
+    const s = dragStartRef.current;
+    if (!s) return;
+    const margin = 8;
+    const w = chatRootRef.current?.offsetWidth ?? PANEL_W;
+    const h = chatRootRef.current?.offsetHeight ?? PANEL_H_FOCUS;
+    const maxX = window.innerWidth - w - margin;
+    const maxY = window.innerHeight - h - margin;
+    const next = {
+      x: Math.min(maxX, Math.max(margin, s.px + (e.clientX - s.mx))),
+      y: Math.min(maxY, Math.max(margin, s.py + (e.clientY - s.my))),
+    };
+    setPos(next);
+  }
+
+  function endDrag(e: React.PointerEvent) {
+    if (!dragging) return;
+    setDragging(false);
+    try {
+      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {
+      /* ignore */
+    }
+    if (posRef.current) {
+      try {
+        window.localStorage.setItem("chatPos", JSON.stringify(posRef.current));
+      } catch {
+        /* ignore */
+      }
+    }
   }
 
   // -------- Inspector Mode (element picker) --------
