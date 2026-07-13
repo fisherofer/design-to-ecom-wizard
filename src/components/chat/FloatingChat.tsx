@@ -344,7 +344,11 @@ export function FloatingChat() {
     >
       {/* Drag handle bar (top, full width) */}
       <div
-        onMouseDown={startDrag}
+        onPointerDown={startDrag}
+        onPointerMove={onDragMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        style={{ touchAction: "none" }}
         className={cn(
           "flex items-center justify-center gap-1 border-b border-primary/10 px-3 py-1 cursor-grab active:cursor-grabbing",
           "text-muted-foreground/50 hover:text-primary/70 transition-colors",
