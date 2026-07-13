@@ -18,16 +18,16 @@ import {
 } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { api, type ChatMessage, type EngineId } from "@/lib/api";
-import { NotWiredBadge } from "@/components/common/NotWiredBadge";
+import { runSmartChat, type ChatMode } from "@/lib/smartChat";
 import type { GooseStatus } from "@/lib/goose";
 import { cn } from "@/lib/utils";
 
-const ENGINES: { id: EngineId; label: string }[] = [
-  { id: "gemini", label: "Gemini 1.5 Pro" },
-  { id: "ollama", label: "Ollama 8B (local)" },
-  { id: "claude", label: "Claude 3.5" },
-  { id: "groq", label: "Groq Llama-70B" },
-  { id: "goose", label: "Goose (MCP)" },
+const MODES: { id: ChatMode; label: string; hint: string }[] = [
+  { id: "auto", label: "Auto · Smart Router", hint: "compute router picks local/cloud/hybrid" },
+  { id: "cloud", label: "Cloud · Lovable AI", hint: "auto-resolved supported model" },
+  { id: "local", label: "Local · Ollama", hint: "localhost:11434" },
+  { id: "hybrid", label: "Hybrid · Local + Cloud", hint: "local draft, cloud finalize" },
+  { id: "goose", label: "Goose · MCP tools", hint: "FastAPI bridge" },
 ];
 
 const PANEL_W = 420;
