@@ -7,7 +7,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, ExternalLink, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
 import { TickerLogo } from "@/components/tickers/TickerLogo";
-import { CandlestickChart } from "@/components/charts/CandlestickChart";
+import { CandlestickChart, type ChartMarker } from "@/components/charts/CandlestickChart";
 import { alpaca, type AlpacaBar, type AlpacaQuote, type Timeframe } from "@/lib/alpaca";
 import { TRACKED_TICKERS } from "@/lib/trackedAssets";
 import { tickerColor } from "@/lib/tickerLogo";
@@ -109,7 +109,7 @@ function TickerDetail() {
           </button>
         </div>
         {bars.length > 0 ? (
-          <CandlestickChart bars={bars} height={440} />
+          <CandlestickChart bars={bars} height={440} markers={deriveMarkers(bars)} />
         ) : (
           <div className="flex h-[440px] items-center justify-center text-sm text-muted-foreground">Loading chart…</div>
         )}
@@ -156,4 +156,26 @@ function ExtLink({ href, label }: { href: string; label: string }) {
       <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
     </a>
   );
+}
+
+/** Derive alert markers: bars with unusual volume (>= 2× avg) or large moves (>= 3%). */
+function deriveMarkers(bars: AlpacaBar[]): ChartMarker[] {
+  if (bars.length < 10) return [];
+  const avgVol = bars.reduce((s, b) => s + b.v, 0) / bars.length;
+  const out: ChartMarker[] = [];
+  for (const b of bars) {
+    const movePct = ((b.c - b.o) / b.o) * 100;
+    const volSurge = avgVol > 0 ? b.v / avgVol : 1;
+    if (volSurge >= 2 && Math.abs(movePct) >= 2) {
+      const up = movePct >= 0;
+      out.push({
+        time: b.t,
+        position: up ? "belowBar" : "aboveBar",
+        shape: up ? "arrowUp" : "arrowDown",
+        color: up ? "#22c55e" : "#ef4444",
+        text: `${up ? "▲" : "▼"} ${movePct.toFixed(1)}% · Vol×${volSurge.toFixed(1)}`,
+      });
+    }
+  }
+  return out.slice(-12); // cap for legibility
 }
