@@ -38,33 +38,44 @@ export function useWidgetData<T>({ kind, refreshId, fetcher, initial }: Options<
   const intervalMs = useRefreshInterval(refreshId);
   const lastLoadedAt = useRef<number>(0);
 
+  // Pin the fetcher in a ref so inline arrow functions at call sites don't
+  // recreate `load` and retrigger the initial-load effect on every render
+  // (that caused ~1 req/s per widget regardless of the configured interval).
+  const fetcherRef = useRef(fetcher);
+  useEffect(() => { fetcherRef.current = fetcher; }, [fetcher]);
+
+  // In-flight guard + minimum gap between calls — a defensive rate-limit that
+  // protects the backend even if upstream events fire in a tight loop.
+  const inFlight = useRef(false);
+  const MIN_GAP_MS = 2_000;
+
   const load = useCallback(async () => {
+    if (inFlight.current) return;
+    if (Date.now() - lastLoadedAt.current < MIN_GAP_MS) return;
+    inFlight.current = true;
     setLoading(true);
     try {
-      const next = await fetcher(source);
+      const next = await fetcherRef.current(source);
       setData(next);
       const now = Date.now();
       setUpdatedAt(now);
       lastLoadedAt.current = now;
     } finally {
       setLoading(false);
+      inFlight.current = false;
     }
-  }, [fetcher, source]);
+  }, [source]);
 
-  // Initial + on source / interval change
+  // Initial fetch + on source change
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      await load();
-      if (cancelled) return;
-    })();
-    return () => { cancelled = true; };
+    void load();
   }, [load]);
 
-  // Auto-refresh timer
+  // Auto-refresh timer — honors the interval configured in Settings → Refresh.
   useEffect(() => {
     if (intervalMs <= 0) return;
-    const id = window.setInterval(load, intervalMs);
+    const safe = Math.max(intervalMs, MIN_GAP_MS);
+    const id = window.setInterval(load, safe);
     return () => window.clearInterval(id);
   }, [intervalMs, load]);
 
