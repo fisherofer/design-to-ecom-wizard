@@ -77,6 +77,8 @@ export interface NewsItem {
   impact: "low" | "medium" | "high";
 }
 
+export type CapBucket = "mega" | "large" | "mid" | "small" | "micro";
+
 export interface BreakoutCandidate {
   symbol: string;
   name?: string;
@@ -87,7 +89,23 @@ export interface BreakoutCandidate {
   reason: string;      // AI-generated rationale
   targetPrice?: number;
   stopLoss?: number;
+  /** Market capitalisation in USD. */
+  marketCap?: number;
+  capBucket?: CapBucket;
+  /** Detected candlestick pattern (last 1-3 bars). */
+  candlePattern?: string;
+  /** Money Flow Index 0..100 (>80 overbought / <20 oversold). */
+  moneyFlowIndex?: number;
+  /** Direction of smart money over last N sessions. */
+  netMoneyFlow?: "in" | "out" | "mixed";
+  /** Current volume as multiple of 20-day average. */
+  volumeSurge?: number;
+  /** AI-projected % move over the next 5–10 sessions if pattern completes. */
+  expectedMovePct?: number;
+  /** Short human catalyst tag (news / earnings / squeeze / etc). */
+  catalyst?: string;
 }
+
 
 export type Timeframe = "1Min" | "5Min" | "15Min" | "1H" | "1D" | "1W";
 
@@ -301,21 +319,36 @@ function mockNews(limit: number): NewsItem[] {
 }
 
 function mockBreakouts(limit: number): BreakoutCandidate[] {
-  const seed: Omit<BreakoutCandidate, "price" | "changePct">[] = [
-    { symbol: "NVDA", name: "NVIDIA", probability: 0.86, pattern: "Bull Flag", reason: "Consolidating above 200-EMA with rising volume; RSI 62; AI-demand narrative intact.", targetPrice: 1020, stopLoss: 905 },
-    { symbol: "PLTR", name: "Palantir", probability: 0.79, pattern: "Cup & Handle", reason: "6-week base breakout with 1.8× avg volume; DoD contract catalyst.", targetPrice: 32.4, stopLoss: 26.5 },
-    { symbol: "AMD", name: "AMD", probability: 0.71, pattern: "Ascending Triangle", reason: "Higher lows since Sep; MI350 launch this week; sector rotation into semis.", targetPrice: 178, stopLoss: 156 },
-    { symbol: "META", name: "Meta", probability: 0.68, pattern: "Breakaway Gap", reason: "Gap up on Llama 4 news, holding support; positive OI shift.", targetPrice: 540, stopLoss: 498 },
-    { symbol: "COIN", name: "Coinbase", probability: 0.74, pattern: "Bull Flag", reason: "BTC>72k with ETF inflows; COIN options skew bullish.", targetPrice: 265, stopLoss: 232 },
-    { symbol: "ESLT", name: "Elbit Systems", probability: 0.66, pattern: "Rounding Bottom", reason: "New EU defense order; defense-sector momentum; 50DMA reclaimed.", targetPrice: 268, stopLoss: 238 },
-    { symbol: "SMCI", name: "Super Micro", probability: 0.62, pattern: "Falling Wedge", reason: "Basing after Aug drawdown; positive divergence on RSI.", targetPrice: 62, stopLoss: 51 },
-    { symbol: "AVGO", name: "Broadcom", probability: 0.60, pattern: "Bull Flag", reason: "Post-split accumulation; AI-chip pricing tailwind.", targetPrice: 195, stopLoss: 172 },
+  type Seed = Omit<BreakoutCandidate, "price" | "changePct">;
+  const seed: Seed[] = [
+    // Mega / Large caps
+    { symbol: "NVDA", name: "NVIDIA", probability: 0.86, pattern: "Bull Flag", reason: "Consolidating above 200-EMA with rising volume; RSI 62; AI-demand narrative intact.", targetPrice: 1020, stopLoss: 905, marketCap: 2.3e12, capBucket: "mega", candlePattern: "Bullish Engulfing", moneyFlowIndex: 71, netMoneyFlow: "in", volumeSurge: 1.9, expectedMovePct: 8.4, catalyst: "AI capex cycle" },
+    { symbol: "META", name: "Meta", probability: 0.68, pattern: "Breakaway Gap", reason: "Gap up on Llama 4 news, holding support; positive OI shift.", targetPrice: 540, stopLoss: 498, marketCap: 1.3e12, capBucket: "mega", candlePattern: "Morning Star", moneyFlowIndex: 63, netMoneyFlow: "in", volumeSurge: 1.4, expectedMovePct: 5.6, catalyst: "Llama 4 launch" },
+    { symbol: "AMD", name: "AMD", probability: 0.71, pattern: "Ascending Triangle", reason: "Higher lows since Sep; MI350 launch this week; sector rotation into semis.", targetPrice: 178, stopLoss: 156, marketCap: 2.6e11, capBucket: "large", candlePattern: "Three White Soldiers", moneyFlowIndex: 68, netMoneyFlow: "in", volumeSurge: 1.7, expectedMovePct: 9.2, catalyst: "MI350 launch" },
+    { symbol: "PLTR", name: "Palantir", probability: 0.79, pattern: "Cup & Handle", reason: "6-week base breakout with 1.8× avg volume; DoD contract catalyst.", targetPrice: 32.4, stopLoss: 26.5, marketCap: 5.8e10, capBucket: "large", candlePattern: "Bullish Marubozu", moneyFlowIndex: 74, netMoneyFlow: "in", volumeSurge: 1.8, expectedMovePct: 12.1, catalyst: "$480M DoD extension" },
+    { symbol: "COIN", name: "Coinbase", probability: 0.74, pattern: "Bull Flag", reason: "BTC>72k with ETF inflows; COIN options skew bullish.", targetPrice: 265, stopLoss: 232, marketCap: 5.5e10, capBucket: "large", candlePattern: "Piercing Line", moneyFlowIndex: 66, netMoneyFlow: "in", volumeSurge: 1.5, expectedMovePct: 10.4, catalyst: "BTC ETF inflows" },
+    // Mid caps
+    { symbol: "ESLT", name: "Elbit Systems", probability: 0.66, pattern: "Rounding Bottom", reason: "New EU defense order; defense-sector momentum; 50DMA reclaimed.", targetPrice: 268, stopLoss: 238, marketCap: 1.1e10, capBucket: "mid", candlePattern: "Hammer", moneyFlowIndex: 59, netMoneyFlow: "in", volumeSurge: 1.3, expectedMovePct: 7.4, catalyst: "$600M EU order" },
+    { symbol: "SMCI", name: "Super Micro", probability: 0.62, pattern: "Falling Wedge", reason: "Basing after Aug drawdown; positive divergence on RSI.", targetPrice: 62, stopLoss: 51, marketCap: 3.2e10, capBucket: "mid", candlePattern: "Bullish Harami", moneyFlowIndex: 44, netMoneyFlow: "mixed", volumeSurge: 1.1, expectedMovePct: 14.8, catalyst: "AI-rack rebound" },
+    { symbol: "AVGO", name: "Broadcom", probability: 0.60, pattern: "Bull Flag", reason: "Post-split accumulation; AI-chip pricing tailwind.", targetPrice: 195, stopLoss: 172, marketCap: 7.8e11, capBucket: "mega", candlePattern: "Doji + follow-through", moneyFlowIndex: 61, netMoneyFlow: "in", volumeSurge: 1.2, expectedMovePct: 6.1, catalyst: "AI-chip pricing" },
+    // Small caps — high upside
+    { symbol: "IONQ", name: "IonQ Quantum", probability: 0.72, pattern: "Cup & Handle", reason: "Institutional accumulation via 13F; MFI trending up; low float squeeze potential.", targetPrice: 18.5, stopLoss: 12.4, marketCap: 3.2e9, capBucket: "small", candlePattern: "Bullish Engulfing", moneyFlowIndex: 78, netMoneyFlow: "in", volumeSurge: 2.6, expectedMovePct: 24.5, catalyst: "Quantum contract rumor" },
+    { symbol: "RKLB", name: "Rocket Lab", probability: 0.69, pattern: "Ascending Triangle", reason: "Neutron-rocket milestone approaching; short interest 12%.", targetPrice: 9.8, stopLoss: 6.9, marketCap: 3.9e9, capBucket: "small", candlePattern: "Three White Soldiers", moneyFlowIndex: 72, netMoneyFlow: "in", volumeSurge: 2.2, expectedMovePct: 19.6, catalyst: "Neutron launch" },
+    { symbol: "SOUN", name: "SoundHound AI", probability: 0.65, pattern: "Bull Flag", reason: "NVDA stake + auto voice-AI deal chatter; MFI 68.", targetPrice: 8.4, stopLoss: 5.2, marketCap: 1.7e9, capBucket: "small", candlePattern: "Piercing Line", moneyFlowIndex: 68, netMoneyFlow: "in", volumeSurge: 2.9, expectedMovePct: 27.1, catalyst: "NVDA equity stake" },
+    { symbol: "BBAI", name: "BigBear.ai", probability: 0.61, pattern: "Falling Wedge", reason: "Basing on rising volume; potential DoD RFP win.", targetPrice: 3.6, stopLoss: 1.9, marketCap: 4.8e8, capBucket: "small", candlePattern: "Hammer", moneyFlowIndex: 55, netMoneyFlow: "mixed", volumeSurge: 3.4, expectedMovePct: 42.2, catalyst: "DoD RFP" },
+    // Micro caps — asymmetric upside
+    { symbol: "MARA", name: "Marathon Digital", probability: 0.58, pattern: "Bull Pennant", reason: "BTC follow-through + hashrate expansion; short squeeze risk.", targetPrice: 26.5, stopLoss: 17.2, marketCap: 6.9e9, capBucket: "small", candlePattern: "Bullish Marubozu", moneyFlowIndex: 76, netMoneyFlow: "in", volumeSurge: 2.4, expectedMovePct: 22.4, catalyst: "BTC breakout" },
+    { symbol: "LUNR", name: "Intuitive Machines", probability: 0.63, pattern: "Cup & Handle", reason: "NASA lunar contract expansion; low float; MFI trending up.", targetPrice: 12.4, stopLoss: 6.8, marketCap: 8.4e8, capBucket: "micro", candlePattern: "Morning Star", moneyFlowIndex: 74, netMoneyFlow: "in", volumeSurge: 3.1, expectedMovePct: 38.9, catalyst: "NASA CLPS award" },
+    { symbol: "EVGO", name: "EVgo", probability: 0.54, pattern: "Rounding Bottom", reason: "EV-charging capex bill tailwind; oversold bounce.", targetPrice: 5.6, stopLoss: 2.9, marketCap: 6.1e8, capBucket: "micro", candlePattern: "Bullish Harami", moneyFlowIndex: 48, netMoneyFlow: "mixed", volumeSurge: 2.0, expectedMovePct: 46.3, catalyst: "DOE grant" },
+    { symbol: "OPEN", name: "Opendoor", probability: 0.51, pattern: "Falling Wedge", reason: "Housing-rate relief trade; 22% short interest; MFI turning.", targetPrice: 3.2, stopLoss: 1.7, marketCap: 1.5e9, capBucket: "small", candlePattern: "Hammer", moneyFlowIndex: 41, netMoneyFlow: "mixed", volumeSurge: 2.7, expectedMovePct: 33.8, catalyst: "Fed pivot" },
+    { symbol: "GRAB", name: "Grab Holdings", probability: 0.57, pattern: "Ascending Triangle", reason: "SEA super-app profitability inflection; MFI 62.", targetPrice: 4.9, stopLoss: 3.1, marketCap: 1.6e10, capBucket: "mid", candlePattern: "Three White Soldiers", moneyFlowIndex: 62, netMoneyFlow: "in", volumeSurge: 1.6, expectedMovePct: 17.2, catalyst: "Profit inflection" },
   ];
   return seed.slice(0, limit).map((s) => {
     const q = mockQuote(s.symbol);
     return { ...s, price: q.price, changePct: q.changePct };
   });
 }
+
 
 export function formatCountdown(ms: number): string {
   if (ms <= 0) return "now";

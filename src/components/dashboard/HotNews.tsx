@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
 import { Newspaper, TrendingUp, TrendingDown, ExternalLink, Flame } from "lucide-react";
 import { alpaca, type NewsItem } from "@/lib/alpaca";
-import { useRefreshInterval } from "@/lib/refreshIntervals";
-import { DASHBOARD_REFRESH_EVENT } from "./RefreshButton";
+import { useWidgetData } from "@/hooks/useWidgetData";
+import { WidgetHeader } from "@/components/dashboard/WidgetHeader";
 import { cn } from "@/lib/utils";
 
 const IMPACT_STYLE: Record<NewsItem["impact"], string> = {
@@ -20,36 +19,31 @@ function timeAgo(iso: string) {
 }
 
 export function HotNews() {
-  const [news, setNews] = useState<NewsItem[]>([]);
-  const ms = useRefreshInterval("news");
-
-  useEffect(() => {
-    let cancelled = false;
-    const load = () => alpaca.news(10).then((n) => !cancelled && setNews(n));
-    load();
-    const id = ms > 0 ? window.setInterval(load, ms) : null;
-    const onManual = () => load();
-    window.addEventListener(DASHBOARD_REFRESH_EVENT, onManual);
-    return () => {
-      cancelled = true;
-      if (id) window.clearInterval(id);
-      window.removeEventListener(DASHBOARD_REFRESH_EVENT, onManual);
-    };
-  }, [ms]);
+  const state = useWidgetData<NewsItem[]>({
+    kind: "news",
+    refreshId: "news",
+    fetcher: () => alpaca.news(10),
+    initial: [],
+  });
 
   return (
     <div className="rounded-xl border border-border glass p-5">
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Flame className="h-4 w-4 text-destructive" />
-          <h3 className="font-display text-base font-semibold">Hot News</h3>
-        </div>
-        <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
-          Market-moving headlines
-        </span>
-      </div>
+      <WidgetHeader
+        title="Hot News"
+        subtitle="Market-moving headlines"
+        Icon={Flame}
+        accent="text-destructive"
+        kind="news"
+        source={state.source}
+        onSourceChange={state.setSource}
+        updatedAt={state.updatedAt}
+        nextInMs={state.nextInMs}
+        intervalMs={state.intervalMs}
+        loading={state.loading}
+        onRefresh={state.refresh}
+      />
       <ul className="space-y-3">
-        {news.map((n) => {
+        {state.data.map((n) => {
           const bull = n.sentiment > 0.15;
           const bear = n.sentiment < -0.15;
           const Icon = bull ? TrendingUp : bear ? TrendingDown : Newspaper;

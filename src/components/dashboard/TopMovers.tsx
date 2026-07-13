@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
 import { TrendingUp, TrendingDown, Activity } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { alpaca, type AlpacaMover } from "@/lib/alpaca";
-import { useRefreshInterval } from "@/lib/refreshIntervals";
-import { DASHBOARD_REFRESH_EVENT } from "./RefreshButton";
+import { useWidgetData } from "@/hooks/useWidgetData";
+import { WidgetHeader } from "@/components/dashboard/WidgetHeader";
 import { cn } from "@/lib/utils";
 
 type Kind = "gainers" | "losers" | "active";
@@ -23,35 +22,32 @@ export function TopMovers() {
 }
 
 function MoversCard({ kind, label, Icon, accent }: { kind: Kind; label: string; Icon: typeof TrendingUp; accent: string }) {
-  const [rows, setRows] = useState<AlpacaMover[]>([]);
-  const ms = useRefreshInterval("ticker");
-
-  useEffect(() => {
-    let cancelled = false;
-    const load = () => alpaca.movers(kind).then((r) => !cancelled && setRows(r.slice(0, 8)));
-    load();
-    const id = ms > 0 ? setInterval(load, ms) : null;
-    const onManual = () => load();
-    window.addEventListener(DASHBOARD_REFRESH_EVENT, onManual);
-    return () => {
-      cancelled = true;
-      if (id) clearInterval(id);
-      window.removeEventListener(DASHBOARD_REFRESH_EVENT, onManual);
-    };
-  }, [kind, ms]);
+  const state = useWidgetData<AlpacaMover[]>({
+    kind: "movers",
+    refreshId: "ticker",
+    fetcher: () => alpaca.movers(kind).then((r) => r.slice(0, 8)),
+    initial: [],
+  });
 
   return (
     <div className="rounded-xl border border-border glass p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Icon className={cn("h-4 w-4", accent)} />
-          <h3 className="font-display text-sm font-semibold">{label}</h3>
-        </div>
-        <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Top 8</span>
-      </div>
+      <WidgetHeader
+        title={label}
+        subtitle="Top 8"
+        Icon={Icon}
+        accent={accent}
+        kind="movers"
+        source={state.source}
+        onSourceChange={state.setSource}
+        updatedAt={state.updatedAt}
+        nextInMs={state.nextInMs}
+        intervalMs={state.intervalMs}
+        loading={state.loading}
+        onRefresh={state.refresh}
+      />
       <table className="w-full text-xs">
         <tbody>
-          {rows.map((r) => {
+          {state.data.map((r) => {
             const up = r.changePct >= 0;
             return (
               <tr key={r.symbol} className="border-b border-border/30 last:border-0">
@@ -71,7 +67,7 @@ function MoversCard({ kind, label, Icon, accent }: { kind: Kind; label: string; 
               </tr>
             );
           })}
-          {rows.length === 0 && (
+          {state.data.length === 0 && (
             <tr><td colSpan={3} className="py-4 text-center text-muted-foreground">Loading…</td></tr>
           )}
         </tbody>
