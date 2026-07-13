@@ -184,12 +184,20 @@ function RepoAnalyzerPage() {
 
       {files.length > 0 && (
         <section className="rounded-xl border border-border/60 bg-card/60 p-4 space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2 text-sm font-medium">
               <Github className="h-4 w-4" /> Files ({filtered.length}/{files.length})
             </div>
-            <input value={filter} onChange={(e) => setFilter(e.target.value)}
-              placeholder="filter…" className="rounded-md border border-border bg-background px-2 py-1 text-xs w-48" />
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="secondary" onClick={onAnalyzeAll}
+                disabled={bulkBusy || filtered.length === 0}
+                title="Analyze top 30 filtered files with AI (sequential)">
+                {bulkBusy ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Zap className="h-3 w-3 mr-1" />}
+                Analyze All ({Math.min(filtered.length, 30)})
+              </Button>
+              <input value={filter} onChange={(e) => setFilter(e.target.value)}
+                placeholder="filter…" className="rounded-md border border-border bg-background px-2 py-1 text-xs w-48" />
+            </div>
           </div>
           <div className="max-h-96 overflow-y-auto divide-y divide-border/40">
             {filtered.map((f) => (
