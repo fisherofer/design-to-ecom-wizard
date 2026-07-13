@@ -102,8 +102,8 @@ export function ProviderConnectorsTab() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <select className="rounded-md border border-border bg-background px-2 py-1.5 text-sm"
-            value={simCat} onChange={(e) => setSimCat(e.target.value as ConnectorCategory)}>
-            {CATEGORIES.map((c) => <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>)}
+            value={simCat} onChange={(e) => setSimCat(e.target.value)}>
+            {allCategories.map((c) => <option key={c} value={c}>{CATEGORY_LABELS[c] ?? c}</option>)}
           </select>
           <select className="rounded-md border border-border bg-background px-2 py-1.5 text-sm"
             value={simTask} onChange={(e) => setSimTask(e.target.value as TaskProfile)}>
@@ -111,11 +111,11 @@ export function ProviderConnectorsTab() {
               .map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
           <div className="flex gap-2">
-            <Button size="sm" onClick={() => setSimResult(pickConnector(simCat, { task: simTask }))}>
+            <Button size="sm" onClick={() => setSimResult(pickConnector(simCat as ConnectorCategory, { task: simTask }))}>
               <Zap className="h-4 w-4 mr-1" /> Pick
             </Button>
             <Button size="sm" variant="outline" onClick={async () => {
-              const r = await execute(simCat, { prompt: "Say hello in 5 words.", symbol: "AAPL" }, { task: simTask });
+              const r = await execute(simCat as ConnectorCategory, { prompt: "Say hello in 5 words.", symbol: "AAPL" }, { task: simTask });
               setTestOut(JSON.stringify({ ok: r.ok, provider: r.provider, ms: r.latencyMs, cost: r.costUsd, text: r.text, error: r.error, data: r.data ? "…" : undefined }, null, 2));
             }}>
               Invoke
@@ -134,24 +134,17 @@ export function ProviderConnectorsTab() {
       </section>
 
       {/* Categories */}
-      {CATEGORIES.map((cat) => {
-        const Icon = CATEGORY_ICONS[cat];
+      {allCategories.map((cat: string) => {
+        const Icon = CATEGORY_ICONS[cat] ?? Globe;
         const items = grouped[cat] ?? [];
         return (
           <section key={cat} className="rounded-xl border border-border/60 bg-card/60 p-4 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm font-medium">
-                <Icon className="h-4 w-4" /> {CATEGORY_LABELS[cat]}
+                <Icon className="h-4 w-4" /> {CATEGORY_LABELS[cat] ?? cat}
                 <span className="text-xs text-muted-foreground">({items.length})</span>
               </div>
-              <Button size="sm" variant="ghost" onClick={() => {
-                const id = prompt("Connector id (unique):");
-                if (!id) return;
-                providerRegistry.upsert({
-                  id, name: id, family: cat.startsWith("llm.") ? "llm" : "data",
-                  category: cat, baseUrl: "", enabled: true, priority: 5,
-                });
-              }}>
+              <Button size="sm" variant="ghost" onClick={() => setAddOpen({ category: cat })}>
                 <Plus className="h-4 w-4 mr-1" /> Add
               </Button>
             </div>
