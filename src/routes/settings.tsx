@@ -125,6 +125,8 @@ function SettingsPage() {
       {tab === "filters" && <ModelFiltersTab />}
       {tab === "limits" && <RateLimitsTab />}
       {tab === "budget" && <BudgetTab />}
+      {tab === "router" && <ComputeRouterTab />}
+
       {tab === "refresh" && <RefreshTab />}
       {tab === "alerts" && <AlertChannelsTab />}
       {tab === "github" && <GithubTab />}
