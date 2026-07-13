@@ -81,6 +81,9 @@ export function ProviderConnectorsTab() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button size="sm" onClick={() => setAddOpen({})}>
+            <Wand2 className="h-4 w-4 mr-1" /> Add with AI
+          </Button>
           <Button variant="outline" size="sm" onClick={() => providerRegistry.probeAll()}>
             <Activity className="h-4 w-4 mr-1" /> Probe all
           </Button>
@@ -89,6 +92,8 @@ export function ProviderConnectorsTab() {
           </Button>
         </div>
       </header>
+
+      {addOpen && <AddSourceDialog initial={addOpen.category} onClose={() => setAddOpen(null)} />}
 
       {/* Live pick simulator */}
       <section className="rounded-xl border border-border/60 bg-card/60 p-4 space-y-3">
