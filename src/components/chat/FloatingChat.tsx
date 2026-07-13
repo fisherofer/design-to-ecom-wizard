@@ -60,18 +60,23 @@ export function FloatingChat() {
     setChatTransparent,
     chatOpacity,
     setChatOpacity,
-    activeEngine,
-    setActiveEngine,
   } = useApp();
+
+  const [mode, setMode] = useState<ChatMode>(() => {
+    if (typeof window === "undefined") return "auto";
+    return (window.localStorage.getItem("chat.mode") as ChatMode) || "auto";
+  });
+  useEffect(() => {
+    if (typeof window !== "undefined") window.localStorage.setItem("chat.mode", mode);
+  }, [mode]);
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "sys-1",
       role: "assistant",
-      engine: activeEngine,
       ts: Date.now(),
       content:
-        "Connected. I can route to **Gemini**, **Claude**, or your local **Ollama 8B**. Ask me to fix code, restart Docker, audit configs, or summarize logs.",
+        "מחובר. אני מנתב אוטומטית בין **Lovable AI (ענן)**, **Ollama (מקומי)** ו-**Hybrid** לפי Compute Router. בחר מצב אחר במידת הצורך.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -83,7 +88,8 @@ export function FloatingChat() {
     return window.localStorage.getItem("chatGooseEnabled") !== "false";
   });
   const [gooseStatus, setGooseStatus] = useState<GooseStatus | null>(null);
-  const [lastRoute, setLastRoute] = useState<"goose" | "llm" | "fallback">("llm");
+  const [lastTrace, setLastTrace] = useState<string[]>([]);
+  const [lastModel, setLastModel] = useState<string>("");
 
   // Drag state
   const [pos, setPos] = useState<Pos | null>(loadPos);
