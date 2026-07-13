@@ -43,7 +43,7 @@ function ago(iso: string) {
 export function SmartMoneyTracker() {
   const state = useWidgetData<SmartMoneyMove[]>({
     kind: "movers",
-    refreshId: "topMovers",
+    refreshId: "smartMoney",
     fetcher: () => getSmartMoneyMoves(),
     initial: [],
   });

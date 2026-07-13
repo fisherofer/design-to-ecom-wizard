@@ -25,7 +25,8 @@ export type ComponentId =
   | "rateLimits"
   | "ollama"
   | "news"
-  | "breakouts";
+  | "breakouts"
+  | "smartMoney";
 
 export interface RefreshConfig {
   /** Global default in milliseconds, used when a component has no override. */
@@ -50,6 +51,7 @@ export const COMPONENT_META: Record<ComponentId, { label: string; description: s
   ollama: { label: "Ollama Models", description: "Local model registry" },
   news: { label: "Hot News", description: "Market-moving headlines" },
   breakouts: { label: "Breakout Candidates", description: "AI-scored breakout picks" },
+  smartMoney: { label: "Smart Money Tracker", description: "13F / Form 4 / Congress feeds" },
 };
 
 export const PRESETS = [
