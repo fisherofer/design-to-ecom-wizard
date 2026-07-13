@@ -2,8 +2,10 @@
  * Compute Router tab — configure the Local ⇄ Cloud smart routing policy,
  * budget guards, per-task overrides, and simulate any task live.
  */
-import { useMemo, useState } from "react";
-import { Cpu, Cloud, Blend, Gauge, ShieldAlert, Zap, RotateCcw, PlayCircle } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { Cpu, Cloud, Blend, Gauge, ShieldAlert, Zap, RotateCcw, PlayCircle, RefreshCw } from "lucide-react";
+import { listAvailableModels, type AvailableModels } from "@/lib/aiModels.functions";
 import {
   computeRouter,
   decideRoute,
