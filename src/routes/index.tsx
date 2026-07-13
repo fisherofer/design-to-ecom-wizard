@@ -10,6 +10,8 @@ import { BreakoutCandidates } from "@/components/dashboard/BreakoutCandidates";
 import { MarketHeatmap } from "@/components/dashboard/MarketHeatmap";
 import { SectorsIndicesPanel } from "@/components/dashboard/SectorsIndicesPanel";
 import { WatchlistPanel } from "@/components/dashboard/WatchlistPanel";
+import { SmartMoneyTracker } from "@/components/dashboard/SmartMoneyTracker";
+import { MissingApiBanner } from "@/components/dashboard/MissingApiBanner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -41,6 +43,15 @@ function Dashboard() {
         </div>
 
         <LiveKpis />
+
+        <div className="mt-6">
+          <MissingApiBanner />
+        </div>
+
+        {/* Smart Money Tracker — follow the flow */}
+        <div className="mt-6">
+          <SmartMoneyTracker />
+        </div>
 
         {/* Watchlist + Breakout side-by-side */}
         <div className="mt-6 grid gap-6 xl:grid-cols-3">

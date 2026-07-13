@@ -1,11 +1,11 @@
 /**
- * AI Breakout Candidates
- * ======================
- * Ranked breakout picks with market-cap bucket tabs (giving small/micro caps
- * their own spotlight), candlestick pattern detection, Money Flow Index
- * gauge, volume-surge and AI-projected move fields.
+ * AI Breakout Candidates — compact tile view
+ * ==========================================
+ * Ranks by AI profit-potential score (expected move × probability × R/R),
+ * shows a big "profit clock" gauge, a small MFI ring, emoji tier badges, and
+ * a one-line AI rationale so you know WHY it's on the board.
  */
-import { Rocket, Target, Shield, Activity, ArrowUpRight, ArrowDownRight, Sparkles, Flame } from "lucide-react";
+import { Rocket, Target, Shield, Sparkles, Flame, Info } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { alpaca, type BreakoutCandidate, type CapBucket } from "@/lib/alpaca";
@@ -22,7 +22,7 @@ const BUCKET_TABS: Array<{ id: BucketTab; label: string; hint: string }> = [
   { id: "large", label: "Large",   hint: "Mega + Large caps" },
   { id: "mid",   label: "Mid",     hint: "$2B – $10B" },
   { id: "small", label: "Small",   hint: "$300M – $2B" },
-  { id: "micro", label: "Micro",   hint: "< $300M · asymmetric upside" },
+  { id: "micro", label: "Micro",   hint: "< $300M · asymmetric" },
 ];
 
 function bucketMatches(tab: BucketTab, b: CapBucket | undefined): boolean {
@@ -32,12 +32,21 @@ function bucketMatches(tab: BucketTab, b: CapBucket | undefined): boolean {
   return b === tab;
 }
 
-function fmtCap(n?: number) {
-  if (!n) return "—";
-  if (n >= 1e12) return `$${(n / 1e12).toFixed(2)}T`;
-  if (n >= 1e9)  return `$${(n / 1e9).toFixed(2)}B`;
-  if (n >= 1e6)  return `$${(n / 1e6).toFixed(0)}M`;
-  return `$${n.toLocaleString()}`;
+/** Composite profit-potential score 0..100 */
+function profitScore(r: BreakoutCandidate): number {
+  const move = Math.min(30, Math.max(0, r.expectedMovePct ?? 0));   // cap 30%
+  const prob = Math.max(0, Math.min(1, r.probability ?? 0.5));
+  const rr = Math.min(5, Math.max(0.5, r.rewardToRisk ?? 1));
+  const raw = (move / 30) * 60 + prob * 25 + (rr / 5) * 15;
+  return Math.round(Math.max(0, Math.min(100, raw)));
+}
+
+function tierEmoji(score: number): string {
+  if (score >= 85) return "🚀";
+  if (score >= 70) return "🔥";
+  if (score >= 55) return "⚡";
+  if (score >= 40) return "💎";
+  return "🌱";
 }
 
 export function BreakoutCandidates() {
@@ -50,10 +59,13 @@ export function BreakoutCandidates() {
     initial: [],
   });
 
-  const rows = useMemo(
-    () => state.data.filter((r) => bucketMatches(tab, r.capBucket)).slice(0, 8),
-    [state.data, tab],
-  );
+  const rows = useMemo(() => {
+    return state.data
+      .filter((r) => bucketMatches(tab, r.capBucket))
+      .map((r) => ({ r, score: profitScore(r) }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8);
+  }, [state.data, tab]);
 
   const counts = useMemo(() => {
     const c: Record<BucketTab, number> = { all: 0, large: 0, mid: 0, small: 0, micro: 0 };
@@ -71,7 +83,7 @@ export function BreakoutCandidates() {
     <div className="rounded-xl border border-border glass p-5">
       <WidgetHeader
         title="AI Breakout Candidates"
-        subtitle="Scanning NYSE + NASDAQ · ranked by AI reward-to-risk × probability × flow"
+        subtitle="NYSE + NASDAQ · ranked by AI profit-potential score"
         Icon={Rocket}
         accent="text-primary"
         kind="breakouts"
@@ -96,7 +108,7 @@ export function BreakoutCandidates() {
             onClick={() => setTab(t.id)}
             title={t.hint}
             className={cn(
-              "inline-flex shrink-0 items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px] font-mono uppercase tracking-wider transition-colors",
+              "inline-flex shrink-0 items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-mono uppercase tracking-wider transition-colors",
               tab === t.id
                 ? "border-primary/60 bg-primary/10 text-primary"
                 : "border-border bg-card/40 text-muted-foreground hover:text-foreground",
@@ -109,144 +121,96 @@ export function BreakoutCandidates() {
         ))}
       </div>
 
-      <ul className="space-y-3">
-        {rows.map((r) => <BreakoutRow key={r.symbol} row={r} />)}
+      <div className="grid gap-2 sm:grid-cols-2">
+        {rows.map(({ r, score }) => <BreakoutTile key={r.symbol} row={r} score={score} />)}
         {rows.length === 0 && (
-          <li className="rounded-md border border-dashed border-border/60 px-3 py-8 text-center text-xs text-muted-foreground">
-            No candidates for this bucket yet — try “All” or wait for the next AI cycle.
-          </li>
+          <div className="col-span-full rounded-md border border-dashed border-border/60 px-3 py-8 text-center text-xs text-muted-foreground">
+            No candidates for this bucket yet — try "All" or wait for the next AI cycle.
+          </div>
         )}
-      </ul>
+      </div>
     </div>
   );
 }
 
-function BreakoutRow({ row: r }: { row: BreakoutCandidate }) {
+function BreakoutTile({ row: r, score }: { row: BreakoutCandidate; score: number }) {
   const prob = Math.round(r.probability * 100);
-  const probColor = prob >= 75 ? "bg-success" : prob >= 60 ? "bg-warning" : "bg-primary";
   const mfi = r.moneyFlowIndex ?? 50;
-  const mfiColor = mfi >= 65 ? "bg-success" : mfi <= 35 ? "bg-destructive" : "bg-warning";
-  const flowIn = r.netMoneyFlow === "in";
-  const flowOut = r.netMoneyFlow === "out";
+  const emoji = tierEmoji(score);
 
   const tooltip = [
-    `${r.symbol} · ${r.pattern}`,
+    `${emoji} ${r.symbol} · profit-potential ${score}/100`,
+    r.pattern,
     r.candlePattern ? `Candle: ${r.candlePattern}` : "",
-    r.catalyst ? `Catalyst: ${r.catalyst}` : "",
+    r.catalyst ? `⚡ Catalyst: ${r.catalyst}` : "",
     `Price: $${r.price.toFixed(2)}`,
-    r.targetPrice != null ? `Target: $${r.targetPrice.toFixed(2)}` : "",
-    r.stopLoss != null ? `Stop: $${r.stopLoss.toFixed(2)}` : "",
-    r.expectedMovePct != null ? `Projected: +${r.expectedMovePct.toFixed(1)}%` : "",
-    `Probability: ${prob}% · R/R ${(r.rewardToRisk ?? 0).toFixed(1)}×`,
-    r.reason ? `\n${r.reason}` : "",
+    r.targetPrice != null ? `🎯 Target: $${r.targetPrice.toFixed(2)}` : "",
+    r.stopLoss != null ? `🛡️ Stop: $${r.stopLoss.toFixed(2)}` : "",
+    r.expectedMovePct != null ? `📈 Projected: +${r.expectedMovePct.toFixed(1)}%` : "",
+    `Probability: ${prob}% · R/R ${(r.rewardToRisk ?? 0).toFixed(1)}× · MFI ${mfi}`,
+    r.reason ? `\n🤖 AI: ${r.reason}` : "",
     `\nClick for full institutional analysis →`,
   ].filter(Boolean).join("\n");
 
   return (
-    <li
-      className="rounded-lg border border-border/60 bg-card/30 p-3 hover:bg-card/50 hover:border-primary/40 transition-colors"
+    <Link
+      to="/ticker/$symbol"
+      params={{ symbol: r.symbol }}
       title={tooltip}
+      className="group flex flex-col gap-2 rounded-lg border border-border/60 bg-card/30 p-2.5 hover:border-primary/50 hover:bg-card/60 transition-colors"
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2">
         <TickerLogo symbol={r.symbol} size="sm" linkTo={false} />
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline justify-between gap-2">
-            <div className="flex items-baseline gap-2 min-w-0">
-              <Link
-                to="/ticker/$symbol"
-                params={{ symbol: r.symbol }}
-                className="font-mono font-semibold hover:text-primary"
-                title={`Open full analysis for ${r.symbol}`}
-              >
-                {r.symbol}
-              </Link>
-              {r.capBucket && (
-                <span className="rounded bg-muted/60 px-1.5 py-0.5 text-[9px] font-mono uppercase text-muted-foreground">
-                  {r.capBucket} · {fmtCap(r.marketCap)}
-                </span>
-              )}
-              {r.exchange && (
-                <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[9px] font-mono uppercase text-primary/80">
-                  {r.exchange}
-                </span>
-              )}
-            </div>
-            <span className="text-xs font-mono tabular-nums text-muted-foreground">${r.price.toFixed(2)}</span>
+            <span className="truncate font-mono text-sm font-bold group-hover:text-primary">
+              {emoji} {r.symbol}
+            </span>
+            <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+              ${r.price.toFixed(2)}
+            </span>
           </div>
-          <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[10px] font-mono text-muted-foreground">
-            <span className="text-foreground/80">{r.pattern}</span>
-            {r.candlePattern && (
-              <span className="inline-flex items-center gap-1 rounded bg-primary/10 px-1.5 py-0.5 text-primary">
-                <Activity className="h-3 w-3" /> {r.candlePattern}
-              </span>
-            )}
-            {r.catalyst && (
-              <span className="rounded bg-accent/10 px-1.5 py-0.5 text-accent-foreground/80">⚡ {r.catalyst}</span>
-            )}
+          <div className="mt-0.5 flex flex-wrap items-center gap-1 text-[9px] font-mono uppercase text-muted-foreground">
+            {r.capBucket && <span className="rounded bg-muted/60 px-1">{r.capBucket}</span>}
+            {r.exchange && <span className="rounded bg-primary/10 px-1 text-primary/80">{r.exchange}</span>}
+            <span className="truncate text-foreground/70 normal-case">{r.pattern}</span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <PercentGauge
-            value={r.expectedMovePct ?? 0}
-            size={56}
-            label="proj move"
-            sublabel="EXP"
-          />
-          <PercentGauge
-            value={r.opportunityScore ?? prob}
-            size={56}
-            mode="unipolar"
-            label={`R/R ${(r.rewardToRisk ?? 0).toFixed(1)}×`}
-            sublabel="OPP"
-          />
-        </div>
       </div>
 
-      {/* probability bar */}
-      <div className="mt-2 h-1 overflow-hidden rounded-full bg-muted">
-        <div className={cn("h-full transition-all", probColor)} style={{ width: `${prob}%` }} />
+      {/* Big profit-potential gauge + small MFI ring + prob */}
+      <div className="flex items-center justify-around gap-1">
+        <PercentGauge value={score} size={62} mode="unipolar" label="profit" sublabel="POT" />
+        <PercentGauge value={r.expectedMovePct ?? 0} size={48} label="move" sublabel="EXP" />
+        <PercentGauge value={mfi} size={48} mode="unipolar" label="MFI" sublabel="MFI" />
       </div>
 
-      {/* Money Flow gauge */}
-      <div className="mt-2.5 grid grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-2">
-        <span className="text-[9px] font-mono uppercase text-muted-foreground">MFI</span>
-        <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-          <div className={cn("h-full transition-all", mfiColor)} style={{ width: `${mfi}%` }} />
-        </div>
-        <span className="inline-flex items-center gap-1 font-mono text-[10px] tabular-nums">
-          {flowIn && <ArrowUpRight className="h-3 w-3 text-success" />}
-          {flowOut && <ArrowDownRight className="h-3 w-3 text-destructive" />}
-          <span className={cn(flowIn && "text-success", flowOut && "text-destructive")}>{mfi}</span>
-        </span>
-      </div>
+      {/* AI reason snippet */}
+      <p className="flex items-start gap-1 text-[10px] leading-snug text-muted-foreground">
+        <Info className="h-3 w-3 mt-0.5 shrink-0 text-primary/70" />
+        <span className="line-clamp-2">🤖 {r.reason}</span>
+      </p>
 
-      <p className="mt-2 text-xs text-muted-foreground leading-snug line-clamp-2">{r.reason}</p>
-
-      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-mono">
+      {/* Trade levels */}
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] font-mono">
         {r.targetPrice != null && (
-          <span className="inline-flex items-center gap-1 text-success">
-            <Target className="h-3 w-3" /> Tgt ${r.targetPrice.toFixed(2)}
+          <span className="inline-flex items-center gap-0.5 text-success">
+            <Target className="h-2.5 w-2.5" />${r.targetPrice.toFixed(2)}
           </span>
         )}
         {r.stopLoss != null && (
-          <span className="inline-flex items-center gap-1 text-destructive">
-            <Shield className="h-3 w-3" /> SL ${r.stopLoss.toFixed(2)}
+          <span className="inline-flex items-center gap-0.5 text-destructive">
+            <Shield className="h-2.5 w-2.5" />${r.stopLoss.toFixed(2)}
           </span>
         )}
-        {r.expectedMovePct != null && (
-          <span className="inline-flex items-center gap-1 text-primary">
-            <ArrowUpRight className="h-3 w-3" /> +{r.expectedMovePct.toFixed(1)}% proj
-          </span>
+        <span className="text-muted-foreground">R/R {(r.rewardToRisk ?? 0).toFixed(1)}×</span>
+        {r.volumeSurge != null && r.volumeSurge >= 1.5 && (
+          <span className="rounded bg-success/15 px-1 text-success">📊 ×{r.volumeSurge.toFixed(1)}</span>
         )}
-        {r.volumeSurge != null && (
-          <span className={cn(
-            "rounded px-1.5 py-0.5",
-            r.volumeSurge >= 2 ? "bg-success/15 text-success" : "bg-muted text-muted-foreground",
-          )}>
-            Vol ×{r.volumeSurge.toFixed(1)}
-          </span>
+        {r.catalyst && (
+          <span className="truncate rounded bg-accent/10 px-1 text-accent-foreground/80">⚡ {r.catalyst}</span>
         )}
       </div>
-    </li>
+    </Link>
   );
 }
