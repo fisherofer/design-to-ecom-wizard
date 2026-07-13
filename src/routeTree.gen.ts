@@ -16,6 +16,7 @@ import { Route as TerminalRouteImport } from './routes/terminal'
 import { Route as SystemRouteImport } from './routes/system'
 import { Route as StrategyRouteImport } from './routes/strategy'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as RepoAnalyzerRouteImport } from './routes/repo-analyzer'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PersonasRouteImport } from './routes/personas'
 import { Route as IntelligenceRouteImport } from './routes/intelligence'
@@ -62,6 +63,11 @@ const StrategyRoute = StrategyRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RepoAnalyzerRoute = RepoAnalyzerRouteImport.update({
+  id: '/repo-analyzer',
+  path: '/repo-analyzer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PortfolioRoute = PortfolioRouteImport.update({
@@ -137,6 +143,7 @@ export interface FileRoutesByFullPath {
   '/intelligence': typeof IntelligenceRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
+  '/repo-analyzer': typeof RepoAnalyzerRoute
   '/settings': typeof SettingsRoute
   '/strategy': typeof StrategyRoute
   '/system': typeof SystemRoute
@@ -158,6 +165,7 @@ export interface FileRoutesByTo {
   '/intelligence': typeof IntelligenceRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
+  '/repo-analyzer': typeof RepoAnalyzerRoute
   '/settings': typeof SettingsRoute
   '/strategy': typeof StrategyRoute
   '/system': typeof SystemRoute
@@ -180,6 +188,7 @@ export interface FileRoutesById {
   '/intelligence': typeof IntelligenceRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
+  '/repo-analyzer': typeof RepoAnalyzerRoute
   '/settings': typeof SettingsRoute
   '/strategy': typeof StrategyRoute
   '/system': typeof SystemRoute
@@ -203,6 +212,7 @@ export interface FileRouteTypes {
     | '/intelligence'
     | '/personas'
     | '/portfolio'
+    | '/repo-analyzer'
     | '/settings'
     | '/strategy'
     | '/system'
@@ -224,6 +234,7 @@ export interface FileRouteTypes {
     | '/intelligence'
     | '/personas'
     | '/portfolio'
+    | '/repo-analyzer'
     | '/settings'
     | '/strategy'
     | '/system'
@@ -245,6 +256,7 @@ export interface FileRouteTypes {
     | '/intelligence'
     | '/personas'
     | '/portfolio'
+    | '/repo-analyzer'
     | '/settings'
     | '/strategy'
     | '/system'
@@ -267,6 +279,7 @@ export interface RootRouteChildren {
   IntelligenceRoute: typeof IntelligenceRoute
   PersonasRoute: typeof PersonasRoute
   PortfolioRoute: typeof PortfolioRoute
+  RepoAnalyzerRoute: typeof RepoAnalyzerRoute
   SettingsRoute: typeof SettingsRoute
   StrategyRoute: typeof StrategyRoute
   SystemRoute: typeof SystemRoute
@@ -326,6 +339,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/repo-analyzer': {
+      id: '/repo-analyzer'
+      path: '/repo-analyzer'
+      fullPath: '/repo-analyzer'
+      preLoaderRoute: typeof RepoAnalyzerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/portfolio': {
@@ -427,6 +447,7 @@ const rootRouteChildren: RootRouteChildren = {
   IntelligenceRoute: IntelligenceRoute,
   PersonasRoute: PersonasRoute,
   PortfolioRoute: PortfolioRoute,
+  RepoAnalyzerRoute: RepoAnalyzerRoute,
   SettingsRoute: SettingsRoute,
   StrategyRoute: StrategyRoute,
   SystemRoute: SystemRoute,
