@@ -1,10 +1,11 @@
 /**
- * Circular ticker logo with graceful fallback.
+ * Circular ticker logo with graceful fallback + optional hover-preview card.
  * On image load-error, renders a colored monogram matching the symbol.
  */
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { logoUrl, tickerColor, initials } from "@/lib/tickerLogo";
+import { TickerHoverCard } from "@/components/tickers/TickerHoverCard";
 import { cn } from "@/lib/utils";
 
 type Size = "xs" | "sm" | "md";
@@ -20,11 +21,14 @@ export function TickerLogo({
   size = "sm",
   className,
   linkTo = true,
+  hoverPreview = true,
 }: {
   symbol: string;
   size?: Size;
   className?: string;
   linkTo?: boolean;
+  /** Show quote preview on hover. Set false inside tables/cards that already show quotes. */
+  hoverPreview?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
   const color = tickerColor(symbol);
@@ -61,8 +65,7 @@ export function TickerLogo({
     </span>
   );
 
-  if (!linkTo) return inner;
-  return (
+  const anchor = linkTo ? (
     <Link
       to="/ticker/$symbol"
       params={{ symbol }}
@@ -71,5 +74,11 @@ export function TickerLogo({
     >
       {inner}
     </Link>
+  ) : (
+    <span className="inline-flex items-center">{inner}</span>
   );
+
+  if (!hoverPreview) return anchor;
+  return <TickerHoverCard symbol={symbol}>{anchor}</TickerHoverCard>;
 }
+
