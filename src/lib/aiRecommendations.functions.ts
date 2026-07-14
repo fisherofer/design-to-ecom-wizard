@@ -88,7 +88,7 @@ Return honest, concise rationale citing pattern, momentum, catalyst, sector cont
         generated_at: generatedAt,
         universe: data.universe,
         model,
-        picks: picks as unknown as object,
+        picks: picks as unknown as never,
         rationale: output.overallView,
         horizon_days: data.horizonDays,
       });
