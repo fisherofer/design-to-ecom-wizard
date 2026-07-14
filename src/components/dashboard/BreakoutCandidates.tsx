@@ -12,6 +12,7 @@ import { alpaca, type BreakoutCandidate, type CapBucket } from "@/lib/alpaca";
 import { useWidgetData } from "@/hooks/useWidgetData";
 import { WidgetHeader } from "@/components/dashboard/WidgetHeader";
 import { TickerLogo } from "@/components/tickers/TickerLogo";
+import { TickerHoverCard } from "@/components/tickers/TickerHoverCard";
 import { PercentGauge } from "@/components/common/PercentGauge";
 import { cn } from "@/lib/utils";
 
@@ -138,79 +139,84 @@ function BreakoutTile({ row: r, score }: { row: BreakoutCandidate; score: number
   const mfi = r.moneyFlowIndex ?? 50;
   const emoji = tierEmoji(score);
 
-  const tooltip = [
-    `${emoji} ${r.symbol} · profit-potential ${score}/100`,
-    r.pattern,
-    r.candlePattern ? `Candle: ${r.candlePattern}` : "",
-    r.catalyst ? `⚡ Catalyst: ${r.catalyst}` : "",
-    `Price: $${r.price.toFixed(2)}`,
-    r.targetPrice != null ? `🎯 Target: $${r.targetPrice.toFixed(2)}` : "",
-    r.stopLoss != null ? `🛡️ Stop: $${r.stopLoss.toFixed(2)}` : "",
-    r.expectedMovePct != null ? `📈 Projected: +${r.expectedMovePct.toFixed(1)}%` : "",
-    `Probability: ${prob}% · R/R ${(r.rewardToRisk ?? 0).toFixed(1)}× · MFI ${mfi}`,
-    r.reason ? `\n🤖 AI: ${r.reason}` : "",
-    `\nClick for full institutional analysis →`,
-  ].filter(Boolean).join("\n");
+  const extra = (
+    <div className="space-y-1">
+      <p className="text-foreground/90">🤖 {r.reason}</p>
+      <p><b>Pattern:</b> {r.pattern}{r.candlePattern ? ` · ${r.candlePattern}` : ""}</p>
+      {r.catalyst && <p><b className="text-warning">⚡ Catalyst:</b> {r.catalyst}</p>}
+      <div className="grid grid-cols-2 gap-x-3">
+        {r.targetPrice != null && <p><b className="text-success">🎯 Target:</b> ${r.targetPrice.toFixed(2)}</p>}
+        {r.stopLoss != null && <p><b className="text-destructive">🛡 Stop:</b> ${r.stopLoss.toFixed(2)}</p>}
+        {r.expectedMovePct != null && <p><b>📈 Move:</b> +{r.expectedMovePct.toFixed(1)}%</p>}
+        <p><b>Prob:</b> {prob}%</p>
+        <p><b>R/R:</b> {(r.rewardToRisk ?? 0).toFixed(1)}×</p>
+        <p><b>MFI:</b> {mfi}</p>
+      </div>
+    </div>
+  );
 
   return (
-    <Link
-      to="/ticker/$symbol"
-      params={{ symbol: r.symbol }}
-      title={tooltip}
-      className="group flex flex-col gap-2 rounded-lg border border-border/60 bg-card/30 p-2.5 hover:border-primary/50 hover:bg-card/60 transition-colors"
-    >
-      <div className="flex items-start gap-2">
-        <TickerLogo symbol={r.symbol} size="sm" linkTo={false} />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="truncate font-mono text-sm font-bold group-hover:text-primary">
-              {emoji} {r.symbol}
-            </span>
-            <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
-              ${r.price.toFixed(2)}
-            </span>
-          </div>
-          <div className="mt-0.5 flex flex-wrap items-center gap-1 text-[9px] font-mono uppercase text-muted-foreground">
-            {r.capBucket && <span className="rounded bg-muted/60 px-1">{r.capBucket}</span>}
-            {r.exchange && <span className="rounded bg-primary/10 px-1 text-primary/80">{r.exchange}</span>}
-            <span className="truncate text-foreground/70 normal-case">{r.pattern}</span>
+    <TickerHoverCard symbol={r.symbol} extra={extra}>
+      <Link
+        to="/ticker/$symbol"
+        params={{ symbol: r.symbol }}
+        className="group relative flex flex-col gap-2 overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-card/60 via-card/30 to-transparent p-3 hover:border-primary/60 hover:shadow-lg hover:shadow-primary/10 transition-all duration-200"
+      >
+        {/* Score ribbon */}
+        <div className="absolute right-0 top-0 rounded-bl-lg bg-gradient-to-br from-primary/30 to-primary/10 px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider text-primary-foreground/90">
+          {emoji} {score}
+        </div>
+
+        <div className="flex items-start gap-2 pr-14">
+          <TickerLogo symbol={r.symbol} size="md" linkTo={false} hoverPreview={false} />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="truncate font-mono text-sm font-bold group-hover:text-primary">
+                {r.symbol}
+              </span>
+              <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+                ${r.price.toFixed(2)}
+              </span>
+            </div>
+            <div className="mt-0.5 flex flex-wrap items-center gap-1 text-[9px] font-mono uppercase text-muted-foreground">
+              {r.capBucket && <span className="rounded bg-muted/60 px-1">{r.capBucket}</span>}
+              {r.exchange && <span className="rounded bg-primary/10 px-1 text-primary/80">{r.exchange}</span>}
+              <span className="truncate text-foreground/70 normal-case">{r.pattern}</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Big profit-potential gauge + small MFI ring + prob */}
-      <div className="flex items-center justify-around gap-1">
-        <PercentGauge value={score} size={62} mode="unipolar" label="profit" sublabel="POT" />
-        <PercentGauge value={r.expectedMovePct ?? 0} size={48} label="move" sublabel="EXP" />
-        <PercentGauge value={mfi} size={48} mode="unipolar" label="MFI" sublabel="MFI" />
-      </div>
+        <div className="flex items-center justify-around gap-1">
+          <PercentGauge value={score} size={62} mode="unipolar" label="profit" sublabel="POT" />
+          <PercentGauge value={r.expectedMovePct ?? 0} size={48} label="move" sublabel="EXP" />
+          <PercentGauge value={mfi} size={48} mode="unipolar" label="MFI" sublabel="MFI" />
+        </div>
 
-      {/* AI reason snippet */}
-      <p className="flex items-start gap-1 text-[10px] leading-snug text-muted-foreground">
-        <Info className="h-3 w-3 mt-0.5 shrink-0 text-primary/70" />
-        <span className="line-clamp-2">🤖 {r.reason}</span>
-      </p>
+        <p className="flex items-start gap-1 text-[10px] leading-snug text-muted-foreground">
+          <Info className="h-3 w-3 mt-0.5 shrink-0 text-primary/70" />
+          <span className="line-clamp-2">🤖 {r.reason}</span>
+        </p>
 
-      {/* Trade levels */}
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] font-mono">
-        {r.targetPrice != null && (
-          <span className="inline-flex items-center gap-0.5 text-success">
-            <Target className="h-2.5 w-2.5" />${r.targetPrice.toFixed(2)}
-          </span>
-        )}
-        {r.stopLoss != null && (
-          <span className="inline-flex items-center gap-0.5 text-destructive">
-            <Shield className="h-2.5 w-2.5" />${r.stopLoss.toFixed(2)}
-          </span>
-        )}
-        <span className="text-muted-foreground">R/R {(r.rewardToRisk ?? 0).toFixed(1)}×</span>
-        {r.volumeSurge != null && r.volumeSurge >= 1.5 && (
-          <span className="rounded bg-success/15 px-1 text-success">📊 ×{r.volumeSurge.toFixed(1)}</span>
-        )}
-        {r.catalyst && (
-          <span className="truncate rounded bg-accent/10 px-1 text-accent-foreground/80">⚡ {r.catalyst}</span>
-        )}
-      </div>
-    </Link>
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] font-mono">
+          {r.targetPrice != null && (
+            <span className="inline-flex items-center gap-0.5 text-success">
+              <Target className="h-2.5 w-2.5" />${r.targetPrice.toFixed(2)}
+            </span>
+          )}
+          {r.stopLoss != null && (
+            <span className="inline-flex items-center gap-0.5 text-destructive">
+              <Shield className="h-2.5 w-2.5" />${r.stopLoss.toFixed(2)}
+            </span>
+          )}
+          <span className="text-muted-foreground">R/R {(r.rewardToRisk ?? 0).toFixed(1)}×</span>
+          {r.volumeSurge != null && r.volumeSurge >= 1.5 && (
+            <span className="rounded bg-success/15 px-1 text-success">📊 ×{r.volumeSurge.toFixed(1)}</span>
+          )}
+          {r.catalyst && (
+            <span className="truncate rounded bg-accent/10 px-1 text-accent-foreground/80">⚡ {r.catalyst}</span>
+          )}
+        </div>
+      </Link>
+    </TickerHoverCard>
   );
 }

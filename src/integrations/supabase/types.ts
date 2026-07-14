@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_recommendation_log: {
+        Row: {
+          generated_at: string
+          horizon_days: number
+          id: string
+          model: string
+          owner_session: string | null
+          picks: Json
+          rationale: string | null
+          universe: string[]
+        }
+        Insert: {
+          generated_at?: string
+          horizon_days?: number
+          id?: string
+          model: string
+          owner_session?: string | null
+          picks: Json
+          rationale?: string | null
+          universe: string[]
+        }
+        Update: {
+          generated_at?: string
+          horizon_days?: number
+          id?: string
+          model?: string
+          owner_session?: string | null
+          picks?: Json
+          rationale?: string | null
+          universe?: string[]
+        }
+        Relationships: []
+      }
       code_findings: {
         Row: {
           created_at: string

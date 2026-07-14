@@ -13,6 +13,8 @@ import { WatchlistPanel } from "@/components/dashboard/WatchlistPanel";
 import { SmartMoneyTracker } from "@/components/dashboard/SmartMoneyTracker";
 import { MissingApiBanner } from "@/components/dashboard/MissingApiBanner";
 import { DriveGapReport } from "@/components/dashboard/DriveGapReport";
+import { AiRecommendedTickers } from "@/components/dashboard/AiRecommendedTickers";
+import { SortableDashboard, type DashboardWidget } from "@/components/dashboard/SortableDashboard";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -25,6 +27,29 @@ export const Route = createFileRoute("/")({
 });
 
 function Dashboard() {
+  const widgets: DashboardWidget[] = [
+    { id: "drive-gap", label: "Drive Gap Report", span: "full", render: () => <DriveGapReport /> },
+    { id: "smart-money", label: "Smart Money Tracker", span: "full", render: () => <SmartMoneyTracker /> },
+    { id: "watchlist", label: "Alpaca Watchlist", span: "full", render: () => <WatchlistPanel /> },
+    { id: "ai-recs", label: "AI Recommended Tickers", span: "full", render: () => <AiRecommendedTickers /> },
+    { id: "breakouts", label: "AI Breakout Candidates", span: "full", render: () => <BreakoutCandidates /> },
+    { id: "heatmap", label: "AI Market Heatmap", span: "full", render: () => <MarketHeatmap /> },
+    { id: "sectors", label: "Sectors & Indices", span: "full", render: () => <SectorsIndicesPanel /> },
+    { id: "movers", label: "Top Movers", span: "full", render: () => (
+      <div>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-display text-lg font-semibold">Top Movers</h2>
+          <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+            Alpaca · US Equities
+          </span>
+        </div>
+        <TopMovers />
+      </div>
+    ) },
+    { id: "news", label: "Hot News", span: "half", render: () => <HotNews /> },
+    { id: "tracked", label: "Live Tracked Tickers", span: "half", render: () => <LiveTrackedTickers /> },
+  ];
+
   return (
     <div className="flex flex-col">
       <Ticker />
@@ -49,54 +74,11 @@ function Dashboard() {
           <MissingApiBanner />
         </div>
 
-        {/* Drive Gap Report — freshness of code snapshots in Drive */}
         <div className="mt-6">
-          <DriveGapReport />
-        </div>
-
-        {/* Smart Money Tracker — follow the flow */}
-        <div className="mt-6">
-          <SmartMoneyTracker />
-        </div>
-
-        {/* Watchlist + Breakout side-by-side */}
-        <div className="mt-6 grid gap-6 xl:grid-cols-3">
-          <div className="xl:col-span-2">
-            <WatchlistPanel />
-          </div>
-          <div>
-            <BreakoutCandidates />
-          </div>
-        </div>
-
-        {/* AI Market Heatmap — curated picks, not full S&P */}
-        <div className="mt-6">
-          <MarketHeatmap />
-        </div>
-
-        {/* Sectors / Indices / Baskets / Funds */}
-        <div className="mt-6">
-          <SectorsIndicesPanel />
-        </div>
-
-
-        {/* Top Movers */}
-        <div className="mt-6">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-display text-lg font-semibold">Top Movers</h2>
-            <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
-              Alpaca · US Equities
-            </span>
-          </div>
-          <TopMovers />
-        </div>
-
-        {/* News + Tracked side-by-side */}
-        <div className="mt-6 grid gap-6 xl:grid-cols-2">
-          <HotNews />
-          <LiveTrackedTickers />
+          <SortableDashboard storageKey="dashboard-widget-order-v2" widgets={widgets} />
         </div>
       </div>
     </div>
   );
 }
+
