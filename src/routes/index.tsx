@@ -12,6 +12,7 @@ import { SectorsIndicesPanel } from "@/components/dashboard/SectorsIndicesPanel"
 import { WatchlistPanel } from "@/components/dashboard/WatchlistPanel";
 import { SmartMoneyTracker } from "@/components/dashboard/SmartMoneyTracker";
 import { MissingApiBanner } from "@/components/dashboard/MissingApiBanner";
+import { DriveGapReport } from "@/components/dashboard/DriveGapReport";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -46,6 +47,11 @@ function Dashboard() {
 
         <div className="mt-6">
           <MissingApiBanner />
+        </div>
+
+        {/* Drive Gap Report — freshness of code snapshots in Drive */}
+        <div className="mt-6">
+          <DriveGapReport />
         </div>
 
         {/* Smart Money Tracker — follow the flow */}
