@@ -2,6 +2,8 @@
 import { useMemo, useState } from "react";
 import {
   CheckCircle2,
+  ExternalLink,
+  KeyRound,
   Loader2,
   Search,
   Sparkles,
@@ -11,12 +13,15 @@ import { cn } from "@/lib/utils";
 import {
   CATEGORY_LABELS,
   PROVIDER_LABELS,
+  PROVIDER_SIGNUP_URL,
   discoverModels,
   type DiscoveredModel,
   type DiscoveryResult,
   type ModelCategory,
   type ProviderId,
 } from "@/lib/modelDiscovery";
+import { keyVault } from "@/lib/apiKeyVault";
+import { MultiKeyManager } from "./MultiKeyManager";
 
 const STORAGE_KEYS = "ai-os.settings.providerKeys";
 const STORAGE_DISCOVERED = "ai-os.settings.discoveredModels";
