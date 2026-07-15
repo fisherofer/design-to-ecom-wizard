@@ -2,6 +2,8 @@
 import { useMemo, useState } from "react";
 import {
   CheckCircle2,
+  ExternalLink,
+  KeyRound,
   Loader2,
   Search,
   Sparkles,
@@ -11,12 +13,15 @@ import { cn } from "@/lib/utils";
 import {
   CATEGORY_LABELS,
   PROVIDER_LABELS,
+  PROVIDER_SIGNUP_URL,
   discoverModels,
   type DiscoveredModel,
   type DiscoveryResult,
   type ModelCategory,
   type ProviderId,
 } from "@/lib/modelDiscovery";
+import { keyVault } from "@/lib/apiKeyVault";
+import { MultiKeyManager } from "./MultiKeyManager";
 
 const STORAGE_KEYS = "ai-os.settings.providerKeys";
 const STORAGE_DISCOVERED = "ai-os.settings.discoveredModels";
@@ -34,6 +39,14 @@ export function ApiProvidersTab() {
     try { return JSON.parse(localStorage.getItem(STORAGE_DISCOVERED) ?? "{}"); } catch { return {}; }
   });
   const [filter, setFilter] = useState<ModelCategory | "ALL">("ALL");
+  const [managing, setManaging] = useState<ProviderId | null>(null);
+  const [vaultTick, setVaultTick] = useState(0);
+  const vaultCounts = useMemo(() => {
+    void vaultTick;
+    const c: Partial<Record<ProviderId, number>> = {};
+    for (const p of Object.keys(PROVIDER_LABELS) as ProviderId[]) c[p] = keyVault.list(p).length;
+    return c;
+  }, [vaultTick, managing]);
 
   function persistKeys(next: ProviderKeys) {
     setKeys(next);
@@ -93,25 +106,54 @@ export function ApiProvidersTab() {
               <div key={p} className="rounded-md border border-border bg-surface p-4">
                 <div className="grid grid-cols-1 items-center gap-3 sm:grid-cols-[160px_minmax(0,1fr)_auto]">
                   <div className="min-w-0">
-                    <div className="font-medium">{PROVIDER_LABELS[p]}</div>
-                    <div className="mt-0.5 text-[11px] font-mono uppercase text-muted-foreground">{p}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{PROVIDER_LABELS[p]}</span>
+                      <a
+                        href={PROVIDER_SIGNUP_URL[p]}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-muted-foreground hover:text-primary"
+                        title="Get an API key"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                    <div className="mt-0.5 flex items-center gap-2 text-[11px] font-mono uppercase text-muted-foreground">
+                      <span>{p}</span>
+                      {(vaultCounts[p] ?? 0) > 0 && (
+                        <span className="rounded bg-primary/15 px-1.5 text-primary">
+                          {vaultCounts[p]} vault key{vaultCounts[p] === 1 ? "" : "s"}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <input
                     type={isOllama ? "text" : "password"}
-                    placeholder={isOllama ? "(no key needed — local)" : `${p} API key`}
+                    placeholder={isOllama ? "(no key needed — local)" : `${p} API key (single)`}
                     value={keys[p] ?? ""}
                     disabled={isOllama}
                     onChange={(e) => persistKeys({ ...keys, [p]: e.target.value })}
                     className="min-w-0 w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-xs focus:border-primary focus:outline-none disabled:opacity-50"
                   />
-                  <button
-                    onClick={() => runDiscovery(p)}
-                    disabled={discovering === p}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/15 disabled:opacity-50"
-                  >
-                    {discovering === p ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
-                    Discover
-                  </button>
+                  <div className="flex flex-wrap gap-1.5">
+                    {!isOllama && (
+                      <button
+                        onClick={() => setManaging(p)}
+                        className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-2 text-xs font-medium hover:bg-muted"
+                        title="Add multiple keys with rotation"
+                      >
+                        <KeyRound className="h-3.5 w-3.5" /> Vault
+                      </button>
+                    )}
+                    <button
+                      onClick={() => runDiscovery(p)}
+                      disabled={discovering === p}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/15 disabled:opacity-50"
+                    >
+                      {discovering === p ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
+                      Discover
+                    </button>
+                  </div>
                 </div>
                 {result && (
                   <div className="mt-3 flex items-center gap-2 text-xs">
@@ -127,6 +169,17 @@ export function ApiProvidersTab() {
           })}
         </div>
       </section>
+
+      {managing && (
+        <MultiKeyManager
+          provider={managing}
+          onClose={() => {
+            setManaging(null);
+            setVaultTick((t) => t + 1);
+          }}
+        />
+      )}
+
 
        {allModels.length > 0 && (
         <section className="rounded-lg border border-border bg-card p-4 sm:p-6">

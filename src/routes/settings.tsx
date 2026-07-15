@@ -23,6 +23,7 @@ import {
   Save,
   Check,
   TrendingUp,
+  FileArchive,
 } from "lucide-react";
 
 
@@ -43,6 +44,7 @@ import { AlertChannelsTab } from "@/components/settings/AlertChannelsTab";
 import { ComputeRouterTab } from "@/components/settings/ComputeRouterTab";
 import { ProviderConnectorsTab } from "@/components/settings/ProviderConnectorsTab";
 import { TradingModeTab } from "@/components/settings/TradingModeTab";
+import { CodeExportTab } from "@/components/settings/CodeExportTab";
 
 
 export const Route = createFileRoute("/settings")({
@@ -59,7 +61,7 @@ export const Route = createFileRoute("/settings")({
   component: SettingsPage,
 });
 
-type TabId = "general" | "trading" | "api" | "ollama" | "hub" | "filters" | "limits" | "budget" | "router" | "connectors" | "refresh" | "alerts" | "github" | "drive" | "theme";
+type TabId = "general" | "trading" | "api" | "ollama" | "hub" | "filters" | "limits" | "budget" | "router" | "connectors" | "refresh" | "alerts" | "github" | "drive" | "theme" | "export";
 
 const TABS: Array<{ id: TabId; label: string; Icon: typeof SettingsIcon }> = [
   { id: "general", label: "General", Icon: SettingsIcon },
@@ -77,6 +79,7 @@ const TABS: Array<{ id: TabId; label: string; Icon: typeof SettingsIcon }> = [
   { id: "github", label: "GitHub", Icon: Github },
   { id: "drive", label: "Google Drive", Icon: Cloud },
   { id: "theme", label: "Theme", Icon: Palette },
+  { id: "export", label: "Code Export", Icon: FileArchive },
 ];
 
 
@@ -140,6 +143,8 @@ function SettingsPage() {
       {tab === "github" && <GithubTab />}
       {tab === "drive" && <GoogleDriveTab />}
       {tab === "theme" && <ThemeTab />}
+      {tab === "export" && <CodeExportTab />}
+
 
       <div className="fixed inset-x-0 bottom-7 z-20 border-t border-border bg-background/90 py-3 pl-3 pr-20 backdrop-blur-xl sm:px-6 md:left-[240px]">
         <div className="mx-auto flex max-w-7xl items-center justify-start gap-3 sm:justify-between">

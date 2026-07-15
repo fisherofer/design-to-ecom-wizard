@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Plus, Trash2, X, ExternalLink } from "lucide-react";
+import { Trash2, X, ExternalLink, Plus } from "lucide-react";
 import { alpaca, type Watchlist } from "@/lib/alpaca";
+import { TickerSearchInput } from "@/components/tickers/TickerSearchInput";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/watchlists")({
@@ -17,7 +18,6 @@ export const Route = createFileRoute("/watchlists")({
 function WatchlistsPage() {
   const [lists, setLists] = useState<Watchlist[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
-  const [newSymbol, setNewSymbol] = useState("");
   const [newName, setNewName] = useState("");
 
   useEffect(() => {
@@ -29,14 +29,13 @@ function WatchlistsPage() {
 
   const active = lists.find((l) => l.id === selected) ?? null;
 
-  const addSymbol = async () => {
-    if (!active || !newSymbol.trim()) return;
-    const sym = newSymbol.trim().toUpperCase();
-    if (active.symbols.includes(sym)) return;
+  const addSymbol = async (raw: string) => {
+    if (!active) return;
+    const sym = raw.trim().toUpperCase();
+    if (!sym || active.symbols.includes(sym)) return;
     const next = [...active.symbols, sym];
     const updated = await alpaca.updateWatchlist(active.id, next);
     setLists((ls) => ls.map((l) => (l.id === active.id ? updated : l)));
-    setNewSymbol("");
   };
 
   const removeSymbol = async (sym: string) => {
@@ -117,17 +116,11 @@ function WatchlistsPage() {
                     {active.symbols.length} symbols · Updated {new Date(active.updatedAt).toLocaleString()}
                   </p>
                 </div>
-                <div className="flex gap-1">
-                  <input
-                    value={newSymbol}
-                    onChange={(e) => setNewSymbol(e.target.value)}
-                    placeholder="AAPL"
-                    className="w-24 rounded-md border border-border bg-card px-2 py-1.5 text-xs font-mono uppercase"
-                    onKeyDown={(e) => e.key === "Enter" && addSymbol()}
+                <div className="w-full max-w-sm">
+                  <TickerSearchInput
+                    placeholder="Add by ticker or company name…"
+                    onPick={(sym) => addSymbol(sym)}
                   />
-                  <button onClick={addSymbol} className="rounded-md border border-border bg-primary/20 px-3 py-1.5 text-xs font-mono uppercase hover:bg-primary/30">
-                    <Plus className="inline h-3 w-3" /> Add
-                  </button>
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">

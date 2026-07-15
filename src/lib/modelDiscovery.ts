@@ -206,11 +206,21 @@ export function getCurated(provider: ProviderId): DiscoveredModel[] {
 
 export const PROVIDER_LABELS: Record<ProviderId, string> = {
   ollama: "Ollama (Local)",
-  gemini: "Google Gemini",
+  gemini: "Google AI Studio (Gemini)",
   openai: "OpenAI",
   anthropic: "Anthropic",
   groq: "Groq",
   perplexity: "Perplexity",
+};
+
+/** Where to obtain a key for each provider. */
+export const PROVIDER_SIGNUP_URL: Record<ProviderId, string> = {
+  ollama: "https://ollama.com/download",
+  gemini: "https://aistudio.google.com/apikey",
+  openai: "https://platform.openai.com/api-keys",
+  anthropic: "https://console.anthropic.com/settings/keys",
+  groq: "https://console.groq.com/keys",
+  perplexity: "https://www.perplexity.ai/settings/api",
 };
 
 export const CATEGORY_LABELS: Record<ModelCategory, string> = {
