@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Plus, Trash2, X, ExternalLink } from "lucide-react";
+import { Trash2, X, ExternalLink, Plus } from "lucide-react";
 import { alpaca, type Watchlist } from "@/lib/alpaca";
 import { TickerSearchInput } from "@/components/tickers/TickerSearchInput";
 import { cn } from "@/lib/utils";
