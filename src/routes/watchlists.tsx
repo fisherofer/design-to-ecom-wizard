@@ -116,17 +116,11 @@ function WatchlistsPage() {
                     {active.symbols.length} symbols · Updated {new Date(active.updatedAt).toLocaleString()}
                   </p>
                 </div>
-                <div className="flex gap-1">
-                  <input
-                    value={newSymbol}
-                    onChange={(e) => setNewSymbol(e.target.value)}
-                    placeholder="AAPL"
-                    className="w-24 rounded-md border border-border bg-card px-2 py-1.5 text-xs font-mono uppercase"
-                    onKeyDown={(e) => e.key === "Enter" && addSymbol()}
+                <div className="w-full max-w-sm">
+                  <TickerSearchInput
+                    placeholder="Add by ticker or company name…"
+                    onPick={(sym) => addSymbol(sym)}
                   />
-                  <button onClick={addSymbol} className="rounded-md border border-border bg-primary/20 px-3 py-1.5 text-xs font-mono uppercase hover:bg-primary/30">
-                    <Plus className="inline h-3 w-3" /> Add
-                  </button>
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
