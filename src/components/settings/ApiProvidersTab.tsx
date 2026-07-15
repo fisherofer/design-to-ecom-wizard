@@ -39,6 +39,14 @@ export function ApiProvidersTab() {
     try { return JSON.parse(localStorage.getItem(STORAGE_DISCOVERED) ?? "{}"); } catch { return {}; }
   });
   const [filter, setFilter] = useState<ModelCategory | "ALL">("ALL");
+  const [managing, setManaging] = useState<ProviderId | null>(null);
+  const [vaultTick, setVaultTick] = useState(0);
+  const vaultCounts = useMemo(() => {
+    void vaultTick;
+    const c: Partial<Record<ProviderId, number>> = {};
+    for (const p of Object.keys(PROVIDER_LABELS) as ProviderId[]) c[p] = keyVault.list(p).length;
+    return c;
+  }, [vaultTick, managing]);
 
   function persistKeys(next: ProviderKeys) {
     setKeys(next);
