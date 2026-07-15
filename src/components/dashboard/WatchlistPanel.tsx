@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Plus, X, ListFilter, TrendingUp, TrendingDown, Minus, Star } from "lucide-react";
+import { X, ListFilter, TrendingUp, TrendingDown, Minus, Star } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { alpaca, type AlpacaQuote, type Watchlist } from "@/lib/alpaca";
 import { useRefreshInterval } from "@/lib/refreshIntervals";
 import { DASHBOARD_REFRESH_EVENT } from "./RefreshButton";
 import { TickerLogo } from "@/components/tickers/TickerLogo";
+import { TickerSearchInput } from "@/components/tickers/TickerSearchInput";
 import { cn } from "@/lib/utils";
 
 type FilterKey = "all" | "gainers" | "losers" | "flat";
@@ -25,7 +26,6 @@ export function WatchlistPanel() {
   const [filter, setFilter] = useState<FilterKey>("all");
   const [sort, setSort] = useState<SortKey>("change");
   const [search, setSearch] = useState("");
-  const [adding, setAdding] = useState("");
   const ms = useRefreshInterval("ticker");
 
   // Load watchlists.
@@ -75,17 +75,13 @@ export function WatchlistPanel() {
     return list;
   }, [quotes, filter, sort, search]);
 
-  const addSymbol = async () => {
-    const sym = adding.trim().toUpperCase();
-    if (!sym || !active) return;
-    if (active.symbols.includes(sym)) {
-      setAdding("");
-      return;
-    }
-    const next = [...active.symbols, sym];
+  const addSymbol = async (sym: string) => {
+    const upper = sym.trim().toUpperCase();
+    if (!upper || !active) return;
+    if (active.symbols.includes(upper)) return;
+    const next = [...active.symbols, upper];
     const updated = await alpaca.updateWatchlist(active.id, next);
     setWls(wls.map((w) => (w.id === active.id ? { ...w, symbols: updated.symbols } : w)));
-    setAdding("");
   };
 
   const removeSymbol = async (sym: string) => {
@@ -213,21 +209,12 @@ export function WatchlistPanel() {
         </table>
       </div>
 
-      {/* Add */}
-      <div className="mt-3 flex items-center gap-2">
-        <input
-          value={adding}
-          onChange={(e) => setAdding(e.target.value.toUpperCase())}
-          onKeyDown={(e) => e.key === "Enter" && addSymbol()}
-          placeholder="Add symbol (e.g. NVDA)"
-          className="h-8 flex-1 rounded-md border border-border bg-card/60 px-3 text-xs font-mono placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary/50"
+      {/* Add — search by ticker OR company name */}
+      <div className="mt-3">
+        <TickerSearchInput
+          placeholder="Add by ticker or company name (e.g. NVDA or Nvidia)…"
+          onPick={(sym) => addSymbol(sym)}
         />
-        <button
-          onClick={addSymbol}
-          className="inline-flex items-center gap-1 rounded-md border border-primary/50 bg-primary/10 px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-primary hover:bg-primary/20"
-        >
-          <Plus className="h-3 w-3" /> Add
-        </button>
       </div>
     </div>
   );
