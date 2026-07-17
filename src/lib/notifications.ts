@@ -85,6 +85,13 @@ export const notifications = {
       ...n,
     };
     write([item, ...list]);
+    if (typeof window !== "undefined") {
+      import("./alertsDedupLog")
+        .then(({ alertsDedupLog }) =>
+          alertsDedupLog.record({ title: item.title, message: item.message, level: item.level }),
+        )
+        .catch(() => {});
+    }
     return item;
   },
   markRead(id: string) {
