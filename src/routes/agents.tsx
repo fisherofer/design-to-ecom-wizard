@@ -85,7 +85,7 @@ function AgentBuilderPage() {
       const rec = await runAgent(selected, { taskInput, source: "manual" });
       update({ ...selected, status: rec.ok ? "idle" : "error", lastRun: rec.finishedAt });
       notifications.push({
-        level: rec.ok ? "info" : "warning",
+        level: rec.ok ? "info" : "warn",
         title: `${selected.name} finished`,
         message: rec.ok ? `Ran in ${rec.durationMs}ms via ${rec.modelId}` : (rec.error ?? "run failed"),
       });
@@ -97,7 +97,7 @@ function AgentBuilderPage() {
   async function consensusRun() {
     const running = items.filter((a) => a.status === "running" || a.id === selectedId);
     if (running.length < 2) {
-      notifications.push({ level: "warning", title: "Consensus needs ≥2 agents", message: "Mark more agents as running or select alternatives." });
+      notifications.push({ level: "warn", title: "Consensus needs ≥2 agents", message: "Mark more agents as running or select alternatives." });
       return;
     }
     setBusy("consensus");
