@@ -141,10 +141,14 @@ function triggerDownload(blob: Blob, name: string) {
   const a = document.createElement("a");
   a.href = url;
   a.download = name;
+  a.rel = "noopener";
+  a.target = "_blank"; // iOS Safari: opens in new tab; user can then Share → Save to Files
   document.body.appendChild(a);
   a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
+  setTimeout(() => {
+    a.remove();
+    URL.revokeObjectURL(url);
+  }, 1500);
 }
 
 function guessLang(path: string): string {
