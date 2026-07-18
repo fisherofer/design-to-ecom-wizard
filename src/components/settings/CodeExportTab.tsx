@@ -5,7 +5,7 @@
  */
 import { useState } from "react";
 import { Download, FileArchive, Loader2, Package } from "lucide-react";
-import { exportCodebase, type CodeExportBundle } from "@/lib/codeExport.functions";
+import { buildCodeBundle, type CodeExportBundle } from "@/lib/codeExportClient";
 
 export function CodeExportTab() {
   const [bundle, setBundle] = useState<CodeExportBundle | null>(null);
@@ -16,7 +16,10 @@ export function CodeExportTab() {
     setLoading(true);
     setError(null);
     try {
-      const b = await exportCodebase();
+      // Yield to the event loop so the spinner paints before the (synchronous) bundle build.
+      await new Promise((r) => setTimeout(r, 0));
+      const b = buildCodeBundle();
+      if (b.fileCount === 0) throw new Error("No source files matched — check glob patterns.");
       setBundle(b);
     } catch (e) {
       setError((e as Error).message);
