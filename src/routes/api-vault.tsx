@@ -15,6 +15,7 @@ import {
 import { api, USE_CASE_LABELS, type ApiKey, type ApiKeyTier, type UseCase } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { ApiHealthPanel } from "@/components/vault/ApiHealthPanel";
+import { MarketDataSourcesPanel } from "@/components/vault/MarketDataSourcesPanel";
 
 export const Route = createFileRoute("/api-vault")({
   head: () => ({
@@ -113,6 +114,9 @@ function ApiVault() {
           </button>
         </div>
       </div>
+
+      {/* Shared source registry (mirrors backend config) */}
+      <MarketDataSourcesPanel />
 
       {/* Live provider health probe */}
       <ApiHealthPanel />
