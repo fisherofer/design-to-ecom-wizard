@@ -21,6 +21,8 @@ import {
   ScrollText,
   Code2,
   AlertTriangle,
+  Terminal,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -34,6 +36,10 @@ import {
   type ImportSummary,
 } from "@/lib/sourceExport";
 import { api } from "@/lib/api";
+import {
+  buildBootstrapperBundle,
+  downloadTextFile,
+} from "@/lib/bootstrapperExport";
 
 export function SourceBundleCard() {
   const [busy, setBusy] = useState<"idle" | "code" | "logs" | "import">("idle");
@@ -218,6 +224,81 @@ export function SourceBundleCard() {
           }}
         />
       </div>
+
+      <div className="mt-4 rounded-md border border-primary/25 bg-primary/[0.04] p-3">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Terminal className="h-4 w-4 text-primary" />
+            <h4 className="font-display text-xs font-semibold uppercase tracking-wider">
+              OFERTRADINGBOT — OS-Independent Bootstrapper
+            </h4>
+          </div>
+          <Badge variant="outline" className="font-mono text-[10px]">
+            VENV · Level 9
+          </Badge>
+        </div>
+        <p className="text-[11px] text-muted-foreground">
+          Downloads a self-contained boot package: an isolated Python VENV
+          orchestrator (root resolved dynamically from{" "}
+          <span className="font-mono">__file__</span> — no hardcoded drives)
+          and the master integration JSON for Claude / Gemini.
+        </p>
+        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          <Button
+            size="sm"
+            variant="secondary"
+            className="justify-start"
+            onClick={() => {
+              const b = buildBootstrapperBundle();
+              downloadTextFile(
+                "system_orchestrator.py",
+                b.orchestratorPy,
+                "text/x-python",
+              );
+              toast.success("system_orchestrator.py downloaded");
+            }}
+          >
+            <Terminal className="mr-2 h-4 w-4" />
+            system_orchestrator.py
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            className="justify-start"
+            onClick={() => {
+              const b = buildBootstrapperBundle();
+              downloadTextFile(
+                "ofer_master_integration.json",
+                b.masterJson,
+                "application/json",
+              );
+              toast.success("ofer_master_integration.json downloaded");
+            }}
+          >
+            <FileJson className="mr-2 h-4 w-4" />
+            master_integration.json
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="justify-start"
+            onClick={() => {
+              const b = buildBootstrapperBundle();
+              downloadTextFile(
+                "BOOTSTRAP_README.md",
+                b.readmeMd,
+                "text/markdown",
+              );
+              toast.success("BOOTSTRAP_README.md downloaded");
+            }}
+          >
+            <BookOpen className="mr-2 h-4 w-4" />
+            README.md
+          </Button>
+        </div>
+      </div>
+
+
 
       {(lastExport || lastLogs || imported) && (
         <div className="mt-4 grid gap-2 text-xs">
