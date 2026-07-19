@@ -21,6 +21,8 @@ import {
   ScrollText,
   Code2,
   AlertTriangle,
+  Terminal,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -34,6 +36,10 @@ import {
   type ImportSummary,
 } from "@/lib/sourceExport";
 import { api } from "@/lib/api";
+import {
+  buildBootstrapperBundle,
+  downloadTextFile,
+} from "@/lib/bootstrapperExport";
 
 export function SourceBundleCard() {
   const [busy, setBusy] = useState<"idle" | "code" | "logs" | "import">("idle");
