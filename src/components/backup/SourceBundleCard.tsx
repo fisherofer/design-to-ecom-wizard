@@ -296,6 +296,41 @@ export function SourceBundleCard() {
             README.md
           </Button>
         </div>
+        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+          <Button
+            size="sm"
+            variant="outline"
+            className="justify-start"
+            onClick={() => {
+              const b = buildBootstrapperBundle();
+              downloadTextFile("venv_manager.py", b.venvManagerPy, "text/x-python");
+              toast.success("hub/venv_manager.py downloaded");
+            }}
+          >
+            <Code2 className="mr-2 h-4 w-4" />
+            hub/venv_manager.py
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="justify-start"
+            onClick={() => {
+              const b = buildBootstrapperBundle();
+              downloadTextFile("venv_routes.py", b.venvRoutesPy, "text/x-python");
+              toast.success("hub/venv_routes.py downloaded");
+            }}
+          >
+            <Code2 className="mr-2 h-4 w-4" />
+            hub/venv_routes.py
+          </Button>
+        </div>
+        <p className="mt-2 text-[10px] font-mono text-muted-foreground">
+          Drop both into <span className="text-foreground">hub/</span> and mount with{" "}
+          <span className="text-foreground">
+            app.include_router(venv_routes.router, prefix=&quot;/api/venv&quot;)
+          </span>
+          . The Venv Manager UI (System page) will light up automatically.
+        </p>
       </div>
 
 
