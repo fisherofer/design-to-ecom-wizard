@@ -1,8 +1,12 @@
 /**
  * VenvManager — real UI for hub/venv_manager.py exposed via hub/venv_routes.py.
  * Renders live backend state only. Never fabricates package lists client-side.
+ *
+ * Adds a periodic health poller with a user-configurable interval, a
+ * "last checked" timestamp, latency measurement, and a one-shot toast when
+ * the backend transitions offline → recovers, or online → drops.
  */
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Boxes,
   RefreshCw,
@@ -13,13 +17,32 @@ import {
   AlertTriangle,
   CheckCircle2,
   Package,
+  Activity,
+  WifiOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { venvApi, type VenvStatus } from "@/lib/venvApi";
+
+const INTERVAL_OPTIONS = [
+  { label: "Off", value: 0 },
+  { label: "5s", value: 5_000 },
+  { label: "15s", value: 15_000 },
+  { label: "30s", value: 30_000 },
+  { label: "1m", value: 60_000 },
+  { label: "5m", value: 300_000 },
+];
+const STORAGE_KEY = "venvManager.pollMs";
 
 export function VenvManager() {
   const [status, setStatus] = useState<VenvStatus | null>(null);
@@ -27,23 +50,61 @@ export function VenvManager() {
   const [busy, setBusy] = useState<string | null>(null);
   const [pkgInput, setPkgInput] = useState("");
   const [filter, setFilter] = useState("");
+  const [lastChecked, setLastChecked] = useState<Date | null>(null);
+  const [latencyMs, setLatencyMs] = useState<number | null>(null);
+  const [pollMs, setPollMs] = useState<number>(() => {
+    if (typeof window === "undefined") return 30_000;
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const n = raw ? Number(raw) : NaN;
+    return Number.isFinite(n) ? n : 30_000;
+  });
+  const wasOnlineRef = useRef<boolean | null>(null);
 
-  async function refresh() {
-    setBusy("status");
+  const refresh = useCallback(async () => {
+    setBusy((b) => b ?? "status");
+    const started = performance.now();
     const res = await venvApi.status();
+    const took = Math.round(performance.now() - started);
+    setLatencyMs(took);
+    setLastChecked(new Date());
     if (res.ok) {
       setStatus(res.data);
       setError(null);
+      if (wasOnlineRef.current === false) {
+        toast.success("Backend online — venv status recovered");
+      }
+      wasOnlineRef.current = true;
     } else {
       setStatus(null);
       setError(res.error);
+      if (wasOnlineRef.current === true || wasOnlineRef.current === null) {
+        // Only alert when we transition to offline, not on every poll
+        if (wasOnlineRef.current === true) {
+          toast.error(`Backend unreachable: ${res.error}`);
+        }
+      }
+      wasOnlineRef.current = false;
     }
     setBusy(null);
-  }
+  }, []);
 
   useEffect(() => {
-    refresh();
-  }, []);
+    void refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    if (pollMs <= 0) return;
+    const id = window.setInterval(() => {
+      if (document.visibilityState === "visible") void refresh();
+    }, pollMs);
+    return () => window.clearInterval(id);
+  }, [pollMs, refresh]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(STORAGE_KEY, String(pollMs));
+    }
+  }, [pollMs]);
 
   async function run(
     label: string,
@@ -85,6 +146,8 @@ export function VenvManager() {
     ? packages.filter((p) => p.name.toLowerCase().includes(filter.toLowerCase()))
     : packages;
 
+  const online = !!status && !error;
+
   return (
     <Card className="border-border/60 bg-card/40 p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
@@ -93,17 +156,45 @@ export function VenvManager() {
           <h3 className="font-display text-sm font-semibold uppercase tracking-wider">
             Python VENV Manager
           </h3>
-          {status?.venv_exists ? (
-            <Badge variant="outline" className="border-success/40 text-success text-[10px]">
-              <CheckCircle2 className="mr-1 h-3 w-3" /> Ready
+          {online ? (
+            status!.venv_exists ? (
+              <Badge variant="outline" className="border-success/40 text-success text-[10px]">
+                <CheckCircle2 className="mr-1 h-3 w-3" /> Ready
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="border-warning/40 text-warning text-[10px]">
+                <AlertTriangle className="mr-1 h-3 w-3" /> Not Created
+              </Badge>
+            )
+          ) : (
+            <Badge variant="outline" className="border-destructive/40 text-destructive text-[10px]">
+              <WifiOff className="mr-1 h-3 w-3" /> Offline
             </Badge>
-          ) : status ? (
-            <Badge variant="outline" className="border-warning/40 text-warning text-[10px]">
-              <AlertTriangle className="mr-1 h-3 w-3" /> Not Created
-            </Badge>
-          ) : null}
+          )}
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <div className="mr-1 flex items-center gap-1 text-[10px] font-mono text-muted-foreground">
+            <Activity className="h-3 w-3" />
+            <span>
+              {lastChecked ? lastChecked.toLocaleTimeString() : "—"}
+              {latencyMs != null && online ? ` · ${latencyMs}ms` : ""}
+            </span>
+          </div>
+          <Select
+            value={String(pollMs)}
+            onValueChange={(v) => setPollMs(Number(v))}
+          >
+            <SelectTrigger className="h-7 w-[88px] text-[11px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {INTERVAL_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={String(opt.value)} className="text-[11px]">
+                  Poll: {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button size="sm" variant="ghost" onClick={refresh} disabled={busy !== null}>
             {busy === "status" ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -115,7 +206,7 @@ export function VenvManager() {
             size="sm"
             variant="secondary"
             onClick={() => run("heal", () => venvApi.heal(), "Venv healed")}
-            disabled={busy !== null}
+            disabled={busy !== null || !online}
           >
             {busy === "heal" ? (
               <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
@@ -128,7 +219,7 @@ export function VenvManager() {
             size="sm"
             variant="outline"
             onClick={handleRecreate}
-            disabled={busy !== null}
+            disabled={busy !== null || !online}
             className="border-destructive/40 text-destructive hover:bg-destructive/10"
           >
             {busy === "recreate" ? (
@@ -150,6 +241,9 @@ export function VenvManager() {
             <div className="mt-1 text-muted-foreground">
               Start the local FastAPI backend (see BOOTSTRAP_README.md → run{" "}
               <span className="font-mono">python system_orchestrator.py</span>).
+              {pollMs > 0 && (
+                <> Auto-retrying every {Math.round(pollMs / 1000)}s.</>
+              )}
             </div>
           </div>
         </div>
@@ -165,6 +259,10 @@ export function VenvManager() {
               label="Disk"
               value={`${(status.disk_usage_bytes / 1024 / 1024).toFixed(1)} MB`}
             />
+          </div>
+          <div className="mb-4 rounded-md border border-border/60 bg-background/40 px-2.5 py-2 text-[10px] font-mono text-muted-foreground">
+            <span className="uppercase tracking-wider">Venv path:</span>{" "}
+            <span className="text-foreground">{status.venv_dir}</span>
           </div>
 
           {status.health.missing && status.health.missing.length > 0 && (
@@ -204,6 +302,9 @@ export function VenvManager() {
             <span>
               <Package className="mr-1 inline h-3 w-3" />
               {packages.length} installed
+              {status.health.required_count != null && (
+                <> · {status.health.installed_count ?? packages.length}/{status.health.required_count} required</>
+              )}
             </span>
             <Input
               placeholder="filter…"
