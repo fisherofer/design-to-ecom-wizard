@@ -11,6 +11,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { api, type HealthReport, type HealthLevel } from "@/lib/api";
+import { VenvManager } from "@/components/system/VenvManager";
 
 export const Route = createFileRoute("/system")({
   head: () => ({
@@ -110,6 +111,11 @@ function SystemHealth() {
 
       {/* Docker / npm quick controls removed — endpoints not implemented on backend.
           Use /api/health/doctor (Repair) above to auto-fix dependency issues. */}
+
+      {/* Python VENV Manager — live view of hub/venv_manager.py via /api/venv/* */}
+      <div className="mt-6">
+        <VenvManager />
+      </div>
 
       {/* Repair log */}
       {repairLog.length > 0 && (
