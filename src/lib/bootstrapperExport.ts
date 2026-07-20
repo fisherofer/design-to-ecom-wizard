@@ -259,6 +259,8 @@ export function buildBootstrapperBundle(): BootstrapperFiles {
     masterJson: buildMasterIntegrationJson(),
     orchestratorPy: buildOrchestratorPy(),
     readmeMd: buildBootstrapReadme(),
+    venvManagerPy,
+    venvRoutesPy,
   };
 }
 
