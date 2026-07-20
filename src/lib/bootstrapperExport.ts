@@ -11,10 +11,18 @@
  *  - No cloud dependency: FastAPI on 127.0.0.1:<API_PORT>.
  */
 
+// Real Python modules — sourced from the OFERTRADINGBOT_UNIFICATION_SPEC,
+// bundled verbatim as raw text so the user can drop them into `hub/` and
+// mount venv_routes.router on the local FastAPI app.
+import venvManagerPy from "@/assets/hub/venv_manager.py?raw";
+import venvRoutesPy from "@/assets/hub/venv_routes.py?raw";
+
 export interface BootstrapperFiles {
   masterJson: string;
   orchestratorPy: string;
   readmeMd: string;
+  venvManagerPy: string;
+  venvRoutesPy: string;
 }
 
 export function buildMasterIntegrationJson(): string {
