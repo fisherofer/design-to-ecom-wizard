@@ -270,11 +270,43 @@ python system_orchestrator.py
 export function buildBootstrapperBundle(): BootstrapperFiles {
   return {
     masterJson: buildMasterIntegrationJson(),
-    orchestratorPy: buildOrchestratorPy(),
+    orchestratorPy: orchestratorPyFull || buildOrchestratorPy(),
     readmeMd: buildBootstrapReadme(),
     venvManagerPy,
     venvRoutesPy,
+    backendFiles: {
+      "hub/__init__.py": hubInitPy,
+      "hub/venv_manager.py": venvManagerPy,
+      "hub/venv_routes.py": venvRoutesPy,
+      "hub/keys_manager.py": keysManagerPy,
+      "hub/system_routes.py": systemRoutesPy,
+      "hub/oms_routes.py": omsRoutesPy,
+      "hub/risk_routes.py": riskRoutesPy,
+      "hub/market_stream_routes.py": marketStreamRoutesPy,
+      "hub/backtest_routes.py": backtestRoutesPy,
+      "hub/mcp_routes.py": mcpRoutesPy,
+      "config.py": configPy,
+      "requirements.txt": requirementsTxt,
+      "backend/main.py": backendMainPy,
+      "system_orchestrator.py": orchestratorPyFull,
+    },
   };
+}
+
+export function buildBackendPackageJson(): string {
+  const bundle = buildBootstrapperBundle();
+  return JSON.stringify(
+    {
+      success: true,
+      timestamp: new Date().toISOString(),
+      project: "OFERTRADINGBOT",
+      kind: "backend-package",
+      fileCount: Object.keys(bundle.backendFiles).length,
+      files: bundle.backendFiles,
+    },
+    null,
+    2,
+  );
 }
 
 export function downloadTextFile(
