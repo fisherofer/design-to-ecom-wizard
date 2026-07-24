@@ -11,11 +11,23 @@
  *  - No cloud dependency: FastAPI on 127.0.0.1:<API_PORT>.
  */
 
-// Real Python modules — sourced from the OFERTRADINGBOT_UNIFICATION_SPEC,
-// bundled verbatim as raw text so the user can drop them into `hub/` and
-// mount venv_routes.router on the local FastAPI app.
+// Real Python modules — sourced from OFERTRADINGBOT specs and the
+// 2026-07-24 workspace backup. Bundled verbatim as raw text so the user
+// can drop them into their local repo and mount the routers on FastAPI.
 import venvManagerPy from "@/assets/hub/venv_manager.py?raw";
 import venvRoutesPy from "@/assets/hub/venv_routes.py?raw";
+import hubInitPy from "@/assets/hub/__init__.py?raw";
+import keysManagerPy from "@/assets/hub/keys_manager.py?raw";
+import systemRoutesPy from "@/assets/hub/system_routes.py?raw";
+import omsRoutesPy from "@/assets/hub/oms_routes.py?raw";
+import riskRoutesPy from "@/assets/hub/risk_routes.py?raw";
+import marketStreamRoutesPy from "@/assets/hub/market_stream_routes.py?raw";
+import backtestRoutesPy from "@/assets/hub/backtest_routes.py?raw";
+import mcpRoutesPy from "@/assets/hub/mcp_routes.py?raw";
+import configPy from "@/assets/backend/config.py?raw";
+import requirementsTxt from "@/assets/backend/requirements.txt?raw";
+import backendMainPy from "@/assets/backend/main.py?raw";
+import orchestratorPyFull from "@/assets/backend/system_orchestrator.py?raw";
 
 export interface BootstrapperFiles {
   masterJson: string;
@@ -23,6 +35,7 @@ export interface BootstrapperFiles {
   readmeMd: string;
   venvManagerPy: string;
   venvRoutesPy: string;
+  backendFiles: Record<string, string>;
 }
 
 export function buildMasterIntegrationJson(): string {
@@ -257,11 +270,43 @@ python system_orchestrator.py
 export function buildBootstrapperBundle(): BootstrapperFiles {
   return {
     masterJson: buildMasterIntegrationJson(),
-    orchestratorPy: buildOrchestratorPy(),
+    orchestratorPy: orchestratorPyFull || buildOrchestratorPy(),
     readmeMd: buildBootstrapReadme(),
     venvManagerPy,
     venvRoutesPy,
+    backendFiles: {
+      "hub/__init__.py": hubInitPy,
+      "hub/venv_manager.py": venvManagerPy,
+      "hub/venv_routes.py": venvRoutesPy,
+      "hub/keys_manager.py": keysManagerPy,
+      "hub/system_routes.py": systemRoutesPy,
+      "hub/oms_routes.py": omsRoutesPy,
+      "hub/risk_routes.py": riskRoutesPy,
+      "hub/market_stream_routes.py": marketStreamRoutesPy,
+      "hub/backtest_routes.py": backtestRoutesPy,
+      "hub/mcp_routes.py": mcpRoutesPy,
+      "config.py": configPy,
+      "requirements.txt": requirementsTxt,
+      "backend/main.py": backendMainPy,
+      "system_orchestrator.py": orchestratorPyFull,
+    },
   };
+}
+
+export function buildBackendPackageJson(): string {
+  const bundle = buildBootstrapperBundle();
+  return JSON.stringify(
+    {
+      success: true,
+      timestamp: new Date().toISOString(),
+      project: "OFERTRADINGBOT",
+      kind: "backend-package",
+      fileCount: Object.keys(bundle.backendFiles).length,
+      files: bundle.backendFiles,
+    },
+    null,
+    2,
+  );
 }
 
 export function downloadTextFile(
