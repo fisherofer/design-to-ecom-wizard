@@ -38,6 +38,7 @@ import {
 import { api } from "@/lib/api";
 import {
   buildBootstrapperBundle,
+  buildBackendPackageJson,
   downloadTextFile,
 } from "@/lib/bootstrapperExport";
 
