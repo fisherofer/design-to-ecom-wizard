@@ -325,14 +325,35 @@ export function SourceBundleCard() {
             hub/venv_routes.py
           </Button>
         </div>
+        <div className="mt-2">
+          <Button
+            size="sm"
+            variant="default"
+            className="w-full justify-start"
+            onClick={() => {
+              const json = buildBackendPackageJson();
+              const count = Object.keys(buildBootstrapperBundle().backendFiles).length;
+              downloadTextFile(
+                `ofertradingbot_backend_package_${new Date().toISOString().slice(0, 10)}.json`,
+                json,
+                "application/json",
+              );
+              toast.success(`Backend package (${count} files) downloaded`);
+            }}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Download Full Backend Package (hub/ + config + orchestrator)
+          </Button>
+        </div>
         <p className="mt-2 text-[10px] font-mono text-muted-foreground">
-          Drop both into <span className="text-foreground">hub/</span> and mount with{" "}
+          Drop the <span className="text-foreground">hub/</span> routers into your local repo and mount them with{" "}
           <span className="text-foreground">
             app.include_router(venv_routes.router, prefix=&quot;/api/venv&quot;)
           </span>
           . The Venv Manager UI (System page) will light up automatically.
         </p>
       </div>
+
 
 
 
