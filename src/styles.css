@@ -258,3 +258,18 @@
 .ticker-scroll {
   animation: ticker-scroll 60s linear infinite;
 }
+
+/* iOS/Android PWA: honor device safe areas (notch, home indicator) */
+@supports (padding: env(safe-area-inset-top)) {
+  html, body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    background-color: #0a0e1a;
+  }
+}
+
+/* Prevent iOS text auto-size + double-tap zoom on interactive controls */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+button, a, [role="button"] { touch-action: manipulation; }
