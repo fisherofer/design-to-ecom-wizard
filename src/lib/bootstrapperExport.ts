@@ -28,6 +28,18 @@ import configPy from "@/assets/backend/config.py?raw";
 import requirementsTxt from "@/assets/backend/requirements.txt?raw";
 import backendMainPy from "@/assets/backend/main.py?raw";
 import orchestratorPyFull from "@/assets/backend/system_orchestrator.py?raw";
+// Core engine modules extracted from the 2026-07-25 workspace backup.
+import backtestingEnginePy from "@/assets/backend/backtesting_engine.py?raw";
+import hardRiskManagerPy from "@/assets/backend/hard_risk_manager.py?raw";
+import agentAlphaHunterPy from "@/assets/backend/agent_alpha_hunter.py?raw";
+import agentWhaleTrackerPy from "@/assets/backend/agent_whale_tracker.py?raw";
+import agentMetaSupervisorPy from "@/assets/backend/agent_meta_supervisor.py?raw";
+import marketDataStreamPy from "@/assets/backend/market_data_stream.py?raw";
+import orderManagementSystemPy from "@/assets/backend/order_management_system.py?raw";
+import liveTelemetryWsPy from "@/assets/backend/live_telemetry_ws.py?raw";
+import llmCognitiveEnginePy from "@/assets/backend/llm_cognitive_engine.py?raw";
+import timeseriesDbPy from "@/assets/backend/timeseries_db.py?raw";
+import masterOrchestratorPy from "@/assets/backend/master_orchestrator.py?raw";
 
 export interface BootstrapperFiles {
   masterJson: string;
