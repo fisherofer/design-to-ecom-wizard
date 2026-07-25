@@ -16,11 +16,27 @@ export function CodeExportTab() {
     setLoading(true);
     setError(null);
     try {
-      // Yield to the event loop so the spinner paints before the (synchronous) bundle build.
       await new Promise((r) => setTimeout(r, 0));
       const b = buildCodeBundle();
       if (b.fileCount === 0) throw new Error("No source files matched — check glob patterns.");
       setBundle(b);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const oneClickDownload = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await new Promise((r) => setTimeout(r, 0));
+      const b = buildCodeBundle();
+      if (b.fileCount === 0) throw new Error("No source files matched — check glob patterns.");
+      setBundle(b);
+      const blob = new Blob([JSON.stringify(b, null, 2)], { type: "application/json" });
+      triggerDownload(blob, `codebase-full-${new Date().toISOString().slice(0, 10)}.json`);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -54,6 +70,7 @@ export function CodeExportTab() {
     const blob = new Blob([parts.join("\n")], { type: "text/markdown" });
     triggerDownload(blob, `codebase-${new Date().toISOString().slice(0, 10)}.md`);
   };
+
 
   return (
     <div className="space-y-6">
