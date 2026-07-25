@@ -16,11 +16,27 @@ export function CodeExportTab() {
     setLoading(true);
     setError(null);
     try {
-      // Yield to the event loop so the spinner paints before the (synchronous) bundle build.
       await new Promise((r) => setTimeout(r, 0));
       const b = buildCodeBundle();
       if (b.fileCount === 0) throw new Error("No source files matched — check glob patterns.");
       setBundle(b);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const oneClickDownload = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await new Promise((r) => setTimeout(r, 0));
+      const b = buildCodeBundle();
+      if (b.fileCount === 0) throw new Error("No source files matched — check glob patterns.");
+      setBundle(b);
+      const blob = new Blob([JSON.stringify(b, null, 2)], { type: "application/json" });
+      triggerDownload(blob, `codebase-full-${new Date().toISOString().slice(0, 10)}.json`);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -55,6 +71,7 @@ export function CodeExportTab() {
     triggerDownload(blob, `codebase-${new Date().toISOString().slice(0, 10)}.md`);
   };
 
+
   return (
     <div className="space-y-6">
       <section className="rounded-lg border border-border bg-card p-4 sm:p-6">
@@ -72,12 +89,20 @@ export function CodeExportTab() {
 
         <div className="mt-5 flex flex-wrap gap-2">
           <button
-            onClick={run}
+            onClick={oneClickDownload}
             disabled={loading}
             className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Package className="h-4 w-4" />}
-            {loading ? "Bundling…" : bundle ? "Rebuild bundle" : "Generate bundle"}
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            {loading ? "Bundling…" : "Download Full Backup (JSON)"}
+          </button>
+          <button
+            onClick={run}
+            disabled={loading}
+            className="inline-flex items-center gap-2 rounded-md border border-border bg-surface px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
+          >
+            <Package className="h-4 w-4" />
+            {bundle ? "Rebuild preview" : "Preview manifest"}
           </button>
           {bundle && (
             <>
@@ -85,17 +110,18 @@ export function CodeExportTab() {
                 onClick={downloadJson}
                 className="inline-flex items-center gap-2 rounded-md border border-primary/40 bg-primary/10 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/20"
               >
-                <Download className="h-4 w-4" /> Download JSON
+                <Download className="h-4 w-4" /> JSON
               </button>
               <button
                 onClick={downloadMarkdown}
                 className="inline-flex items-center gap-2 rounded-md border border-border bg-surface px-4 py-2 text-sm font-medium hover:bg-muted"
               >
-                <Download className="h-4 w-4" /> Download Markdown
+                <Download className="h-4 w-4" /> Markdown
               </button>
             </>
           )}
         </div>
+
 
         {error && <p className="mt-3 text-sm text-destructive">Error: {error}</p>}
 
