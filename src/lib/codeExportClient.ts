@@ -26,7 +26,8 @@ export interface CodeExportBundle {
 const SOURCE_MODULES = {
   ...(import.meta.glob(
     [
-      "/src/**/*.{ts,tsx,js,jsx,css,md,json,sql,html,svg}",
+      "/src/**/*.{ts,tsx,js,jsx,css,scss,md,json,sql,html,svg,py,txt,yml,yaml,toml,cfg,ini,env}",
+      "/src/**/*.ts.txt",
       "!/src/routeTree.gen.ts",
     ],
     { query: "?raw", import: "default", eager: true },
@@ -36,11 +37,18 @@ const SOURCE_MODULES = {
     import: "default",
     eager: true,
   }) as Record<string, string>),
-  ...(import.meta.glob("/public/**/*.{json,txt,md,svg,html}", {
+  ...(import.meta.glob("/public/**/*.{json,txt,md,svg,html,xml,webmanifest}", {
     query: "?raw",
     import: "default",
     eager: true,
   }) as Record<string, string>),
+  ...(import.meta.glob(
+    [
+      "/*.{ts,js,mjs,cjs,json,jsonc,md,html,yml,yaml,toml,css}",
+      "/.{gitignore,env.example}",
+    ],
+    { query: "?raw", import: "default", eager: true },
+  ) as Record<string, string>),
 } as Record<string, string>;
 
 export function buildCodeBundle(projectName = "ai-executive-os"): CodeExportBundle {
