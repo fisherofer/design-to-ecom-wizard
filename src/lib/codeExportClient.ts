@@ -44,7 +44,7 @@ const SOURCE_MODULES = {
   }) as Record<string, string>),
   ...(import.meta.glob(
     [
-      "/*.{ts,js,mjs,cjs,json,md,html,yml,yaml,toml,css}",
+      "/*.{ts,js,mjs,cjs,json,jsonc,md,html,yml,yaml,toml,css}",
       "/.{gitignore,env.example}",
     ],
     { query: "?raw", import: "default", eager: true },
