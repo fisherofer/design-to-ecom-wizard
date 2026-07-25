@@ -301,6 +301,18 @@ export function buildBootstrapperBundle(): BootstrapperFiles {
       "requirements.txt": requirementsTxt,
       "backend/main.py": backendMainPy,
       "system_orchestrator.py": orchestratorPyFull,
+      // Core engine modules — Sprint B integrations from 2026-07-25 backup.
+      "engines/backtesting_engine.py": backtestingEnginePy,
+      "engines/hard_risk_manager.py": hardRiskManagerPy,
+      "engines/market_data_stream.py": marketDataStreamPy,
+      "engines/order_management_system.py": orderManagementSystemPy,
+      "engines/live_telemetry_ws.py": liveTelemetryWsPy,
+      "engines/llm_cognitive_engine.py": llmCognitiveEnginePy,
+      "engines/timeseries_db.py": timeseriesDbPy,
+      "agents/agent_alpha_hunter.py": agentAlphaHunterPy,
+      "agents/agent_whale_tracker.py": agentWhaleTrackerPy,
+      "agents/agent_meta_supervisor.py": agentMetaSupervisorPy,
+      "master_orchestrator.py": masterOrchestratorPy,
     },
   };
 }
