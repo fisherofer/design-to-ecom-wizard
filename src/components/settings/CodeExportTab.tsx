@@ -4,24 +4,42 @@
  * knowledge, another Lovable project) without cloning the git repo.
  */
 import { useState } from "react";
-import { Download, FileArchive, Loader2, Package } from "lucide-react";
-import { buildCodeBundle, type CodeExportBundle } from "@/lib/codeExportClient";
+import { Download, FileArchive, Loader2, Package, ShieldCheck, ShieldAlert } from "lucide-react";
+import {
+  buildCodeBundle,
+  IntegrityError,
+  type CodeExportBundle,
+  type IntegrityCheck,
+} from "@/lib/codeExportClient";
 
 export function CodeExportTab() {
   const [bundle, setBundle] = useState<CodeExportBundle | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [integrity, setIntegrity] = useState<IntegrityCheck | null>(null);
+  const [forceDownload, setForceDownload] = useState(false);
+
+  const handleBuildError = (e: unknown) => {
+    if (e instanceof IntegrityError) {
+      setIntegrity(e.report);
+      setError(e.message);
+    } else {
+      setError((e as Error).message);
+    }
+  };
 
   const run = async () => {
     setLoading(true);
     setError(null);
+    setIntegrity(null);
     try {
       await new Promise((r) => setTimeout(r, 0));
-      const b = await buildCodeBundle();
+      const b = await buildCodeBundle("ai-executive-os", { throwOnFailure: false });
       if (b.fileCount === 0) throw new Error("No source files matched — check glob patterns.");
       setBundle(b);
+      setIntegrity(b.integrity);
     } catch (e) {
-      setError((e as Error).message);
+      handleBuildError(e);
     } finally {
       setLoading(false);
     }
@@ -30,15 +48,17 @@ export function CodeExportTab() {
   const oneClickDownload = async () => {
     setLoading(true);
     setError(null);
+    setIntegrity(null);
     try {
       await new Promise((r) => setTimeout(r, 0));
-      const b = await buildCodeBundle();
+      const b = await buildCodeBundle("ai-executive-os", { throwOnFailure: !forceDownload });
       if (b.fileCount === 0) throw new Error("No source files matched — check glob patterns.");
       setBundle(b);
+      setIntegrity(b.integrity);
       const blob = new Blob([JSON.stringify(b, null, 2)], { type: "application/json" });
       triggerDownload(blob, `codebase-full-${new Date().toISOString().slice(0, 10)}.json`);
     } catch (e) {
-      setError((e as Error).message);
+      handleBuildError(e);
     } finally {
       setLoading(false);
     }
