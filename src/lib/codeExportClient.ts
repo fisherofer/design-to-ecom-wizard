@@ -15,6 +15,15 @@ export interface ExportedFile {
   encoding?: "utf8" | "base64";
 }
 
+export interface IntegrityCheck {
+  ok: boolean;
+  missing: string[];
+  missingGlobs: string[];
+  minCounts: Record<string, { required: number; found: number }>;
+  totalFiles: number;
+  totalBytes: number;
+}
+
 export interface CodeExportBundle {
   generatedAt: string;
   project: string;
@@ -23,6 +32,17 @@ export interface CodeExportBundle {
   files: ExportedFile[];
   manifest: Array<{ path: string; bytes: number; encoding: "utf8" | "base64" }>;
   restoreGuide: string;
+  integrity: IntegrityCheck;
+}
+
+export class IntegrityError extends Error {
+  constructor(public report: IntegrityCheck) {
+    super(
+      `Backup integrity check failed — missing ${report.missing.length} required file(s)` +
+        (report.missingGlobs.length ? `, ${report.missingGlobs.length} empty required folder(s)` : ""),
+    );
+    this.name = "IntegrityError";
+  }
 }
 
 // ---------- TEXT SOURCES (inlined as strings) ----------
