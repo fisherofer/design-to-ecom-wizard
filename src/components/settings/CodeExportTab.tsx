@@ -17,7 +17,7 @@ export function CodeExportTab() {
     setError(null);
     try {
       await new Promise((r) => setTimeout(r, 0));
-      const b = buildCodeBundle();
+      const b = await buildCodeBundle();
       if (b.fileCount === 0) throw new Error("No source files matched — check glob patterns.");
       setBundle(b);
     } catch (e) {
@@ -32,7 +32,7 @@ export function CodeExportTab() {
     setError(null);
     try {
       await new Promise((r) => setTimeout(r, 0));
-      const b = buildCodeBundle();
+      const b = await buildCodeBundle();
       if (b.fileCount === 0) throw new Error("No source files matched — check glob patterns.");
       setBundle(b);
       const blob = new Blob([JSON.stringify(b, null, 2)], { type: "application/json" });
