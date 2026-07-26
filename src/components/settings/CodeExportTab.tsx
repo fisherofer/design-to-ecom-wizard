@@ -4,24 +4,42 @@
  * knowledge, another Lovable project) without cloning the git repo.
  */
 import { useState } from "react";
-import { Download, FileArchive, Loader2, Package } from "lucide-react";
-import { buildCodeBundle, type CodeExportBundle } from "@/lib/codeExportClient";
+import { Download, FileArchive, Loader2, Package, ShieldCheck, ShieldAlert } from "lucide-react";
+import {
+  buildCodeBundle,
+  IntegrityError,
+  type CodeExportBundle,
+  type IntegrityCheck,
+} from "@/lib/codeExportClient";
 
 export function CodeExportTab() {
   const [bundle, setBundle] = useState<CodeExportBundle | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [integrity, setIntegrity] = useState<IntegrityCheck | null>(null);
+  const [forceDownload, setForceDownload] = useState(false);
+
+  const handleBuildError = (e: unknown) => {
+    if (e instanceof IntegrityError) {
+      setIntegrity(e.report);
+      setError(e.message);
+    } else {
+      setError((e as Error).message);
+    }
+  };
 
   const run = async () => {
     setLoading(true);
     setError(null);
+    setIntegrity(null);
     try {
       await new Promise((r) => setTimeout(r, 0));
-      const b = await buildCodeBundle();
+      const b = await buildCodeBundle("ai-executive-os", { throwOnFailure: false });
       if (b.fileCount === 0) throw new Error("No source files matched — check glob patterns.");
       setBundle(b);
+      setIntegrity(b.integrity);
     } catch (e) {
-      setError((e as Error).message);
+      handleBuildError(e);
     } finally {
       setLoading(false);
     }
@@ -30,15 +48,17 @@ export function CodeExportTab() {
   const oneClickDownload = async () => {
     setLoading(true);
     setError(null);
+    setIntegrity(null);
     try {
       await new Promise((r) => setTimeout(r, 0));
-      const b = await buildCodeBundle();
+      const b = await buildCodeBundle("ai-executive-os", { throwOnFailure: !forceDownload });
       if (b.fileCount === 0) throw new Error("No source files matched — check glob patterns.");
       setBundle(b);
+      setIntegrity(b.integrity);
       const blob = new Blob([JSON.stringify(b, null, 2)], { type: "application/json" });
       triggerDownload(blob, `codebase-full-${new Date().toISOString().slice(0, 10)}.json`);
     } catch (e) {
-      setError((e as Error).message);
+      handleBuildError(e);
     } finally {
       setLoading(false);
     }
@@ -121,9 +141,68 @@ export function CodeExportTab() {
             </>
           )}
         </div>
-
+        <label className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={forceDownload}
+            onChange={(e) => setForceDownload(e.target.checked)}
+            className="h-3.5 w-3.5"
+          />
+          Allow download even if integrity check fails (not recommended)
+        </label>
 
         {error && <p className="mt-3 text-sm text-destructive">Error: {error}</p>}
+
+        {integrity && (
+          <div
+            className={`mt-4 rounded-md border p-3 text-xs ${
+              integrity.ok
+                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
+                : "border-destructive/50 bg-destructive/10 text-destructive"
+            }`}
+          >
+            <div className="flex items-center gap-2 font-semibold">
+              {integrity.ok ? <ShieldCheck className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
+              {integrity.ok
+                ? `Integrity OK — ${integrity.totalFiles} files, ${(integrity.totalBytes / 1024).toFixed(0)} KB`
+                : `Integrity FAILED — ${integrity.missing.length} missing file(s), ${integrity.missingGlobs.length} under-filled folder(s)`}
+            </div>
+            {!integrity.ok && (
+              <div className="mt-2 space-y-1 font-mono">
+                {integrity.missing.length > 0 && (
+                  <div>
+                    <div className="uppercase opacity-70">Missing files:</div>
+                    <ul className="ml-3 list-disc">
+                      {integrity.missing.map((p) => (
+                        <li key={p}>{p}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {integrity.missingGlobs.length > 0 && (
+                  <div>
+                    <div className="uppercase opacity-70">Under-filled folders:</div>
+                    <ul className="ml-3 list-disc">
+                      {integrity.missingGlobs.map((p) => (
+                        <li key={p}>{p}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+            <details className="mt-2">
+              <summary className="cursor-pointer opacity-70">Folder counts</summary>
+              <ul className="mt-1 ml-3 font-mono">
+                {Object.entries(integrity.minCounts).map(([label, v]) => (
+                  <li key={label}>
+                    {label}: {v.found}/{v.required}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          </div>
+        )}
 
         {bundle && (
           <div className="mt-5 rounded-md border border-border bg-surface p-4">
