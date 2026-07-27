@@ -308,30 +308,35 @@ class OrderManagementSystem:
         if not equity_ok or self.risk_manager.limits.trading_halted:
             return False, f"Risk circuit breaker active: {self.risk_manager.limits.halt_reason or 'equity drawdown'}"
 
-        # VaR position sizing guard
+        # VaR position sizing guard (HardRiskManager owns the math)
+        max_qty: Optional[float] = None
         try:
-            max_qty = self.risk_manager.calculate_var_position_size(
+            daily_volatility = float(os.environ.get("OFER_DEFAULT_DAILY_VOL", "0.02"))
+            stop_loss_pct = None
+            if order.stop_price and order.stop_price > 0 and market_price > 0:
+                stop_loss_pct = abs(market_price - order.stop_price) / market_price
+            sized_units, _sized_dollars = self.risk_manager.calculate_var_position_size(
                 symbol=order.symbol,
-                entry_price=market_price or order.price,
-                stop_price=order.stop_price or 0.0,
+                price=market_price or order.price,
+                daily_volatility=daily_volatility,
+                stop_loss_pct=stop_loss_pct,
             )
-        except TypeError:
-            max_qty = None
+            max_qty = float(sized_units)
         except Exception as err:
             logger.warning(f"VaR sizing unavailable for {order.symbol}: {err}")
-            max_qty = None
 
-        if isinstance(max_qty, (int, float)) and max_qty > 0 and order.quantity > max_qty:
+        if max_qty is not None and max_qty <= 0:
+            return False, "VaR sizing returned zero allowed units (risk engine halted or invalid inputs)."
+        if max_qty is not None and order.quantity > max_qty:
             return False, (
                 f"VaR limit: requested {order.quantity} exceeds max allowed position size {max_qty:.4f}"
             )
 
-        # ATR trailing stop guard for exits on an existing position
-        state = getattr(self.risk_manager, "trailing_stops", {}).get(order.symbol) if hasattr(self.risk_manager, "trailing_stops") else None
-        if state is not None and order.side == OrderSide.BUY:
-            stop_level = getattr(state, "stop_price", None)
-            if isinstance(stop_level, (int, float)) and stop_level > 0 and market_price < stop_level:
-                return False, f"ATR trailing stop breached for {order.symbol} ({market_price} < {stop_level})"
+        # ATR trailing stop guard on the tracked position
+        state = getattr(self.risk_manager, "trailing_stops", {}).get(order.symbol)
+        if state is not None and getattr(state, "is_triggered", False):
+            return False, f"ATR trailing stop already triggered for {order.symbol}; entry blocked."
+
 
         return True, ""
 
