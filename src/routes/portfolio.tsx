@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { HOLDINGS, DIVIDEND_CALENDAR, totalReturn } from "@/lib/trackedAssets";
 import { Calendar, Wallet, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PortfolioCommandCenter } from "@/components/trading/PortfolioCommandCenter";
 
 export const Route = createFileRoute("/portfolio")({
   head: () => ({
@@ -38,6 +39,8 @@ function PortfolioPage() {
           Live holdings · Projected income · Ex-dividend tracking
         </p>
       </div>
+
+      <PortfolioCommandCenter />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={Wallet} label="Portfolio Value" value={`$${totals.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} />
