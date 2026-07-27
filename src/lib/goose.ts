@@ -1,150 +1,30 @@
-export type GooseCheckState = "pass" | "warn" | "fail";
+/**
+ * @deprecated Vendor-specific alias kept for backwards compatibility.
+ * The generic implementation now lives in `src/lib/agentRuntime.ts`.
+ * New code should import from `@/lib/agentRuntime`.
+ */
+import {
+  DEFAULT_RUNTIME_TOOLS,
+  createUnprobedRuntimeStatus,
+  type AgentRuntimeStatus,
+  type RuntimeCheckState,
+  type RuntimeTool,
+  type RuntimeVerification,
+  type RuntimeVerificationCheck,
+} from "@/lib/agentRuntime";
 
-export interface GooseTool {
-  name: string;
-  description: string;
-  available: boolean;
-}
+export { auditExternalInstructions } from "@/lib/agentRuntime";
+export type { InstructionAudit, InstructionFinding } from "@/lib/agentRuntime";
 
-export interface GooseStatus {
-  connected: boolean;
-  extensionOk: boolean;
-  endpoint: string;
-  version: string;
-  tools: GooseTool[];
-}
+export type GooseCheckState = RuntimeCheckState;
+export type GooseTool = RuntimeTool;
+export type GooseStatus = AgentRuntimeStatus;
+export type GooseVerificationCheck = RuntimeVerificationCheck;
+export type GooseVerification = RuntimeVerification;
 
-export interface GooseVerificationCheck {
-  id: string;
-  label: string;
-  state: GooseCheckState;
-  detail: string;
-}
-
-export interface GooseVerification {
-  ok: boolean;
-  checks: GooseVerificationCheck[];
-  checkedAt: string;
-}
-
-export interface InstructionFinding {
-  id: string;
-  label: string;
-  state: GooseCheckState;
-  detail: string;
-}
-
-export interface InstructionAudit {
-  score: number;
-  safeToApply: boolean;
-  recognized: string[];
-  missing: string[];
-  conflicts: string[];
-  findings: InstructionFinding[];
-  completionPrompt: string;
-}
-
-const REQUIRED_AREAS = [
-  { label: "מטרת מוצר וקהל יעד", patterns: [/overview/i, /קהל יעד/, /מה האתר עושה/, /role:/i] },
-  {
-    label: "ארכיטקטורה וחוזה API",
-    patterns: [
-      /architecture|ארכיטקטורה/i,
-      /api contract|endpoints/i,
-      /fastapi|localhost:\d+|baseurl/i,
-      /\/api\/|\/health/i,
-    ],
-  },
-  { label: "מסכים וזרימות", patterns: [/screens|מסכים/i, /dashboard|tracker|editor/i] },
-  { label: "רכיבי ממשק", patterns: [/components|רכיבים/i, /widget|tailwind|recharts|lucide/i] },
-  {
-    label: "מצבים, polling ושגיאות",
-    patterns: [/polling|real-time|state/i, /שגיאות|errors|retry|backoff|interceptor/i],
-  },
-  { label: "RTL ו-responsive", patterns: [/rtl/i, /responsive|מובייל|grid|bento/i] },
-  {
-    label: "גבולות אחריות",
-    patterns: [
-      /מה לא לבנות|do not build/i,
-      /frontend.*בלבד|frontend.*only/i,
-      /frontend setup|react.*vite|frontend.*directory/i,
-    ],
-  },
-  { label: "Goose ו-MCP", patterns: [/goose/i, /mcp/i, /ai generator prompts|copy.*paste.*prompt/i] },
-] as const;
-
-const UNSAFE_PATTERNS = [
-  { label: "ניסיון לעקוף הוראות מערכת", pattern: /ignore (all|previous)|התעלם (מכל|מההוראות)|override system/i },
-  { label: "בקשה לחשיפת סודות", pattern: /reveal.*(secret|token|key)|הצג.*(סוד|מפתח|טוקן)|cat\s+\.env/i },
-  { label: "פעולה הרסנית ללא אישור", pattern: /rm\s+-rf|drop\s+table|delete\s+all|מחק את כל/i },
-  { label: "הרצת קוד בלתי מבוקרת", pattern: /curl.+\|\s*(sh|bash)|eval\s*\(|exec\s*\(/i },
-] as const;
-
-export function auditExternalInstructions(content: string): InstructionAudit {
-  const normalized = content.trim();
-  const recognized = REQUIRED_AREAS.filter((area) =>
-    area.patterns.some((pattern) => pattern.test(normalized)),
-  ).map((area) => area.label);
-  const missing = REQUIRED_AREAS.filter((area) => !recognized.includes(area.label)).map(
-    (area) => area.label,
-  );
-  const conflicts = UNSAFE_PATTERNS.filter(({ pattern }) => pattern.test(normalized)).map(
-    ({ label }) => label,
-  );
-  const hasAcceptanceCriteria = /acceptance|קריטריוני קבלה|definition of done/i.test(normalized);
-  const hasDataExamples = /```(json|ts|typescript|tsx|bash|sh)|דוגמת תגובת api|mock data|example|prompt:/i.test(normalized);
-  const findings: InstructionFinding[] = [
-    {
-      id: "scope",
-      label: "כיסוי דרישות",
-      state: recognized.length >= 7 ? "pass" : recognized.length >= 4 ? "warn" : "fail",
-      detail: `${recognized.length}/${REQUIRED_AREAS.length} תחומי חובה זוהו`,
-    },
-    {
-      id: "security",
-      label: "בטיחות הוראות חיצוניות",
-      state: conflicts.length ? "fail" : "pass",
-      detail: conflicts.length ? `${conflicts.length} התנגשויות דורשות בדיקה ידנית` : "לא זוהו הוראות עוקפות או הרסניות",
-    },
-    {
-      id: "acceptance",
-      label: "קריטריוני קבלה",
-      state: hasAcceptanceCriteria ? "pass" : "warn",
-      detail: hasAcceptanceCriteria ? "נמצאו קריטריוני קבלה מפורשים" : "מומלץ להוסיף Definition of Done מדיד",
-    },
-    {
-      id: "examples",
-      label: "דוגמאות נתונים",
-      state: hasDataExamples ? "pass" : "warn",
-      detail: hasDataExamples ? "נמצאו דוגמאות API או mock" : "חסרות דוגמאות JSON לבדיקת הממשק",
-    },
-  ];
-  const score = Math.max(
-    0,
-    Math.round((recognized.length / REQUIRED_AREAS.length) * 80 + (hasAcceptanceCriteria ? 10 : 0) + (hasDataExamples ? 10 : 0) - conflicts.length * 25),
-  );
-  const completionPrompt = [
-    "השלם את המפרט החיצוני בלי לשנות את הלוגיקה העסקית הקיימת.",
-    missing.length ? `תחומים חסרים: ${missing.join(", ")}.` : "כל תחומי החובה קיימים.",
-    !hasAcceptanceCriteria ? "הוסף קריטריוני קבלה מדידים לכל מסך ופעולה." : "",
-    !hasDataExamples ? "הוסף דוגמאות JSON למצבי הצלחה, ריקנות ושגיאה." : "",
-    "שמור על frontend כשכבת תצוגה ושליטה בלבד, RTL מלא, ואישור ידני לכל שינוי קוד או פעולה הרסנית.",
-  ].filter(Boolean).join("\n");
-
-  return { score, safeToApply: conflicts.length === 0, recognized, missing, conflicts, findings, completionPrompt };
-}
-
-export const MOCK_GOOSE_STATUS: GooseStatus = {
-  connected: false,
-  extensionOk: false,
-  endpoint: "http://localhost:8050/api/goose",
-  version: "Not detected",
-  tools: [
-    { name: "get_status", description: "קריאת מצב המערכת", available: true },
-    { name: "scan_market", description: "הפעלת סריקת שוק", available: true },
-    { name: "get_recommendations", description: "שליפת המלצות", available: true },
-    { name: "run_agent", description: "הרצת סוכן בשם", available: true },
-    { name: "check_health", description: "בדיקת בריאות מלאה", available: true },
-    { name: "update_code", description: "יצירת שינוי קוד באישור", available: false },
-  ],
-};
+/** Placeholder status until a live runtime probe succeeds. */
+export const MOCK_GOOSE_STATUS: GooseStatus = createUnprobedRuntimeStatus(
+  "Goose",
+  "http://localhost:8050/api/goose",
+  DEFAULT_RUNTIME_TOOLS,
+);
