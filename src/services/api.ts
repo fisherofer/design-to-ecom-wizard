@@ -188,3 +188,43 @@ export const DriveService = {
     return r.data;
   },
 };
+
+// ============================================================
+// Account — real brokerage state from /api/account (Alpaca paper).
+// ============================================================
+
+export interface AccountSummary {
+  equity: number;
+  buying_power: number;
+  day_pnl: number;
+  day_pnl_pct: number;
+  maintenance_margin: number;
+  cash: number;
+  currency: string;
+  account_status: string;
+  pattern_day_trader: boolean;
+  trading_blocked: boolean;
+  is_simulated: boolean;
+  source: string;
+  as_of: string;
+  error?: string;
+}
+
+export interface AccountHealth {
+  credentials_present: boolean;
+  base_url: string;
+  trading_stage: string;
+  http_client: string;
+  checked_at: string;
+}
+
+export const AccountService = {
+  getSummary: async (): Promise<AccountSummary> => {
+    const r = await apiClient.get<AccountSummary>("/api/account/summary");
+    return r.data;
+  },
+  getHealth: async (): Promise<AccountHealth> => {
+    const r = await apiClient.get<AccountHealth>("/api/account/health");
+    return r.data;
+  },
+};

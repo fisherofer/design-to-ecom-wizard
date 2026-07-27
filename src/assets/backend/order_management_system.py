@@ -289,10 +289,61 @@ class OrderManagementSystem:
         logger.info(f"Order created: {order_id} | {side.value} {quantity} {symbol} @ {price}")
         return order
 
+    def run_pre_trade_risk_check(self, order: Order, market_price: float) -> Tuple[bool, str]:
+        """
+        Single mandatory risk gate delegating to the existing HardRiskManager.
+        No redundant risk engine is created here.
+
+        Checks, in order:
+          1. Circuit breaker / equity drawdown (HardRiskManager.update_equity).
+          2. Explicit halt flag with its reason.
+          3. VaR-based maximum position size for the order notional.
+          4. ATR trailing-stop violation for the symbol, when state exists.
+
+        Returns:
+            Tuple[bool, str]: (allowed, reason). `reason` is empty when allowed.
+        """
+        portfolio_value = self.get_portfolio_summary()["total_unrealized_pnl"] + self.risk_manager.current_equity
+        equity_ok = self.risk_manager.update_equity(portfolio_value)
+        if not equity_ok or self.risk_manager.limits.trading_halted:
+            return False, f"Risk circuit breaker active: {self.risk_manager.limits.halt_reason or 'equity drawdown'}"
+
+        # VaR position sizing guard (HardRiskManager owns the math)
+        max_qty: Optional[float] = None
+        try:
+            daily_volatility = float(os.environ.get("OFER_DEFAULT_DAILY_VOL", "0.02"))
+            stop_loss_pct = None
+            if order.stop_price and order.stop_price > 0 and market_price > 0:
+                stop_loss_pct = abs(market_price - order.stop_price) / market_price
+            sized_units, _sized_dollars = self.risk_manager.calculate_var_position_size(
+                symbol=order.symbol,
+                price=market_price or order.price,
+                daily_volatility=daily_volatility,
+                stop_loss_pct=stop_loss_pct,
+            )
+            max_qty = float(sized_units)
+        except Exception as err:
+            logger.warning(f"VaR sizing unavailable for {order.symbol}: {err}")
+
+        if max_qty is not None and max_qty <= 0:
+            return False, "VaR sizing returned zero allowed units (risk engine halted or invalid inputs)."
+        if max_qty is not None and order.quantity > max_qty:
+            return False, (
+                f"VaR limit: requested {order.quantity} exceeds max allowed position size {max_qty:.4f}"
+            )
+
+        # ATR trailing stop guard on the tracked position
+        state = getattr(self.risk_manager, "trailing_stops", {}).get(order.symbol)
+        if state is not None and getattr(state, "is_triggered", False):
+            return False, f"ATR trailing stop already triggered for {order.symbol}; entry blocked."
+
+
+        return True, ""
+
     async def execute_order_with_backoff(self, order_id: str, market_price: float) -> Order:
         """
         Executes order through state machine with exponential backoff and rate-limit retries.
-        Validates risk circuit breaker state prior to execution.
+        EVERY execution passes through `run_pre_trade_risk_check` first.
         """
         if order_id not in self.orders:
             raise ValueError(f"Order {order_id} not found in OMS registry.")
@@ -302,12 +353,12 @@ class OrderManagementSystem:
         if order.status == OrderStatus.REJECTED:
             return order
 
-        # Hard Risk Manager Check: Check if daily circuit breaker tripped
-        portfolio_val = self.get_portfolio_summary()["total_unrealized_pnl"] + self.risk_manager.current_equity
-        if not self.risk_manager.update_equity(portfolio_val) or self.risk_manager.limits.trading_halted:
+        # Mandatory HardRiskManager gate
+        allowed, reason = self.run_pre_trade_risk_check(order, market_price)
+        if not allowed:
             order.status = OrderStatus.REJECTED
-            order.error_message = f"Execution rejected by Risk Manager: {self.risk_manager.limits.halt_reason}"
-            logger.critical(f"Order {order_id} REJECTED BY HARD RISK MANAGER.")
+            order.error_message = f"Execution rejected by Risk Manager: {reason}"
+            logger.critical(f"Order {order_id} REJECTED BY HARD RISK MANAGER: {reason}")
             return order
 
         # Slippage Guard
@@ -316,6 +367,7 @@ class OrderManagementSystem:
             order.error_message = "Slippage tolerance exceeded."
             logger.warning(f"Order {order_id} rejected due to slippage guard.")
             return order
+
 
         attempt = 0
         backoff_delay = 0.5
