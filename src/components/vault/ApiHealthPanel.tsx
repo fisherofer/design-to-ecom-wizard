@@ -6,8 +6,11 @@
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Activity, AlertTriangle, CheckCircle2, HelpCircle, Loader2, RefreshCw, XCircle } from "lucide-react";
+import { Activity, AlertTriangle, CheckCircle2, HelpCircle, Loader2, Plug, RefreshCw, XCircle } from "lucide-react";
 import { probeAllApis, type ApiHealthResult, type ApiHealthStatus } from "@/lib/apiHealth.functions";
+import { ApiConnectModal } from "@/components/vault/ApiConnectModal";
+import { apiCredentials } from "@/lib/apiCredentials";
+
 
 const STATUS_ICON: Record<ApiHealthStatus, typeof CheckCircle2> = {
   ok: CheckCircle2,
@@ -29,6 +32,9 @@ export function ApiHealthPanel() {
   const [loading, setLoading] = useState(false);
   const [ranAt, setRanAt] = useState<number | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [connect, setConnect] = useState<ApiHealthResult | null>(null);
+
+
 
   const run = useCallback(async () => {
     setLoading(true);
@@ -107,7 +113,7 @@ export function ApiHealthPanel() {
             <div className="mb-2 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{cat}</div>
             <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
               {list.map((r) => (
-                <HealthCard key={r.id} r={r} />
+                <HealthCard key={r.id} r={r} onConnect={() => setConnect(r)} />
               ))}
             </div>
           </div>
@@ -118,11 +124,20 @@ export function ApiHealthPanel() {
           </div>
         )}
       </div>
+
+      <ApiConnectModal
+        providerId={connect?.id ?? null}
+        providerName={connect?.provider}
+        reason={connect?.reason}
+        onClose={() => setConnect(null)}
+        onSaved={run}
+      />
     </section>
   );
 }
 
-function HealthCard({ r }: { r: ApiHealthResult }) {
+function HealthCard({ r, onConnect }: { r: ApiHealthResult; onConnect: () => void }) {
+
   const Icon = STATUS_ICON[r.status];
   const cls = STATUS_CLASS[r.status];
   return (
@@ -154,7 +169,17 @@ function HealthCard({ r }: { r: ApiHealthResult }) {
         )}
         {r.hint && <span className="col-span-3 opacity-90">💡 {r.hint}</span>}
       </div>
+      {(r.status === "missing" || r.status === "error") && (
+        <button
+          onClick={onConnect}
+          className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded border border-current/40 px-2 py-1 font-mono text-[10px] uppercase tracking-wider hover:bg-current/10"
+        >
+          <Plug className="h-3 w-3" />
+          {apiCredentials.has(r.id) ? "Update key" : "Connect"}
+        </button>
+      )}
     </div>
+
   );
 }
 

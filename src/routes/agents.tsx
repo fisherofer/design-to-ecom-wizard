@@ -17,7 +17,10 @@ import {
   type AgentBlueprint,
 } from "@/lib/agentBuilder";
 import { runAgent } from "@/lib/agentRunner";
+import { runFleet } from "@/lib/agentOrchestrator";
+import { OrchestratorPanel } from "@/components/agents/OrchestratorPanel";
 import { runConsensus, type ConsensusResult } from "@/lib/agentConsensus";
+
 import type { AgentTemplate } from "@/lib/agentTemplates";
 import { notifications } from "@/lib/notifications";
 
@@ -36,7 +39,7 @@ function AgentBuilderPage() {
   const [selectedId, setSelectedId] = useState<string | null>(items[0]?.id ?? null);
   const [taskInput, setTaskInput] = useState("Summarize today's whale flows on ETH.");
   const [dirty, setDirty] = useState(false);
-  const [busy, setBusy] = useState<"idle" | "run" | "consensus">("idle");
+  const [busy, setBusy] = useState<"idle" | "run" | "consensus" | "fleet">("idle");
   const [tplOpen, setTplOpen] = useState(false);
   const [consensus, setConsensus] = useState<ConsensusResult | null>(null);
 
@@ -162,7 +165,40 @@ function AgentBuilderPage() {
         </div>
       </div>
 
+      <OrchestratorPanel
+        agents={items}
+        running={busy === "fleet"}
+        onRunAll={async (task) => {
+          setBusy("fleet");
+          try {
+            const res = await runFleet(items, task, { source: "manual" });
+            notifications.push({
+              level: res.failCount ? "warn" : "info",
+              title: "Fleet run complete",
+              message: `${res.okCount}/${res.records.length} agents succeeded${res.skipped.length ? ` · skipped ${res.skipped.length}` : ""}.`,
+            });
+            setItems(loadBlueprints());
+          } finally {
+            setBusy("idle");
+          }
+        }}
+        onRunAgent={async (agent, task) => {
+          setBusy("run");
+          try {
+            const rec = await runAgent(agent, { taskInput: task, source: "manual" });
+            notifications.push({
+              level: rec.ok ? "info" : "warn",
+              title: `${agent.name} finished`,
+              message: rec.ok ? `Ran in ${rec.durationMs}ms via ${rec.modelId}` : (rec.error ?? "run failed"),
+            });
+          } finally {
+            setBusy("idle");
+          }
+        }}
+      />
+
       <AgentStatusBoard items={items} selectedId={selectedId} onSelect={setSelectedId} />
+
 
       <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)_360px]">
 
