@@ -32,6 +32,9 @@ export function ApiHealthPanel() {
   const [loading, setLoading] = useState(false);
   const [ranAt, setRanAt] = useState<number | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [connect, setConnect] = useState<ApiHealthResult | null>(null);
+
+
 
   const run = useCallback(async () => {
     setLoading(true);
