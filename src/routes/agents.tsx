@@ -39,7 +39,7 @@ function AgentBuilderPage() {
   const [selectedId, setSelectedId] = useState<string | null>(items[0]?.id ?? null);
   const [taskInput, setTaskInput] = useState("Summarize today's whale flows on ETH.");
   const [dirty, setDirty] = useState(false);
-  const [busy, setBusy] = useState<"idle" | "run" | "consensus">("idle");
+  const [busy, setBusy] = useState<"idle" | "run" | "consensus" | "fleet">("idle");
   const [tplOpen, setTplOpen] = useState(false);
   const [consensus, setConsensus] = useState<ConsensusResult | null>(null);
 
