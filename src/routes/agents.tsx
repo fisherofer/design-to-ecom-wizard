@@ -10,6 +10,7 @@ import { AgentList } from "@/components/agents/AgentList";
 import { AgentEditor } from "@/components/agents/AgentEditor";
 import { AgentPreview } from "@/components/agents/AgentPreview";
 import { AgentRunHistory } from "@/components/agents/AgentRunHistory";
+import { AgentStatusBoard } from "@/components/agents/AgentStatusBoard";
 import { AgentTemplatesModal } from "@/components/agents/AgentTemplatesModal";
 import {
   loadBlueprints, upsertBlueprint, deleteBlueprint, newBlueprint,
@@ -161,7 +162,10 @@ function AgentBuilderPage() {
         </div>
       </div>
 
+      <AgentStatusBoard items={items} selectedId={selectedId} onSelect={setSelectedId} />
+
       <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)_360px]">
+
         <AgentList
           items={items}
           selectedId={selectedId}
