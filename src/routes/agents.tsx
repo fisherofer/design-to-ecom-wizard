@@ -162,7 +162,40 @@ function AgentBuilderPage() {
         </div>
       </div>
 
+      <OrchestratorPanel
+        agents={items}
+        running={busy === "fleet"}
+        onRunAll={async (task) => {
+          setBusy("fleet");
+          try {
+            const res = await runFleet(items, task, { source: "manual" });
+            notifications.push({
+              level: res.failCount ? "warn" : "info",
+              title: "Fleet run complete",
+              message: `${res.okCount}/${res.records.length} agents succeeded${res.skipped.length ? ` · skipped ${res.skipped.length}` : ""}.`,
+            });
+            setItems(loadBlueprints());
+          } finally {
+            setBusy("idle");
+          }
+        }}
+        onRunAgent={async (agent, task) => {
+          setBusy("run");
+          try {
+            const rec = await runAgent(agent, { taskInput: task, source: "manual" });
+            notifications.push({
+              level: rec.ok ? "info" : "warn",
+              title: `${agent.name} finished`,
+              message: rec.ok ? `Ran in ${rec.durationMs}ms via ${rec.modelId}` : (rec.error ?? "run failed"),
+            });
+          } finally {
+            setBusy("idle");
+          }
+        }}
+      />
+
       <AgentStatusBoard items={items} selectedId={selectedId} onSelect={setSelectedId} />
+
 
       <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)_360px]">
 
