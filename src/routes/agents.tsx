@@ -162,7 +162,10 @@ function AgentBuilderPage() {
         </div>
       </div>
 
+      <AgentStatusBoard items={items} selectedId={selectedId} onSelect={setSelectedId} />
+
       <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)_360px]">
+
         <AgentList
           items={items}
           selectedId={selectedId}
