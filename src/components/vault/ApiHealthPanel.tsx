@@ -6,8 +6,11 @@
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Activity, AlertTriangle, CheckCircle2, HelpCircle, Loader2, RefreshCw, XCircle } from "lucide-react";
+import { Activity, AlertTriangle, CheckCircle2, HelpCircle, Loader2, Plug, RefreshCw, XCircle } from "lucide-react";
 import { probeAllApis, type ApiHealthResult, type ApiHealthStatus } from "@/lib/apiHealth.functions";
+import { ApiConnectModal } from "@/components/vault/ApiConnectModal";
+import { apiCredentials } from "@/lib/apiCredentials";
+
 
 const STATUS_ICON: Record<ApiHealthStatus, typeof CheckCircle2> = {
   ok: CheckCircle2,
