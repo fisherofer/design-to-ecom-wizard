@@ -38,6 +38,9 @@ export async function runAgent(agent: AgentBlueprint, opts: RunAgentOptions): Pr
       data: {
         mode: "auto",
         system: agent.systemPrompt,
+        preferModel: agent.model,
+        temperature: agent.temperature,
+        maxTokens: agent.maxTokens,
         messages: [{ role: "user", content: userPrompt }],
       },
     });
