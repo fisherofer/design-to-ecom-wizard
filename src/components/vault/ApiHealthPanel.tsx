@@ -113,7 +113,7 @@ export function ApiHealthPanel() {
             <div className="mb-2 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{cat}</div>
             <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
               {list.map((r) => (
-                <HealthCard key={r.id} r={r} />
+                <HealthCard key={r.id} r={r} onConnect={() => setConnect(r)} />
               ))}
             </div>
           </div>
@@ -124,11 +124,20 @@ export function ApiHealthPanel() {
           </div>
         )}
       </div>
+
+      <ApiConnectModal
+        providerId={connect?.id ?? null}
+        providerName={connect?.provider}
+        reason={connect?.reason}
+        onClose={() => setConnect(null)}
+        onSaved={run}
+      />
     </section>
   );
 }
 
-function HealthCard({ r }: { r: ApiHealthResult }) {
+function HealthCard({ r, onConnect }: { r: ApiHealthResult; onConnect: () => void }) {
+
   const Icon = STATUS_ICON[r.status];
   const cls = STATUS_CLASS[r.status];
   return (
