@@ -17,7 +17,10 @@ import {
   type AgentBlueprint,
 } from "@/lib/agentBuilder";
 import { runAgent } from "@/lib/agentRunner";
+import { runFleet } from "@/lib/agentOrchestrator";
+import { OrchestratorPanel } from "@/components/agents/OrchestratorPanel";
 import { runConsensus, type ConsensusResult } from "@/lib/agentConsensus";
+
 import type { AgentTemplate } from "@/lib/agentTemplates";
 import { notifications } from "@/lib/notifications";
 
