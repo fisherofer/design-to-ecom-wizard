@@ -10,6 +10,7 @@ import { AgentList } from "@/components/agents/AgentList";
 import { AgentEditor } from "@/components/agents/AgentEditor";
 import { AgentPreview } from "@/components/agents/AgentPreview";
 import { AgentRunHistory } from "@/components/agents/AgentRunHistory";
+import { AgentStatusBoard } from "@/components/agents/AgentStatusBoard";
 import { AgentTemplatesModal } from "@/components/agents/AgentTemplatesModal";
 import {
   loadBlueprints, upsertBlueprint, deleteBlueprint, newBlueprint,
