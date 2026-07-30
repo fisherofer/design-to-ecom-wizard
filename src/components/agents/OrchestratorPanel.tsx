@@ -50,6 +50,32 @@ export function OrchestratorPanel({
   const [tickNote, setTickNote] = useState<string>("");
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // --- interface preflight gate -------------------------------------------
+  const preflight = useServerFn(preflightApis);
+  const [gateReport, setGateReport] = useState<PreflightReport | null>(null);
+  const [gateChecking, setGateChecking] = useState(false);
+  const [requirePreflight, setRequirePreflight] = useState(true);
+
+  /** Verifies every connected interface; returns true when agents may run. */
+  const verifyInterfaces = useCallback(async (): Promise<boolean> => {
+    setGateChecking(true);
+    try {
+      const rep = await preflight();
+      setGateReport(rep);
+      return rep.readyForAgents || !requirePreflight;
+    } catch (e) {
+      setTickNote(`Preflight error: ${(e as Error).message}`);
+      return !requirePreflight;
+    } finally {
+      setGateChecking(false);
+    }
+  }, [preflight, requirePreflight]);
+
+  useEffect(() => {
+    verifyInterfaces();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const refresh = useCallback(() => {
     setSettings(loadSettings());
     setApprovals(listApprovals());
