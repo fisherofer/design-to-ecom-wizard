@@ -85,11 +85,13 @@ const SPECS: ProviderSpec[] = [
     requiredEnv: ["LOVABLE_API_KEY"],
     endpoints: [
       {
-        id: "models.list",
-        label: "List models",
-        url: () => "https://ai.gateway.lovable.dev/v1/models",
-        headers: (e) => ({ "Lovable-API-Key": e.LOVABLE_API_KEY, "X-Lovable-AIG-SDK": "vercel-ai-sdk" }),
-        requiredFields: ["data"],
+        id: "chat.completions",
+        label: "Chat completions endpoint",
+        url: () => "https://ai.gateway.lovable.dev/v1/chat/completions",
+        headers: (e) => ({ Authorization: `Bearer ${e.LOVABLE_API_KEY}` }),
+        requiredFields: [],
+        // GET is not allowed on this endpoint; 405 proves it is live and routed.
+        acceptStatuses: [405, 400, 422],
       },
     ],
   },
