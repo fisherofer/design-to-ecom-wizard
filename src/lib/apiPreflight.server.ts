@@ -325,7 +325,8 @@ async function runEndpoint(spec: EndpointSpec, env: Record<string, string>): Pro
     base.httpStatus = res.status;
 
     // A 400 on an auth-probe POST still proves the credential is accepted.
-    const authOk = res.ok || (method === "POST" && res.status === 400);
+    const accepted = spec.acceptStatuses?.includes(res.status) ?? false;
+    const authOk = res.ok || accepted || (method === "POST" && res.status === 400);
     if (!authOk) {
       base.status = "fail";
       base.reason =
