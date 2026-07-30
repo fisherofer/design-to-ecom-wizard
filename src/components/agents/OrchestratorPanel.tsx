@@ -97,6 +97,10 @@ export function OrchestratorPanel({
   const runTick = useCallback(async () => {
     setTicking(true);
     try {
+      if (!(await verifyInterfaces())) {
+        setTickNote("blocked by interface preflight");
+        return;
+      }
       setTickNote(await tick());
     } catch (e) {
       setTickNote((e as Error).message);
@@ -104,7 +108,15 @@ export function OrchestratorPanel({
       setTicking(false);
       refresh();
     }
-  }, [refresh]);
+  }, [refresh, verifyInterfaces]);
+
+  const runAllGuarded = useCallback(async () => {
+    if (!(await verifyInterfaces())) {
+      setTickNote("Run all blocked — required interfaces are not ready");
+      return;
+    }
+    await onRunAll(settings.defaultTask);
+  }, [onRunAll, settings.defaultTask, verifyInterfaces]);
 
   // scheduler loop
   useEffect(() => {
