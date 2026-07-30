@@ -159,8 +159,22 @@ export function OrchestratorPanel({
             Tick now
           </button>
           <button
-            onClick={() => onRunAll(settings.defaultTask)}
-            disabled={running || enabledCount === 0}
+            onClick={() => void verifyInterfaces()}
+            disabled={gateChecking}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-2 text-xs font-mono disabled:opacity-50"
+          >
+            {gateChecking ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : gateReport?.readyForAgents ? (
+              <ShieldCheck className="h-3.5 w-3.5 text-success" />
+            ) : (
+              <ShieldAlert className="h-3.5 w-3.5 text-warning" />
+            )}
+            Verify APIs
+          </button>
+          <button
+            onClick={() => void runAllGuarded()}
+            disabled={running || gateChecking || enabledCount === 0}
             className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground disabled:opacity-50"
           >
             {running ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
@@ -168,6 +182,37 @@ export function OrchestratorPanel({
           </button>
         </div>
       </header>
+
+      {/* interface preflight gate */}
+      <div
+        className={`mb-3 flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 text-[11px] font-mono ${
+          gateReport
+            ? gateReport.readyForAgents
+              ? "border-success/40 bg-success/10 text-success"
+              : "border-destructive/40 bg-destructive/10 text-destructive"
+            : "border-border bg-muted/30 text-muted-foreground"
+        }`}
+      >
+        <span>
+          {gateChecking
+            ? "Verifying interfaces…"
+            : gateReport
+              ? gateReport.readyForAgents
+                ? `Interfaces verified · ${gateReport.totals.endpointsPass}/${gateReport.totals.endpoints} endpoints OK · ${gateReport.totals.skipped} not configured`
+                : `Blocked · ${gateReport.blockers.join(" · ")}`
+              : "Interface preflight not run yet"}
+        </span>
+        <label className="ml-auto inline-flex items-center gap-1.5 text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={requirePreflight}
+            onChange={(e) => setRequirePreflight(e.target.checked)}
+            className="h-3 w-3 accent-current"
+          />
+          Block runs on failure
+        </label>
+      </div>
+
 
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         {MODES.map((m) => (
