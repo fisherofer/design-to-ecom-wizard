@@ -62,6 +62,8 @@ interface EndpointSpec {
   headers?: (env: Record<string, string>) => Record<string, string>;
   /** dot-paths that must exist in the JSON response */
   requiredFields: string[];
+  /** extra HTTP statuses that still prove the endpoint is reachable/allowed */
+  acceptStatuses?: number[];
 }
 
 interface ProviderSpec {
