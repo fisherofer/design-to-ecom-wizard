@@ -16,6 +16,7 @@ import { api, USE_CASE_LABELS, type ApiKey, type ApiKeyTier, type UseCase } from
 import { cn } from "@/lib/utils";
 import { ApiHealthPanel } from "@/components/vault/ApiHealthPanel";
 import { MarketDataSourcesPanel } from "@/components/vault/MarketDataSourcesPanel";
+import { ApiPreflightPanel } from "@/components/vault/ApiPreflightPanel";
 
 export const Route = createFileRoute("/api-vault")({
   head: () => ({
