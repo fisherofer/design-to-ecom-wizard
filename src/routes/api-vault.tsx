@@ -119,6 +119,9 @@ function ApiVault() {
       {/* Shared source registry (mirrors backend config) */}
       <MarketDataSourcesPanel />
 
+      {/* Endpoint-level readiness verification (runs before agents) */}
+      <ApiPreflightPanel />
+
       {/* Live provider health probe */}
       <ApiHealthPanel />
 
