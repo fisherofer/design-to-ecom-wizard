@@ -4,7 +4,9 @@
  * per-agent participation, approval queue, and "Run all now".
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { CalendarClock, Check, Loader2, Play, Timer, X, Zap } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { CalendarClock, Check, Loader2, Play, ShieldAlert, ShieldCheck, Timer, X, Zap } from "lucide-react";
+import { preflightApis, type PreflightReport } from "@/lib/apiPreflight.functions";
 import type { AgentBlueprint } from "@/lib/agentBuilder";
 import {
   DEFAULT_SETTINGS,
