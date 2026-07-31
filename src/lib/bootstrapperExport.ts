@@ -25,6 +25,8 @@ import marketStreamRoutesPy from "@/assets/hub/market_stream_routes.py?raw";
 import backtestRoutesPy from "@/assets/hub/backtest_routes.py?raw";
 import mcpRoutesPy from "@/assets/hub/mcp_routes.py?raw";
 import tradingAccountRoutesPy from "@/assets/hub/trading_account_routes.py?raw";
+import alertsRoutesPy from "@/assets/hub/alerts_routes.py?raw";
+import quotesRouterPy from "@/assets/hub/quotes_router.py?raw";
 import configPy from "@/assets/backend/config.py?raw";
 import requirementsTxt from "@/assets/backend/requirements.txt?raw";
 import backendMainPy from "@/assets/backend/main.py?raw";
@@ -299,6 +301,8 @@ export function buildBootstrapperBundle(): BootstrapperFiles {
       "hub/backtest_routes.py": backtestRoutesPy,
       "hub/mcp_routes.py": mcpRoutesPy,
       "hub/trading_account_routes.py": tradingAccountRoutesPy,
+      "hub/alerts_routes.py": alertsRoutesPy,
+      "hub/quotes_router.py": quotesRouterPy,
       "config.py": configPy,
       "requirements.txt": requirementsTxt,
       "backend/main.py": backendMainPy,
