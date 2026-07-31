@@ -23,6 +23,8 @@ from hub.backtest_routes import router as backtest_router
 from hub.mcp_routes import router as mcp_router
 from hub.system_routes import router as system_router
 from hub import trading_account_routes
+from hub.alerts_routes import router as alerts_router
+from hub.quotes_router import router as quotes_router
 
 app = FastAPI(title="OFERTRADINGBOT Production Backend Engine")
 
@@ -55,6 +57,8 @@ app.include_router(backtest_router, prefix="/api/backtest")
 app.include_router(mcp_router, prefix="/api/mcp")
 app.include_router(system_router, prefix="/api/system")
 app.include_router(trading_account_routes.router, prefix="/api/account")
+app.include_router(alerts_router, prefix="/api/alerts")
+app.include_router(quotes_router, prefix="/api/market-data")
 
 
 @app.get("/api/health")
