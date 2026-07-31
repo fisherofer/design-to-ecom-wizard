@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Brain, Sparkles, BookOpen, Newspaper } from "lucide-react";
+import { SmartAiRouterPanel } from "@/components/intelligence/SmartAiRouterPanel";
+import { AiPluginsManager } from "@/components/intelligence/AiPluginsManager";
 
 export const Route = createFileRoute("/intelligence")({
   head: () => ({
@@ -53,6 +55,9 @@ function IntelligenceHub() {
 
       <div className="grid gap-5 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-5">
+          <SmartAiRouterPanel />
+          <AiPluginsManager />
+
           <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 to-transparent p-5 glass-strong">
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/20">

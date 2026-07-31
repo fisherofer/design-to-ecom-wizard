@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Bell, CheckCheck, Trash2, AlertTriangle, Info, CheckCircle2, AlertCircle } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,10 @@ function relative(ts: string) {
 
 export function NotificationsBell() {
   const list = useNotifications();
-  const unread = list.filter((n) => !n.read).length;
+  // Avoid SSR/client mismatch: the badge depends on localStorage.
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
+  const unread = hydrated ? list.filter((n) => !n.read).length : 0;
 
   return (
     <Popover>
