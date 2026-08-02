@@ -4,11 +4,12 @@ import { Link } from "@tanstack/react-router";
 import { api, type HealthReport } from "@/lib/api";
 
 export function StatusBar() {
-  const [time, setTime] = useState(() => new Date());
+  const [time, setTime] = useState<Date | null>(null);
   const [health, setHealth] = useState<HealthReport | null>(null);
   const [loadingHealth, setLoadingHealth] = useState(true);
 
   useEffect(() => {
+    setTime(new Date());
     const id = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
@@ -55,7 +56,7 @@ export function StatusBar() {
       </div>
       <div className="flex items-center gap-3 text-muted-foreground">
         <span className="hidden sm:inline">UTC</span>
-        <span className="text-foreground tabular-nums">{time.toISOString().slice(11, 19)}</span>
+        <span className="text-foreground tabular-nums">{time ? time.toISOString().slice(11, 19) : "--:--:--"}</span>
         <span className="h-1.5 w-1.5 rounded-full bg-success pulse-dot" />
       </div>
     </footer>

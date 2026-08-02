@@ -27,6 +27,13 @@ import mcpRoutesPy from "@/assets/hub/mcp_routes.py?raw";
 import tradingAccountRoutesPy from "@/assets/hub/trading_account_routes.py?raw";
 import alertsRoutesPy from "@/assets/hub/alerts_routes.py?raw";
 import quotesRouterPy from "@/assets/hub/quotes_router.py?raw";
+import alpacaRoutesPy from "@/assets/hub/alpaca_routes.py?raw";
+import ownershipRoutesPy from "@/assets/hub/ownership_routes.py?raw";
+import quantRoutesPy from "@/assets/hub/quant_routes.py?raw";
+import hiveRoutesPy from "@/assets/hub/hive_routes.py?raw";
+import quantPredictionEnginePy from "@/assets/backend/quant_prediction_engine.py?raw";
+import universeScannerPy from "@/assets/backend/universe_scanner.py?raw";
+import localDataUpdaterPy from "@/assets/backend/local_data_updater.py?raw";
 import configPy from "@/assets/backend/config.py?raw";
 import requirementsTxt from "@/assets/backend/requirements.txt?raw";
 import backendMainPy from "@/assets/backend/main.py?raw";
@@ -303,6 +310,10 @@ export function buildBootstrapperBundle(): BootstrapperFiles {
       "hub/trading_account_routes.py": tradingAccountRoutesPy,
       "hub/alerts_routes.py": alertsRoutesPy,
       "hub/quotes_router.py": quotesRouterPy,
+      "hub/alpaca_routes.py": alpacaRoutesPy,
+      "hub/ownership_routes.py": ownershipRoutesPy,
+      "hub/quant_routes.py": quantRoutesPy,
+      "hub/hive_routes.py": hiveRoutesPy,
       "config.py": configPy,
       "requirements.txt": requirementsTxt,
       "backend/main.py": backendMainPy,
@@ -318,6 +329,9 @@ export function buildBootstrapperBundle(): BootstrapperFiles {
       "agents/agent_alpha_hunter.py": agentAlphaHunterPy,
       "agents/agent_whale_tracker.py": agentWhaleTrackerPy,
       "agents/agent_meta_supervisor.py": agentMetaSupervisorPy,
+      "engines/quant_prediction_engine.py": quantPredictionEnginePy,
+      "engines/universe_scanner.py": universeScannerPy,
+      "engines/local_data_updater.py": localDataUpdaterPy,
       "master_orchestrator.py": masterOrchestratorPy,
     },
   };
