@@ -56,7 +56,7 @@ export function StatusBar() {
       </div>
       <div className="flex items-center gap-3 text-muted-foreground">
         <span className="hidden sm:inline">UTC</span>
-        <span className="text-foreground tabular-nums">{time.toISOString().slice(11, 19)}</span>
+        <span className="text-foreground tabular-nums">{time ? time.toISOString().slice(11, 19) : "--:--:--"}</span>
         <span className="h-1.5 w-1.5 rounded-full bg-success pulse-dot" />
       </div>
     </footer>
