@@ -94,8 +94,6 @@ def order_book(symbol: str) -> Dict[str, Any]:
         return {"success": False, "symbol": symbol, "available": False,
                 "reason": "yfinance is not installed in the backend venv."}
     try:
-        info = yf.Ticker(symbol).fast_info
-        bid = _f(getattr(info, "last_price", None))
         raw = yf.Ticker(symbol).info or {}
         bid = _f(raw.get("bid"))
         ask = _f(raw.get("ask"))
