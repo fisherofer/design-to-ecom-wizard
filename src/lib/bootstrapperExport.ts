@@ -31,6 +31,7 @@ import alpacaRoutesPy from "@/assets/hub/alpaca_routes.py?raw";
 import ownershipRoutesPy from "@/assets/hub/ownership_routes.py?raw";
 import quantRoutesPy from "@/assets/hub/quant_routes.py?raw";
 import hiveRoutesPy from "@/assets/hub/hive_routes.py?raw";
+import microstructureRoutesPy from "@/assets/hub/microstructure_routes.py?raw";
 import quantPredictionEnginePy from "@/assets/backend/quant_prediction_engine.py?raw";
 import universeScannerPy from "@/assets/backend/universe_scanner.py?raw";
 import localDataUpdaterPy from "@/assets/backend/local_data_updater.py?raw";
@@ -314,6 +315,7 @@ export function buildBootstrapperBundle(): BootstrapperFiles {
       "hub/ownership_routes.py": ownershipRoutesPy,
       "hub/quant_routes.py": quantRoutesPy,
       "hub/hive_routes.py": hiveRoutesPy,
+      "hub/microstructure_routes.py": microstructureRoutesPy,
       "config.py": configPy,
       "requirements.txt": requirementsTxt,
       "backend/main.py": backendMainPy,

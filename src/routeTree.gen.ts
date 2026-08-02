@@ -19,6 +19,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RepoAnalyzerRouteImport } from './routes/repo-analyzer'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PersonasRouteImport } from './routes/personas'
+import { Route as MicrostructureRouteImport } from './routes/microstructure'
 import { Route as IntelligenceRouteImport } from './routes/intelligence'
 import { Route as GooseRouteImport } from './routes/goose'
 import { Route as ConfigRouteImport } from './routes/config'
@@ -80,6 +81,11 @@ const PortfolioRoute = PortfolioRouteImport.update({
 const PersonasRoute = PersonasRouteImport.update({
   id: '/personas',
   path: '/personas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MicrostructureRoute = MicrostructureRouteImport.update({
+  id: '/microstructure',
+  path: '/microstructure',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IntelligenceRoute = IntelligenceRouteImport.update({
@@ -155,6 +161,7 @@ export interface FileRoutesByFullPath {
   '/config': typeof ConfigRoute
   '/goose': typeof GooseRoute
   '/intelligence': typeof IntelligenceRoute
+  '/microstructure': typeof MicrostructureRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
   '/repo-analyzer': typeof RepoAnalyzerRoute
@@ -179,6 +186,7 @@ export interface FileRoutesByTo {
   '/config': typeof ConfigRoute
   '/goose': typeof GooseRoute
   '/intelligence': typeof IntelligenceRoute
+  '/microstructure': typeof MicrostructureRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
   '/repo-analyzer': typeof RepoAnalyzerRoute
@@ -204,6 +212,7 @@ export interface FileRoutesById {
   '/config': typeof ConfigRoute
   '/goose': typeof GooseRoute
   '/intelligence': typeof IntelligenceRoute
+  '/microstructure': typeof MicrostructureRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
   '/repo-analyzer': typeof RepoAnalyzerRoute
@@ -230,6 +239,7 @@ export interface FileRouteTypes {
     | '/config'
     | '/goose'
     | '/intelligence'
+    | '/microstructure'
     | '/personas'
     | '/portfolio'
     | '/repo-analyzer'
@@ -254,6 +264,7 @@ export interface FileRouteTypes {
     | '/config'
     | '/goose'
     | '/intelligence'
+    | '/microstructure'
     | '/personas'
     | '/portfolio'
     | '/repo-analyzer'
@@ -278,6 +289,7 @@ export interface FileRouteTypes {
     | '/config'
     | '/goose'
     | '/intelligence'
+    | '/microstructure'
     | '/personas'
     | '/portfolio'
     | '/repo-analyzer'
@@ -303,6 +315,7 @@ export interface RootRouteChildren {
   ConfigRoute: typeof ConfigRoute
   GooseRoute: typeof GooseRoute
   IntelligenceRoute: typeof IntelligenceRoute
+  MicrostructureRoute: typeof MicrostructureRoute
   PersonasRoute: typeof PersonasRoute
   PortfolioRoute: typeof PortfolioRoute
   RepoAnalyzerRoute: typeof RepoAnalyzerRoute
@@ -387,6 +400,13 @@ declare module '@tanstack/react-router' {
       path: '/personas'
       fullPath: '/personas'
       preLoaderRoute: typeof PersonasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/microstructure': {
+      id: '/microstructure'
+      path: '/microstructure'
+      fullPath: '/microstructure'
+      preLoaderRoute: typeof MicrostructureRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/intelligence': {
@@ -487,6 +507,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConfigRoute: ConfigRoute,
   GooseRoute: GooseRoute,
   IntelligenceRoute: IntelligenceRoute,
+  MicrostructureRoute: MicrostructureRoute,
   PersonasRoute: PersonasRoute,
   PortfolioRoute: PortfolioRoute,
   RepoAnalyzerRoute: RepoAnalyzerRoute,
