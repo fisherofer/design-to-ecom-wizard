@@ -4,11 +4,12 @@ import { Link } from "@tanstack/react-router";
 import { api, type HealthReport } from "@/lib/api";
 
 export function StatusBar() {
-  const [time, setTime] = useState(() => new Date());
+  const [time, setTime] = useState<Date | null>(null);
   const [health, setHealth] = useState<HealthReport | null>(null);
   const [loadingHealth, setLoadingHealth] = useState(true);
 
   useEffect(() => {
+    setTime(new Date());
     const id = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
