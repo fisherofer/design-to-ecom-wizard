@@ -28,6 +28,7 @@ type NavTo =
   | "/"
   | "/command"
   | "/trading"
+  | "/microstructure"
   | "/portfolio"
   | "/watchlists"
   | "/triggers"
