@@ -1,7 +1,7 @@
-import {
-  Layers3, Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import {
   LayoutDashboard,
+  Layers3,
   Brain,
   Layers,
   KeyRound,
