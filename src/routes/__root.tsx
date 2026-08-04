@@ -91,9 +91,15 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  // Hydrate the portable (desktop SQLite) store once, before any tab reads it.
+  useEffect(() => {
+    void initPortableStorage();
+  }, []);
+
   return (
     <AppShell>
       <Outlet />
     </AppShell>
   );
 }
+
