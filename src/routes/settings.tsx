@@ -24,6 +24,8 @@ import {
   Check,
   TrendingUp,
   FileArchive,
+  HardDrive,
+
 } from "lucide-react";
 
 
@@ -45,6 +47,8 @@ import { ComputeRouterTab } from "@/components/settings/ComputeRouterTab";
 import { ProviderConnectorsTab } from "@/components/settings/ProviderConnectorsTab";
 import { TradingModeTab } from "@/components/settings/TradingModeTab";
 import { CodeExportTab } from "@/components/settings/CodeExportTab";
+import { PortableDataTab } from "@/components/settings/PortableDataTab";
+
 
 
 export const Route = createFileRoute("/settings")({
@@ -61,7 +65,7 @@ export const Route = createFileRoute("/settings")({
   component: SettingsPage,
 });
 
-type TabId = "general" | "trading" | "api" | "ollama" | "hub" | "filters" | "limits" | "budget" | "router" | "connectors" | "refresh" | "alerts" | "github" | "drive" | "theme" | "export";
+type TabId = "general" | "trading" | "api" | "ollama" | "hub" | "filters" | "limits" | "budget" | "router" | "connectors" | "refresh" | "alerts" | "github" | "drive" | "theme" | "export" | "portable";
 
 const TABS: Array<{ id: TabId; label: string; Icon: typeof SettingsIcon }> = [
   { id: "general", label: "General", Icon: SettingsIcon },
@@ -80,7 +84,9 @@ const TABS: Array<{ id: TabId; label: string; Icon: typeof SettingsIcon }> = [
   { id: "drive", label: "Google Drive", Icon: Cloud },
   { id: "theme", label: "Theme", Icon: Palette },
   { id: "export", label: "Code Export", Icon: FileArchive },
+  { id: "portable", label: "Portable Data", Icon: HardDrive },
 ];
+
 
 
 
