@@ -1,5 +1,8 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { AppShell } from "@/components/layout/AppShell";
+import { initPortableStorage } from "@/lib/portableStorage";
+
 
 import appCss from "../styles.css?url";
 
@@ -91,9 +94,15 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  // Hydrate the portable (desktop SQLite) store once, before any tab reads it.
+  useEffect(() => {
+    void initPortableStorage();
+  }, []);
+
   return (
     <AppShell>
       <Outlet />
     </AppShell>
   );
 }
+
