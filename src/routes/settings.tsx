@@ -150,6 +150,8 @@ function SettingsPage() {
       {tab === "drive" && <GoogleDriveTab />}
       {tab === "theme" && <ThemeTab />}
       {tab === "export" && <CodeExportTab />}
+      {tab === "portable" && <PortableDataTab />}
+
 
 
       <div className="fixed inset-x-0 bottom-7 z-20 border-t border-border bg-background/90 py-3 pl-3 pr-20 backdrop-blur-xl sm:px-6 md:left-[240px]">
