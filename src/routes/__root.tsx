@@ -1,5 +1,8 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { AppShell } from "@/components/layout/AppShell";
+import { initPortableStorage } from "@/lib/portableStorage";
+
 
 import appCss from "../styles.css?url";
 
