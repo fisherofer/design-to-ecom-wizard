@@ -1,17 +1,21 @@
-import { Bell, MessageCircle, Send, Smartphone, TestTube2 } from "lucide-react";
+import { Bell, MessageCircle, Send, Smartphone, TestTube2, Mail, Webhook } from "lucide-react";
 import { useState } from "react";
 import { channels, useChannels, type ChannelKind } from "@/lib/alertChannels";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { NotWiredBadge } from "@/components/common/NotWiredBadge";
+import { NotificationDispatcherPanel } from "@/components/settings/NotificationDispatcherPanel";
 
 const ICON: Record<ChannelKind, typeof Bell> = {
   bell: Bell,
   telegram: Send,
   whatsapp: MessageCircle,
   push: Smartphone,
+  email: Mail,
+  webhook: Webhook,
 };
+
 
 export function AlertChannelsTab() {
   const list = useChannels();
