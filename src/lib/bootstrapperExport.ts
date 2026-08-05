@@ -51,6 +51,11 @@ import liveTelemetryWsPy from "@/assets/backend/live_telemetry_ws.py?raw";
 import llmCognitiveEnginePy from "@/assets/backend/llm_cognitive_engine.py?raw";
 import timeseriesDbPy from "@/assets/backend/timeseries_db.py?raw";
 import masterOrchestratorPy from "@/assets/backend/master_orchestrator.py?raw";
+import tradingCostModelPy from "@/assets/backend/trading_cost_model.py?raw";
+import portfolioRiskManagerPy from "@/assets/backend/portfolio_risk_manager.py?raw";
+import exitStrategyOptimizerPy from "@/assets/backend/exit_strategy_optimizer.py?raw";
+import sentimentAnalysisEnginePy from "@/assets/backend/sentiment_analysis_engine.py?raw";
+import notificationDispatcherPy from "@/assets/backend/notification_dispatcher.py?raw";
 
 export interface BootstrapperFiles {
   masterJson: string;
