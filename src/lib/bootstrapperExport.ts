@@ -51,6 +51,11 @@ import liveTelemetryWsPy from "@/assets/backend/live_telemetry_ws.py?raw";
 import llmCognitiveEnginePy from "@/assets/backend/llm_cognitive_engine.py?raw";
 import timeseriesDbPy from "@/assets/backend/timeseries_db.py?raw";
 import masterOrchestratorPy from "@/assets/backend/master_orchestrator.py?raw";
+import tradingCostModelPy from "@/assets/backend/trading_cost_model.py?raw";
+import portfolioRiskManagerPy from "@/assets/backend/portfolio_risk_manager.py?raw";
+import exitStrategyOptimizerPy from "@/assets/backend/exit_strategy_optimizer.py?raw";
+import sentimentAnalysisEnginePy from "@/assets/backend/sentiment_analysis_engine.py?raw";
+import notificationDispatcherPy from "@/assets/backend/notification_dispatcher.py?raw";
 
 export interface BootstrapperFiles {
   masterJson: string;
@@ -335,6 +340,12 @@ export function buildBootstrapperBundle(): BootstrapperFiles {
       "engines/universe_scanner.py": universeScannerPy,
       "engines/local_data_updater.py": localDataUpdaterPy,
       "master_orchestrator.py": masterOrchestratorPy,
+      // Sprint C — cost/tax model, Kelly sizing, dynamic exits, sentiment, alerts.
+      "engines/trading_cost_model.py": tradingCostModelPy,
+      "engines/portfolio_risk_manager.py": portfolioRiskManagerPy,
+      "engines/exit_strategy_optimizer.py": exitStrategyOptimizerPy,
+      "engines/sentiment_analysis_engine.py": sentimentAnalysisEnginePy,
+      "engines/notification_dispatcher.py": notificationDispatcherPy,
     },
   };
 }
