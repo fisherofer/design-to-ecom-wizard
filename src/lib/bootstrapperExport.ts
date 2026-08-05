@@ -340,6 +340,12 @@ export function buildBootstrapperBundle(): BootstrapperFiles {
       "engines/universe_scanner.py": universeScannerPy,
       "engines/local_data_updater.py": localDataUpdaterPy,
       "master_orchestrator.py": masterOrchestratorPy,
+      // Sprint C — cost/tax model, Kelly sizing, dynamic exits, sentiment, alerts.
+      "engines/trading_cost_model.py": tradingCostModelPy,
+      "engines/portfolio_risk_manager.py": portfolioRiskManagerPy,
+      "engines/exit_strategy_optimizer.py": exitStrategyOptimizerPy,
+      "engines/sentiment_analysis_engine.py": sentimentAnalysisEnginePy,
+      "engines/notification_dispatcher.py": notificationDispatcherPy,
     },
   };
 }
