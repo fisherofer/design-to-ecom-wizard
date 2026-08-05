@@ -1,17 +1,21 @@
-import { Bell, MessageCircle, Send, Smartphone, TestTube2 } from "lucide-react";
+import { Bell, MessageCircle, Send, Smartphone, TestTube2, Mail, Webhook } from "lucide-react";
 import { useState } from "react";
 import { channels, useChannels, type ChannelKind } from "@/lib/alertChannels";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { NotWiredBadge } from "@/components/common/NotWiredBadge";
+import { NotificationDispatcherPanel } from "@/components/settings/NotificationDispatcherPanel";
 
 const ICON: Record<ChannelKind, typeof Bell> = {
   bell: Bell,
   telegram: Send,
   whatsapp: MessageCircle,
   push: Smartphone,
+  email: Mail,
+  webhook: Webhook,
 };
+
 
 export function AlertChannelsTab() {
   const list = useChannels();
@@ -78,6 +82,15 @@ export function AlertChannelsTab() {
                 </div>
               )}
 
+              {(c.kind === "email" || c.kind === "webhook") && (
+                <Input
+                  className="mt-3"
+                  placeholder={c.kind === "email" ? "recipient@example.com" : "https://chat.googleapis.com/... or Slack webhook URL"}
+                  value={c.target ?? ""}
+                  onChange={(e) => channels.update(c.id, { target: e.target.value })}
+                />
+              )}
+
               {c.kind === "push" && (
                 <p className="mt-3 text-xs text-muted-foreground">
                   Uses the browser Notification API. For Android background delivery, install the site as a PWA
@@ -90,6 +103,9 @@ export function AlertChannelsTab() {
       </div>
 
       {notice && <div className="rounded-lg border border-info/30 bg-info/5 p-3 text-xs text-info">{notice}</div>}
+
+      <NotificationDispatcherPanel />
     </div>
   );
 }
+
