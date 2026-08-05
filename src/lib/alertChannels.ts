@@ -9,38 +9,55 @@
  */
 import { useEffect, useState } from "react";
 
-export type ChannelKind = "telegram" | "whatsapp" | "push" | "bell";
+export type ChannelKind = "telegram" | "whatsapp" | "push" | "bell" | "email" | "webhook";
 
 export interface Channel {
   id: string;
   kind: ChannelKind;
   label: string;
   enabled: boolean;
-  target?: string;    // chat id / phone number / device token
+  target?: string;    // chat id / phone number / email / webhook url
   meta?: Record<string, string>;
 }
 
 const KEY = "ai-os.alertChannels.v1";
 const EVT = "ai-os:channels-changed";
 
+function defaults(): Channel[] {
+  return [
+    { id: "bell", kind: "bell", label: "In-app bell", enabled: true },
+    { id: "push", kind: "push", label: "Browser / Android Push", enabled: false },
+    { id: "email", kind: "email", label: "Email", enabled: false, target: "" },
+    { id: "telegram", kind: "telegram", label: "Telegram bot", enabled: false, target: "", meta: { botName: "OferTradingBot" } },
+    { id: "whatsapp", kind: "whatsapp", label: "WhatsApp Cloud API", enabled: false, target: "" },
+    { id: "webhook", kind: "webhook", label: "Webhook (Google Chat / Slack)", enabled: false, target: "" },
+  ];
+}
+
 function read(): Channel[] {
   if (typeof window === "undefined") return [];
-  try { return JSON.parse(localStorage.getItem(KEY) ?? "null") ?? seed(); } catch { return seed(); }
+  let stored: Channel[] | null = null;
+  try { stored = JSON.parse(localStorage.getItem(KEY) ?? "null"); } catch { stored = null; }
+  if (!stored) return seed();
+  // merge in any channel kinds added after the user's config was first written
+  const missing = defaults().filter((d) => !stored!.some((c) => c.id === d.id));
+  if (missing.length) {
+    const merged = [...stored, ...missing];
+    localStorage.setItem(KEY, JSON.stringify(merged));
+    return merged;
+  }
+  return stored;
 }
 function write(list: Channel[]) {
   localStorage.setItem(KEY, JSON.stringify(list));
   window.dispatchEvent(new CustomEvent(EVT));
 }
 function seed(): Channel[] {
-  const initial: Channel[] = [
-    { id: "bell", kind: "bell", label: "In-app bell", enabled: true },
-    { id: "telegram", kind: "telegram", label: "Telegram bot", enabled: false, target: "", meta: { botName: "OferTradingBot" } },
-    { id: "whatsapp", kind: "whatsapp", label: "WhatsApp Cloud API", enabled: false, target: "" },
-    { id: "push", kind: "push", label: "Browser / Android Push", enabled: false },
-  ];
+  const initial = defaults();
   if (typeof window !== "undefined") localStorage.setItem(KEY, JSON.stringify(initial));
   return initial;
 }
+
 
 export const channels = {
   list: () => read(),
