@@ -56,6 +56,8 @@ import portfolioRiskManagerPy from "@/assets/backend/portfolio_risk_manager.py?r
 import exitStrategyOptimizerPy from "@/assets/backend/exit_strategy_optimizer.py?raw";
 import sentimentAnalysisEnginePy from "@/assets/backend/sentiment_analysis_engine.py?raw";
 import notificationDispatcherPy from "@/assets/backend/notification_dispatcher.py?raw";
+import mockDataGuardEnginePy from "@/assets/backend/mock_data_guard_engine.py?raw";
+import smartLlmExecutionEnginePy from "@/assets/backend/smart_llm_execution_engine.py?raw";
 
 export interface BootstrapperFiles {
   masterJson: string;
@@ -346,6 +348,9 @@ export function buildBootstrapperBundle(): BootstrapperFiles {
       "engines/exit_strategy_optimizer.py": exitStrategyOptimizerPy,
       "engines/sentiment_analysis_engine.py": sentimentAnalysisEnginePy,
       "engines/notification_dispatcher.py": notificationDispatcherPy,
+      // Sprint D — simulated-data guard + dual-loop AI execution engine.
+      "core/mock_data_guard_engine.py": mockDataGuardEnginePy,
+      "core/smart_llm_execution_engine.py": smartLlmExecutionEnginePy,
     },
   };
 }
