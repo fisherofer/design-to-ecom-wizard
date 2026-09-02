@@ -15,6 +15,7 @@ const EVENT = "ai-os:trading-mode-changed";
 /** Routes considered "trading surfaces" — hidden from nav when disabled. */
 export const TRADING_ROUTES: readonly string[] = [
   "/trading",
+  "/live-trading",
   "/portfolio",
   "/triggers",
   "/alerts",
