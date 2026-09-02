@@ -139,3 +139,71 @@ async def get_account_health() -> Dict[str, Any]:
         "http_client": "httpx" if httpx is not None else "missing",
         "checked_at": _utc_now_iso(),
     }
+
+
+@router.get("/positions")
+async def get_positions() -> Dict[str, Any]:
+    """
+    Live broker positions used by the UI's reconciliation view.
+
+    Never fabricates a book: when credentials or connectivity are missing an
+    empty list is returned together with an explicit `error` string so the
+    frontend can flag the local book as unverified.
+    """
+    creds = _credentials()
+    if not creds["key"] or not creds["secret"]:
+        return {
+            "positions": [],
+            "is_simulated": True,
+            "as_of": _utc_now_iso(),
+            "error": "ALPACA_API_KEY / ALPACA_SECRET_KEY are not configured in the environment.",
+        }
+    if httpx is None:
+        return {
+            "positions": [],
+            "is_simulated": True,
+            "as_of": _utc_now_iso(),
+            "error": "httpx is not installed in the backend venv.",
+        }
+
+    url = f"{_resolve_base_url()}/v2/positions"
+    headers = {
+        "APCA-API-KEY-ID": creds["key"],
+        "APCA-API-SECRET-KEY": creds["secret"],
+    }
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(url, headers=headers)
+    except Exception as err:
+        return {"positions": [], "is_simulated": True, "as_of": _utc_now_iso(), "error": f"Alpaca request failed: {err}"}
+
+    if response.status_code >= 400:
+        return {
+            "positions": [],
+            "is_simulated": True,
+            "as_of": _utc_now_iso(),
+            "error": f"Alpaca returned HTTP {response.status_code}",
+        }
+
+    raw = response.json()
+    positions = [
+        {
+            "symbol": str(item.get("symbol", "")),
+            "qty": _to_float(item.get("qty")),
+            "avg_entry_price": _to_float(item.get("avg_entry_price")),
+            "current_price": _to_float(item.get("current_price")),
+            "market_value": _to_float(item.get("market_value")),
+            "unrealized_pl": _to_float(item.get("unrealized_pl")),
+            "unrealized_plpc": _to_float(item.get("unrealized_plpc")),
+            "side": str(item.get("side", "long")),
+        }
+        for item in (raw if isinstance(raw, list) else [])
+    ]
+    return {
+        "positions": positions,
+        "count": len(positions),
+        "open_interest": round(sum(abs(p["market_value"]) for p in positions), 2),
+        "unrealized_pl": round(sum(p["unrealized_pl"] for p in positions), 2),
+        "is_simulated": False,
+        "as_of": _utc_now_iso(),
+    }
