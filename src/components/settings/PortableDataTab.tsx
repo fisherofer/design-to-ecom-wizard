@@ -19,6 +19,7 @@ import {
   revealDataDir,
   type PortableInfo,
 } from "@/lib/portableStorage";
+import { CloudSyncCard } from "@/components/settings/CloudSyncCard";
 
 function formatBytes(n: number) {
   if (n < 1024) return `${n} B`;
@@ -189,6 +190,9 @@ export function PortableDataTab() {
         </ol>
         <p className="mt-3 text-xs text-muted-foreground">See PORTABLE.md in the bundle for the full guide.</p>
       </div>
+
+      <CloudSyncCard />
     </div>
+
   );
 }

@@ -45,6 +45,7 @@ type NavTo =
   | "/system"
   | "/backup"
   | "/repo-analyzer"
+  | "/live-trading"
   | "/settings";
 
 type NavItem = {
@@ -71,6 +72,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Trading",
     items: [
       { to: "/trading", label: "Trading Hub", icon: TrendingUp },
+      { to: "/live-trading", label: "Live Trading Loop", icon: Activity },
       { to: "/microstructure", label: "Microstructure", icon: Layers3 },
       { to: "/portfolio", label: "Portfolio & Dividends", icon: Wallet },
       { to: "/watchlists", label: "Watchlists", icon: Layers },

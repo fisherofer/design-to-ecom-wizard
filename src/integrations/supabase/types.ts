@@ -149,6 +149,42 @@ export type Database = {
         }
         Relationships: []
       }
+      portable_profile_sync: {
+        Row: {
+          created_at: string
+          deleted: boolean
+          device_id: string | null
+          id: string
+          key: string
+          owner_session: string
+          revision: number
+          updated_at: string
+          value: Json | null
+        }
+        Insert: {
+          created_at?: string
+          deleted?: boolean
+          device_id?: string | null
+          id?: string
+          key: string
+          owner_session: string
+          revision?: number
+          updated_at?: string
+          value?: Json | null
+        }
+        Update: {
+          created_at?: string
+          deleted?: boolean
+          device_id?: string | null
+          id?: string
+          key?: string
+          owner_session?: string
+          revision?: number
+          updated_at?: string
+          value?: Json | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
