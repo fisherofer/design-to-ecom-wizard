@@ -16,6 +16,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from hub.venv_routes import router as venv_router
+from hub.local_ai_routes import router as local_ai_router
 from hub.risk_routes import router as risk_router
 from hub.oms_routes import router as oms_router
 from hub.market_stream_routes import router as stream_router
@@ -55,6 +56,7 @@ app.add_middleware(
 
 # Connect system and feature module routers
 app.include_router(venv_router)
+app.include_router(local_ai_router, prefix="/api/local-ai")
 app.include_router(risk_router, prefix="/api/risk")
 app.include_router(oms_router, prefix="/api/trading")
 app.include_router(stream_router, prefix="/api/stream")

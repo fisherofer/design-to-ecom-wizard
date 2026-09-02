@@ -16,6 +16,8 @@
 // can drop them into their local repo and mount the routers on FastAPI.
 import venvManagerPy from "@/assets/hub/venv_manager.py?raw";
 import venvRoutesPy from "@/assets/hub/venv_routes.py?raw";
+import localAiManagerPy from "@/assets/hub/local_ai_manager.py?raw";
+import localAiRoutesPy from "@/assets/hub/local_ai_routes.py?raw";
 import hubInitPy from "@/assets/hub/__init__.py?raw";
 import keysManagerPy from "@/assets/hub/keys_manager.py?raw";
 import systemRoutesPy from "@/assets/hub/system_routes.py?raw";
@@ -311,6 +313,8 @@ export function buildBootstrapperBundle(): BootstrapperFiles {
       "hub/__init__.py": hubInitPy,
       "hub/venv_manager.py": venvManagerPy,
       "hub/venv_routes.py": venvRoutesPy,
+      "hub/local_ai_manager.py": localAiManagerPy,
+      "hub/local_ai_routes.py": localAiRoutesPy,
       "hub/keys_manager.py": keysManagerPy,
       "hub/system_routes.py": systemRoutesPy,
       "hub/oms_routes.py": omsRoutesPy,
