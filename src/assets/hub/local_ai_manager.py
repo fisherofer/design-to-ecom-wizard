@@ -193,3 +193,137 @@ def get_status() -> dict[str, Any]:
 
 if __name__ == "__main__":  # manual smoke test
     print(json.dumps(get_status(), indent=2))
+
+
+# --------------------------------------------------------------------------- #
+# GGUF loading + local inference                                               #
+# --------------------------------------------------------------------------- #
+
+_LOADED: dict[str, Any] = {}  # abs path -> llama_cpp.Llama instance
+_LOADED_META: dict[str, dict[str, Any]] = {}
+
+
+def _resolve_model_path(model_path: str) -> Path:
+    p = Path(model_path)
+    if not p.is_absolute():
+        p = MODELS_DIR / model_path
+    return p.resolve()
+
+
+def load_gguf_model(model_path: str, n_ctx: int = 4096, n_gpu_layers: int = 0) -> dict[str, Any]:
+    """Load a GGUF weight file into memory through llama-cpp-python.
+
+    The weights must physically exist under MODELS_DIR (or an absolute path the
+    user chose). Nothing is downloaded here and nothing is faked: if
+    llama-cpp-python is missing from the venv we say so and point at
+    install_local_ai_stack().
+    """
+    path = _resolve_model_path(model_path)
+    if not path.exists() or path.suffix.lower() != ".gguf":
+        return {"ok": False, "error": f"GGUF file not found: {path}"}
+    key = str(path)
+    if key in _LOADED:
+        return {"ok": True, "already_loaded": True, **_LOADED_META[key]}
+    try:
+        from llama_cpp import Llama  # type: ignore[import-not-found]
+    except Exception as exc:  # noqa: BLE001
+        return {
+            "ok": False,
+            "error": f"llama-cpp-python not installed in the venv ({exc})",
+            "hint": "POST /api/local-ai/install-stack",
+        }
+    try:
+        _LOADED[key] = Llama(model_path=key, n_ctx=n_ctx, n_gpu_layers=n_gpu_layers, verbose=False)
+    except Exception as exc:  # noqa: BLE001
+        return {"ok": False, "error": str(exc)}
+    _LOADED_META[key] = {
+        "path": key,
+        "name": path.name,
+        "size_bytes": path.stat().st_size,
+        "n_ctx": n_ctx,
+        "n_gpu_layers": n_gpu_layers,
+    }
+    return {"ok": True, "already_loaded": False, **_LOADED_META[key]}
+
+
+def unload_gguf_model(model_path: str) -> dict[str, Any]:
+    key = str(_resolve_model_path(model_path))
+    _LOADED.pop(key, None)
+    meta = _LOADED_META.pop(key, None)
+    return {"ok": meta is not None, "path": key}
+
+
+def loaded_models() -> dict[str, Any]:
+    return {"ok": True, "models": list(_LOADED_META.values())}
+
+
+def generate(prompt: str, model: str | None = None, max_tokens: int = 512,
+             temperature: float = 0.2) -> dict[str, Any]:
+    """Run a completion on the best available LOCAL runtime.
+
+    Order: an already-loaded GGUF (llama-cpp) → Ollama → LM Studio.
+    Never falls back to a cloud model, and never invents an answer.
+    """
+    # 1. in-process GGUF
+    key = str(_resolve_model_path(model)) if model and model.endswith(".gguf") else next(iter(_LOADED), None)
+    if key and key in _LOADED:
+        try:
+            out = _LOADED[key].create_completion(
+                prompt=prompt, max_tokens=max_tokens, temperature=temperature
+            )
+            return {
+                "ok": True,
+                "runtime": "llama-cpp",
+                "model": _LOADED_META[key]["name"],
+                "text": out["choices"][0]["text"],
+            }
+        except Exception as exc:  # noqa: BLE001
+            return {"ok": False, "runtime": "llama-cpp", "error": str(exc)}
+
+    # 2. Ollama daemon
+    ollama = ollama_status()
+    if ollama["running"] and ollama["models"]:
+        name = model or ollama["models"][0]["name"]
+        try:
+            if httpx is None:
+                raise RuntimeError("httpx not installed")
+            res = httpx.post(
+                f"{OLLAMA_URL}/api/generate",
+                json={"model": name, "prompt": prompt, "stream": False,
+                      "options": {"temperature": temperature, "num_predict": max_tokens}},
+                timeout=max(HTTP_TIMEOUT, 120.0),
+            )
+            res.raise_for_status()
+            return {"ok": True, "runtime": "ollama", "model": name, "text": res.json().get("response", "")}
+        except Exception as exc:  # noqa: BLE001
+            return {"ok": False, "runtime": "ollama", "error": str(exc)}
+
+    # 3. LM Studio OpenAI-compatible endpoint
+    lms = lmstudio_status()
+    if lms["running"] and lms["models"]:
+        name = model or lms["models"][0]["name"]
+        try:
+            if httpx is None:
+                raise RuntimeError("httpx not installed")
+            res = httpx.post(
+                f"{LMSTUDIO_URL}/v1/chat/completions",
+                json={"model": name, "messages": [{"role": "user", "content": prompt}],
+                      "temperature": temperature, "max_tokens": max_tokens},
+                timeout=max(HTTP_TIMEOUT, 120.0),
+            )
+            res.raise_for_status()
+            data = res.json()
+            return {
+                "ok": True,
+                "runtime": "lmstudio",
+                "model": name,
+                "text": data["choices"][0]["message"]["content"],
+            }
+        except Exception as exc:  # noqa: BLE001
+            return {"ok": False, "runtime": "lmstudio", "error": str(exc)}
+
+    return {
+        "ok": False,
+        "error": "No local runtime available — load a GGUF file or start Ollama / LM Studio",
+        "models_dir": str(MODELS_DIR),
+    }

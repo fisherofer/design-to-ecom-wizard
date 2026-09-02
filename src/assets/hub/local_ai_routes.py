@@ -56,3 +56,45 @@ def delete(body: ModelRequest) -> dict:
     if not result["ok"]:
         raise HTTPException(status_code=500, detail=result)
     return result
+
+
+class LoadRequest(BaseModel):
+    model_path: str
+    n_ctx: int = 4096
+    n_gpu_layers: int = 0
+
+
+class GenerateRequest(BaseModel):
+    prompt: str
+    model: str | None = None
+    max_tokens: int = 512
+    temperature: float = 0.2
+
+
+@router.get("/loaded")
+def loaded() -> dict:
+    """GGUF weights currently resident in memory."""
+    return local_ai_manager.loaded_models()
+
+
+@router.post("/load")
+def load(body: LoadRequest) -> dict:
+    """Load a GGUF file from the local models dir into llama-cpp."""
+    result = local_ai_manager.load_gguf_model(body.model_path, body.n_ctx, body.n_gpu_layers)
+    if not result["ok"]:
+        raise HTTPException(status_code=400, detail=result)
+    return result
+
+
+@router.post("/unload")
+def unload(body: LoadRequest) -> dict:
+    return local_ai_manager.unload_gguf_model(body.model_path)
+
+
+@router.post("/generate")
+def generate(body: GenerateRequest) -> dict:
+    """Completion on a LOCAL runtime only (GGUF → Ollama → LM Studio)."""
+    result = local_ai_manager.generate(body.prompt, body.model, body.max_tokens, body.temperature)
+    if not result["ok"]:
+        raise HTTPException(status_code=503, detail=result)
+    return result
