@@ -19,6 +19,7 @@ import {
   revealDataDir,
   type PortableInfo,
 } from "@/lib/portableStorage";
+import { CloudSyncCard } from "@/components/settings/CloudSyncCard";
 
 function formatBytes(n: number) {
   if (n < 1024) return `${n} B`;
