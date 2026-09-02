@@ -58,6 +58,9 @@ import sentimentAnalysisEnginePy from "@/assets/backend/sentiment_analysis_engin
 import notificationDispatcherPy from "@/assets/backend/notification_dispatcher.py?raw";
 import mockDataGuardEnginePy from "@/assets/backend/mock_data_guard_engine.py?raw";
 import smartLlmExecutionEnginePy from "@/assets/backend/smart_llm_execution_engine.py?raw";
+import executionSlicerPy from "@/assets/backend/execution_slicer.py?raw";
+import optionsSentimentPy from "@/assets/backend/options_sentiment.py?raw";
+import localSqlVaultPy from "@/assets/hub/local_sql_vault.py?raw";
 
 export interface BootstrapperFiles {
   masterJson: string;
@@ -351,6 +354,10 @@ export function buildBootstrapperBundle(): BootstrapperFiles {
       // Sprint D — simulated-data guard + dual-loop AI execution engine.
       "core/mock_data_guard_engine.py": mockDataGuardEnginePy,
       "core/smart_llm_execution_engine.py": smartLlmExecutionEnginePy,
+      // Sprint E — institutional execution slicing, options greeks/sentiment, local SQL vault.
+      "engines/execution_slicer.py": executionSlicerPy,
+      "engines/options_sentiment.py": optionsSentimentPy,
+      "hub/local_sql_vault.py": localSqlVaultPy,
     },
   };
 }
