@@ -33,6 +33,7 @@ import {
   stopDualLoop,
   useLoopState,
 } from "@/lib/dualLoopRunner";
+import { LocalVarScanPanel } from "@/components/trading/LocalVarScanPanel";
 import { isDesktop } from "@/lib/portableStorage";
 import { cn } from "@/lib/utils";
 
@@ -306,6 +307,8 @@ function LiveTradingScreen() {
           </table>
         </div>
       </section>
+
+      <LocalVarScanPanel />
 
       {/* ---------- decision summary ---------- */}
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
