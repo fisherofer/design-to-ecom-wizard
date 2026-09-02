@@ -34,6 +34,12 @@ import {
   useLoopState,
 } from "@/lib/dualLoopRunner";
 import { LocalVarScanPanel } from "@/components/trading/LocalVarScanPanel";
+import { MarketStreamCard } from "@/components/trading/MarketStreamCard";
+import { BrokerReconciliation } from "@/components/trading/BrokerReconciliation";
+import { engageKillSwitch, releaseKillSwitch, useKillSwitch } from "@/lib/killSwitch";
+import { cancelAllWorking } from "@/lib/orderTicket";
+import { disconnectStream } from "@/lib/marketSocket";
+import { OctagonX } from "lucide-react";
 import { isDesktop } from "@/lib/portableStorage";
 import { cn } from "@/lib/utils";
 
@@ -101,12 +107,24 @@ function LiveTradingScreen() {
   const [guard] = useGuardConfig();
   const [smart] = useSmartConfig();
   const summary = useMemo(() => summarizeRuns(runs), [runs]);
+  const kill = useKillSwitch();
+  const streamSymbols = useMemo(
+    () =>
+      Array.from(
+        new Set([...state.positions.map((p) => p.symbol), "AAPL", "NVDA", "TSLA", "MSFT", "AMD", "META", "AMZN", "GOOGL"]),
+      ),
+    [state.positions],
+  );
 
   const pnl = state.equityUsd - state.openingEquityUsd;
   const pnlPct = state.openingEquityUsd ? (pnl / state.openingEquityUsd) * 100 : 0;
   const running = state.running && isLoopRunning();
 
   const onToggle = () => {
+    if (kill.engaged) {
+      toast.error("Kill-switch engaged — release it before arming the loop");
+      return;
+    }
     if (running) {
       stopDualLoop();
       toast.info("Dual loop stopped");
@@ -140,6 +158,26 @@ function LiveTradingScreen() {
           >
             {running ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
             {running ? "Stop loop" : "הפעל לולאה כפולה"}
+          </Button>
+          <Button
+            size="lg"
+            variant={kill.engaged ? "default" : "destructive"}
+            className="gap-2"
+            onClick={() => {
+              if (kill.engaged) {
+                releaseKillSwitch();
+                toast.success("Kill-switch released");
+                return;
+              }
+              engageKillSwitch("Emergency halt from Live Trading");
+              const n = cancelAllWorking("Kill-switch: bulk cancel");
+              stopDualLoop("Kill-switch engaged");
+              disconnectStream();
+              toast.error(`KILL-SWITCH ENGAGED — ${n} orders cancelled`);
+            }}
+          >
+            <OctagonX className="h-4 w-4" />
+            {kill.engaged ? "Release halt" : "KILL"}
           </Button>
           <Button
             size="lg"
@@ -307,6 +345,19 @@ function LiveTradingScreen() {
           </table>
         </div>
       </section>
+
+      {kill.engaged ? (
+        <div className="flex items-center gap-3 rounded-lg border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
+          <OctagonX className="h-5 w-5 shrink-0" />
+          <div>
+            <strong>Trading halted.</strong> {kill.reason} · {kill.at ? new Date(kill.at).toLocaleString() : ""}
+          </div>
+        </div>
+      ) : null}
+
+      <MarketStreamCard symbols={streamSymbols} />
+
+      <BrokerReconciliation />
 
       <LocalVarScanPanel />
 

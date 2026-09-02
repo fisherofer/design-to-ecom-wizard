@@ -18,6 +18,7 @@
  */
 import { useEffect, useState } from "react";
 import { portableGetJson, portableSetJson } from "@/lib/portableStorage";
+import { isKilled } from "@/lib/killSwitch";
 import {
   atrVarUsd,
   getGuardConfig,
@@ -218,6 +219,10 @@ function runSlowCycle() {
 
 async function runFastTick() {
   if (ticking) return;
+  if (isKilled()) {
+    stopDualLoop("Kill-switch engaged — loop halted");
+    return;
+  }
   ticking = true;
   try {
     const smart: SmartLlmConfig = getSmartConfig();
@@ -389,6 +394,9 @@ export function isLoopRunning(): boolean {
 
 /** One-click start of the dual loop. */
 export function startDualLoop(reset = false): LoopState {
+  if (isKilled()) {
+    return patch({ running: false, phase: "BLOCKED", lastNote: "Kill-switch engaged — cannot arm the loop" });
+  }
   const smart = getSmartConfig();
   stopTimers();
   const base = reset ? defaultLoopState(smart.initialEquityUsd) : getLoopState();
