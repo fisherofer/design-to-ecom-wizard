@@ -45,6 +45,7 @@ type NavTo =
   | "/system"
   | "/backup"
   | "/repo-analyzer"
+  | "/live-trading"
   | "/settings";
 
 type NavItem = {
