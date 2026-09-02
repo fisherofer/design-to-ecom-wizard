@@ -354,6 +354,10 @@ export function buildBootstrapperBundle(): BootstrapperFiles {
       // Sprint D — simulated-data guard + dual-loop AI execution engine.
       "core/mock_data_guard_engine.py": mockDataGuardEnginePy,
       "core/smart_llm_execution_engine.py": smartLlmExecutionEnginePy,
+      // Sprint E — institutional execution slicing, options greeks/sentiment, local SQL vault.
+      "engines/execution_slicer.py": executionSlicerPy,
+      "engines/options_sentiment.py": optionsSentimentPy,
+      "hub/local_sql_vault.py": localSqlVaultPy,
     },
   };
 }
