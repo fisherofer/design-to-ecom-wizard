@@ -16,6 +16,9 @@ import {
   Square,
   TrendingDown,
   TrendingUp,
+  Wallet,
+  Wifi,
+  WifiOff,
   Zap,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -170,6 +173,12 @@ function LiveTradingScreen() {
           <Gauge className="h-3 w-3" />
           AI sentiment {state.aiScore.toFixed(1)}
         </Badge>
+        <Badge variant={state.dataSource === "LIVE" ? "default" : "destructive"} className="gap-1.5">
+          {state.dataSource === "LIVE" ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
+          {state.dataSource === "LIVE"
+            ? `LIVE ${state.quoteProvider ?? "quotes_router"} · ${state.quoteAgeSec ?? 0}s`
+            : `NO FEED — ${state.feedError ?? "quotes_router offline"}`}
+        </Badge>
         <Badge variant={isDesktop() ? "default" : "secondary"}>
           {isDesktop() ? "Portable Mode (SQLite)" : "Browser profile"}
         </Badge>
@@ -208,6 +217,94 @@ function LiveTradingScreen() {
           hint={`risk/trade ${smart.riskPerTradePct}% · stop ×${smart.atrStopMultiple}`}
           tone="warn"
         />
+      </section>
+
+      {/* ---------- live book ---------- */}
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Stat
+          icon={state.unrealizedPnlUsd >= 0 ? TrendingUp : TrendingDown}
+          label="PnL חוטף (Unrealized)"
+          value={`${state.unrealizedPnlUsd >= 0 ? "+" : ""}${usd(state.unrealizedPnlUsd)}`}
+          hint={`${state.positions.length} open positions`}
+          tone={state.unrealizedPnlUsd >= 0 ? "up" : "down"}
+        />
+        <Stat
+          icon={Wallet}
+          label="Realized P&L"
+          value={`${state.realizedPnlUsd >= 0 ? "+" : ""}${usd(state.realizedPnlUsd)}`}
+          tone={state.realizedPnlUsd >= 0 ? "up" : "down"}
+        />
+        <Stat
+          icon={Activity}
+          label="Open Interest (notional)"
+          value={usd(state.openInterestUsd)}
+          hint="sum |qty × last price|"
+        />
+        <Stat
+          icon={Gauge}
+          label="Feed"
+          value={state.dataSource === "LIVE" ? (state.quoteProvider ?? "quotes_router") : "offline"}
+          hint={
+            state.dataSource === "LIVE"
+              ? `snapshot age ${state.quoteAgeSec ?? 0}s`
+              : "guard downgrades ticks to paper"
+          }
+          tone={state.dataSource === "LIVE" ? "up" : "warn"}
+        />
+      </section>
+
+      {/* ---------- positions ---------- */}
+      <section className="rounded-lg border border-border bg-card">
+        <div className="border-b border-border px-4 py-3 font-display text-sm font-semibold">
+          Positions · live mark-to-market
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="text-xs text-muted-foreground">
+              <tr className="border-b border-border">
+                <th className="p-2 text-start">Symbol</th>
+                <th className="p-2 text-end">Qty</th>
+                <th className="p-2 text-end">Avg</th>
+                <th className="p-2 text-end">Last</th>
+                <th className="p-2 text-end">Notional</th>
+                <th className="p-2 text-end">Unrealized</th>
+                <th className="p-2 text-start">Mode</th>
+              </tr>
+            </thead>
+            <tbody>
+              {state.positions.map((p) => (
+                <tr key={p.symbol} className="border-b border-border/60 last:border-0">
+                  <td className="p-2 font-mono text-xs">{p.symbol}</td>
+                  <td className="p-2 text-end tabular-nums">{p.qty}</td>
+                  <td className="p-2 text-end tabular-nums">{p.avgPrice.toFixed(2)}</td>
+                  <td className="p-2 text-end tabular-nums">{p.lastPrice.toFixed(2)}</td>
+                  <td className="p-2 text-end tabular-nums">{usd(p.notionalUsd)}</td>
+                  <td
+                    className={cn(
+                      "p-2 text-end tabular-nums",
+                      p.unrealizedUsd >= 0 ? "text-emerald-500" : "text-destructive",
+                    )}
+                  >
+                    {p.unrealizedUsd >= 0 ? "+" : ""}
+                    {usd(p.unrealizedUsd)}
+                  </td>
+                  <td className="p-2">
+                    <Badge variant={p.simulated ? "secondary" : "default"}>
+                      {p.simulated ? "PAPER" : "LIVE"}
+                    </Badge>
+                  </td>
+                </tr>
+              ))}
+              {state.positions.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-6 text-center text-sm text-muted-foreground">
+                    No open positions — the loop opens a position when the blended score clears the threshold.
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
       </section>
 
       {/* ---------- decision summary ---------- */}
