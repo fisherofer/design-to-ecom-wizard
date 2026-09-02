@@ -189,6 +189,9 @@ export function PortableDataTab() {
         </ol>
         <p className="mt-3 text-xs text-muted-foreground">See PORTABLE.md in the bundle for the full guide.</p>
       </div>
+
+      <CloudSyncCard />
     </div>
+
   );
 }
