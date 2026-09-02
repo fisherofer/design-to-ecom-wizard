@@ -16,6 +16,8 @@ const EVENT = "ai-os:trading-mode-changed";
 export const TRADING_ROUTES: readonly string[] = [
   "/trading",
   "/live-trading",
+  "/order-ticket",
+  "/backtesting",
   "/portfolio",
   "/triggers",
   "/alerts",

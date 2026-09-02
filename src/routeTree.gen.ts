@@ -28,6 +28,7 @@ import { Route as ConfigRouteImport } from './routes/config'
 import { Route as CommandRouteImport } from './routes/command'
 import { Route as CodeStudioRouteImport } from './routes/code-studio'
 import { Route as BackupRouteImport } from './routes/backup'
+import { Route as BacktestingRouteImport } from './routes/backtesting'
 import { Route as ApiVaultRouteImport } from './routes/api-vault'
 import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as AgentsRouteImport } from './routes/agents'
@@ -130,6 +131,11 @@ const BackupRoute = BackupRouteImport.update({
   path: '/backup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BacktestingRoute = BacktestingRouteImport.update({
+  id: '/backtesting',
+  path: '/backtesting',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiVaultRoute = ApiVaultRouteImport.update({
   id: '/api-vault',
   path: '/api-vault',
@@ -167,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/agents': typeof AgentsRoute
   '/alerts': typeof AlertsRoute
   '/api-vault': typeof ApiVaultRoute
+  '/backtesting': typeof BacktestingRoute
   '/backup': typeof BackupRoute
   '/code-studio': typeof CodeStudioRoute
   '/command': typeof CommandRoute
@@ -194,6 +201,7 @@ export interface FileRoutesByTo {
   '/agents': typeof AgentsRoute
   '/alerts': typeof AlertsRoute
   '/api-vault': typeof ApiVaultRoute
+  '/backtesting': typeof BacktestingRoute
   '/backup': typeof BackupRoute
   '/code-studio': typeof CodeStudioRoute
   '/command': typeof CommandRoute
@@ -222,6 +230,7 @@ export interface FileRoutesById {
   '/agents': typeof AgentsRoute
   '/alerts': typeof AlertsRoute
   '/api-vault': typeof ApiVaultRoute
+  '/backtesting': typeof BacktestingRoute
   '/backup': typeof BackupRoute
   '/code-studio': typeof CodeStudioRoute
   '/command': typeof CommandRoute
@@ -251,6 +260,7 @@ export interface FileRouteTypes {
     | '/agents'
     | '/alerts'
     | '/api-vault'
+    | '/backtesting'
     | '/backup'
     | '/code-studio'
     | '/command'
@@ -278,6 +288,7 @@ export interface FileRouteTypes {
     | '/agents'
     | '/alerts'
     | '/api-vault'
+    | '/backtesting'
     | '/backup'
     | '/code-studio'
     | '/command'
@@ -305,6 +316,7 @@ export interface FileRouteTypes {
     | '/agents'
     | '/alerts'
     | '/api-vault'
+    | '/backtesting'
     | '/backup'
     | '/code-studio'
     | '/command'
@@ -333,6 +345,7 @@ export interface RootRouteChildren {
   AgentsRoute: typeof AgentsRoute
   AlertsRoute: typeof AlertsRoute
   ApiVaultRoute: typeof ApiVaultRoute
+  BacktestingRoute: typeof BacktestingRoute
   BackupRoute: typeof BackupRoute
   CodeStudioRoute: typeof CodeStudioRoute
   CommandRoute: typeof CommandRoute
@@ -491,6 +504,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BackupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/backtesting': {
+      id: '/backtesting'
+      path: '/backtesting'
+      fullPath: '/backtesting'
+      preLoaderRoute: typeof BacktestingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api-vault': {
       id: '/api-vault'
       path: '/api-vault'
@@ -541,6 +561,7 @@ const rootRouteChildren: RootRouteChildren = {
   AgentsRoute: AgentsRoute,
   AlertsRoute: AlertsRoute,
   ApiVaultRoute: ApiVaultRoute,
+  BacktestingRoute: BacktestingRoute,
   BackupRoute: BackupRoute,
   CodeStudioRoute: CodeStudioRoute,
   CommandRoute: CommandRoute,
