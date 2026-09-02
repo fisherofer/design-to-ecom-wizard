@@ -58,6 +58,9 @@ import sentimentAnalysisEnginePy from "@/assets/backend/sentiment_analysis_engin
 import notificationDispatcherPy from "@/assets/backend/notification_dispatcher.py?raw";
 import mockDataGuardEnginePy from "@/assets/backend/mock_data_guard_engine.py?raw";
 import smartLlmExecutionEnginePy from "@/assets/backend/smart_llm_execution_engine.py?raw";
+import executionSlicerPy from "@/assets/backend/execution_slicer.py?raw";
+import optionsSentimentPy from "@/assets/backend/options_sentiment.py?raw";
+import localSqlVaultPy from "@/assets/hub/local_sql_vault.py?raw";
 
 export interface BootstrapperFiles {
   masterJson: string;
