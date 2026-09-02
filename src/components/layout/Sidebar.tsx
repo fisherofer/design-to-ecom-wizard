@@ -20,6 +20,8 @@ import {
   Bird,
   BellRing,
   GitBranch,
+  Ticket,
+  LineChart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isTradingRoute, useTradingEnabled } from "@/lib/tradingMode";
@@ -46,6 +48,8 @@ type NavTo =
   | "/backup"
   | "/repo-analyzer"
   | "/live-trading"
+  | "/order-ticket"
+  | "/backtesting"
   | "/settings";
 
 type NavItem = {
@@ -73,6 +77,8 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: "/trading", label: "Trading Hub", icon: TrendingUp },
       { to: "/live-trading", label: "Live Trading Loop", icon: Activity },
+      { to: "/order-ticket", label: "Order Ticket", icon: Ticket },
+      { to: "/backtesting", label: "Backtesting Lab", icon: LineChart },
       { to: "/microstructure", label: "Microstructure", icon: Layers3 },
       { to: "/portfolio", label: "Portfolio & Dividends", icon: Wallet },
       { to: "/watchlists", label: "Watchlists", icon: Layers },

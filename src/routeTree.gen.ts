@@ -19,6 +19,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RepoAnalyzerRouteImport } from './routes/repo-analyzer'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PersonasRouteImport } from './routes/personas'
+import { Route as OrderTicketRouteImport } from './routes/order-ticket'
 import { Route as MicrostructureRouteImport } from './routes/microstructure'
 import { Route as LiveTradingRouteImport } from './routes/live-trading'
 import { Route as IntelligenceRouteImport } from './routes/intelligence'
@@ -27,6 +28,7 @@ import { Route as ConfigRouteImport } from './routes/config'
 import { Route as CommandRouteImport } from './routes/command'
 import { Route as CodeStudioRouteImport } from './routes/code-studio'
 import { Route as BackupRouteImport } from './routes/backup'
+import { Route as BacktestingRouteImport } from './routes/backtesting'
 import { Route as ApiVaultRouteImport } from './routes/api-vault'
 import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as AgentsRouteImport } from './routes/agents'
@@ -84,6 +86,11 @@ const PersonasRoute = PersonasRouteImport.update({
   path: '/personas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrderTicketRoute = OrderTicketRouteImport.update({
+  id: '/order-ticket',
+  path: '/order-ticket',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MicrostructureRoute = MicrostructureRouteImport.update({
   id: '/microstructure',
   path: '/microstructure',
@@ -124,6 +131,11 @@ const BackupRoute = BackupRouteImport.update({
   path: '/backup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BacktestingRoute = BacktestingRouteImport.update({
+  id: '/backtesting',
+  path: '/backtesting',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiVaultRoute = ApiVaultRouteImport.update({
   id: '/api-vault',
   path: '/api-vault',
@@ -161,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/agents': typeof AgentsRoute
   '/alerts': typeof AlertsRoute
   '/api-vault': typeof ApiVaultRoute
+  '/backtesting': typeof BacktestingRoute
   '/backup': typeof BackupRoute
   '/code-studio': typeof CodeStudioRoute
   '/command': typeof CommandRoute
@@ -169,6 +182,7 @@ export interface FileRoutesByFullPath {
   '/intelligence': typeof IntelligenceRoute
   '/live-trading': typeof LiveTradingRoute
   '/microstructure': typeof MicrostructureRoute
+  '/order-ticket': typeof OrderTicketRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
   '/repo-analyzer': typeof RepoAnalyzerRoute
@@ -187,6 +201,7 @@ export interface FileRoutesByTo {
   '/agents': typeof AgentsRoute
   '/alerts': typeof AlertsRoute
   '/api-vault': typeof ApiVaultRoute
+  '/backtesting': typeof BacktestingRoute
   '/backup': typeof BackupRoute
   '/code-studio': typeof CodeStudioRoute
   '/command': typeof CommandRoute
@@ -195,6 +210,7 @@ export interface FileRoutesByTo {
   '/intelligence': typeof IntelligenceRoute
   '/live-trading': typeof LiveTradingRoute
   '/microstructure': typeof MicrostructureRoute
+  '/order-ticket': typeof OrderTicketRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
   '/repo-analyzer': typeof RepoAnalyzerRoute
@@ -214,6 +230,7 @@ export interface FileRoutesById {
   '/agents': typeof AgentsRoute
   '/alerts': typeof AlertsRoute
   '/api-vault': typeof ApiVaultRoute
+  '/backtesting': typeof BacktestingRoute
   '/backup': typeof BackupRoute
   '/code-studio': typeof CodeStudioRoute
   '/command': typeof CommandRoute
@@ -222,6 +239,7 @@ export interface FileRoutesById {
   '/intelligence': typeof IntelligenceRoute
   '/live-trading': typeof LiveTradingRoute
   '/microstructure': typeof MicrostructureRoute
+  '/order-ticket': typeof OrderTicketRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
   '/repo-analyzer': typeof RepoAnalyzerRoute
@@ -242,6 +260,7 @@ export interface FileRouteTypes {
     | '/agents'
     | '/alerts'
     | '/api-vault'
+    | '/backtesting'
     | '/backup'
     | '/code-studio'
     | '/command'
@@ -250,6 +269,7 @@ export interface FileRouteTypes {
     | '/intelligence'
     | '/live-trading'
     | '/microstructure'
+    | '/order-ticket'
     | '/personas'
     | '/portfolio'
     | '/repo-analyzer'
@@ -268,6 +288,7 @@ export interface FileRouteTypes {
     | '/agents'
     | '/alerts'
     | '/api-vault'
+    | '/backtesting'
     | '/backup'
     | '/code-studio'
     | '/command'
@@ -276,6 +297,7 @@ export interface FileRouteTypes {
     | '/intelligence'
     | '/live-trading'
     | '/microstructure'
+    | '/order-ticket'
     | '/personas'
     | '/portfolio'
     | '/repo-analyzer'
@@ -294,6 +316,7 @@ export interface FileRouteTypes {
     | '/agents'
     | '/alerts'
     | '/api-vault'
+    | '/backtesting'
     | '/backup'
     | '/code-studio'
     | '/command'
@@ -302,6 +325,7 @@ export interface FileRouteTypes {
     | '/intelligence'
     | '/live-trading'
     | '/microstructure'
+    | '/order-ticket'
     | '/personas'
     | '/portfolio'
     | '/repo-analyzer'
@@ -321,6 +345,7 @@ export interface RootRouteChildren {
   AgentsRoute: typeof AgentsRoute
   AlertsRoute: typeof AlertsRoute
   ApiVaultRoute: typeof ApiVaultRoute
+  BacktestingRoute: typeof BacktestingRoute
   BackupRoute: typeof BackupRoute
   CodeStudioRoute: typeof CodeStudioRoute
   CommandRoute: typeof CommandRoute
@@ -329,6 +354,7 @@ export interface RootRouteChildren {
   IntelligenceRoute: typeof IntelligenceRoute
   LiveTradingRoute: typeof LiveTradingRoute
   MicrostructureRoute: typeof MicrostructureRoute
+  OrderTicketRoute: typeof OrderTicketRoute
   PersonasRoute: typeof PersonasRoute
   PortfolioRoute: typeof PortfolioRoute
   RepoAnalyzerRoute: typeof RepoAnalyzerRoute
@@ -415,6 +441,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PersonasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/order-ticket': {
+      id: '/order-ticket'
+      path: '/order-ticket'
+      fullPath: '/order-ticket'
+      preLoaderRoute: typeof OrderTicketRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/microstructure': {
       id: '/microstructure'
       path: '/microstructure'
@@ -471,6 +504,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BackupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/backtesting': {
+      id: '/backtesting'
+      path: '/backtesting'
+      fullPath: '/backtesting'
+      preLoaderRoute: typeof BacktestingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api-vault': {
       id: '/api-vault'
       path: '/api-vault'
@@ -521,6 +561,7 @@ const rootRouteChildren: RootRouteChildren = {
   AgentsRoute: AgentsRoute,
   AlertsRoute: AlertsRoute,
   ApiVaultRoute: ApiVaultRoute,
+  BacktestingRoute: BacktestingRoute,
   BackupRoute: BackupRoute,
   CodeStudioRoute: CodeStudioRoute,
   CommandRoute: CommandRoute,
@@ -529,6 +570,7 @@ const rootRouteChildren: RootRouteChildren = {
   IntelligenceRoute: IntelligenceRoute,
   LiveTradingRoute: LiveTradingRoute,
   MicrostructureRoute: MicrostructureRoute,
+  OrderTicketRoute: OrderTicketRoute,
   PersonasRoute: PersonasRoute,
   PortfolioRoute: PortfolioRoute,
   RepoAnalyzerRoute: RepoAnalyzerRoute,

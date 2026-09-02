@@ -8,6 +8,7 @@
  * Guard then downgrades the tick to simulated/paper).
  */
 import { getApiBase } from "@/lib/apiConfig";
+import { getStreamTicks, isStreamLive } from "@/lib/marketSocket";
 
 export interface LiveQuote {
   symbol: string;
@@ -43,6 +44,27 @@ export async function fetchQuotes(symbols: string[]): Promise<QuotesResult> {
   };
   if (symbols.length === 0) return empty;
 
+  // ---- 1. streaming ticks first (WebSocket) ---------------------------
+  const streamed = getStreamTicks(symbols);
+  const streamedSymbols = Object.keys(streamed);
+  if (isStreamLive() && streamedSymbols.length === symbols.length) {
+    const now = Date.now() / 1000;
+    const quotes: Record<string, LiveQuote> = {};
+    streamedSymbols.forEach((s) => {
+      const t = streamed[s]!;
+      quotes[s] = { symbol: s, price: t.price, provider: t.provider, ts: t.ts };
+    });
+    const ages = Object.values(quotes).map((q) => Math.max(0, now - q.ts));
+    return {
+      ok: true,
+      quotes,
+      errors: {},
+      ageSec: ages.length ? Math.min(...ages) : 0,
+      source: "quotes_router",
+    };
+  }
+
+  // ---- 2. REST fallback (quotes_router provider chain) ------------------
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
@@ -56,7 +78,12 @@ export async function fetchQuotes(symbols: string[]): Promise<QuotesResult> {
       quotes: Record<string, LiveQuote>;
       errors?: Record<string, string[]>;
     };
-    const quotes = data.quotes ?? {};
+    const quotes = { ...(data.quotes ?? {}) };
+    // Streamed ticks win over REST snapshots when both exist.
+    streamedSymbols.forEach((s2) => {
+      const t = streamed[s2]!;
+      quotes[s2] = { symbol: s2, price: t.price, provider: t.provider, ts: t.ts };
+    });
     const now = Date.now() / 1000;
     const ages = Object.values(quotes).map((q) => Math.max(0, now - (q.ts ?? now)));
     return {
