@@ -207,3 +207,208 @@ async def get_positions() -> Dict[str, Any]:
         "is_simulated": False,
         "as_of": _utc_now_iso(),
     }
+
+
+# ---------------------------------------------------------------------------
+# Real broker order routing (Alpaca). Stage 1 = paper endpoint only.
+# ---------------------------------------------------------------------------
+
+from pydantic import BaseModel, Field  # noqa: E402
+
+
+class BracketOrderRequest(BaseModel):
+    """A parent entry order with optional protective stop and target legs."""
+
+    symbol: str
+    side: str = Field(pattern="^(?i)(buy|sell)$")
+    qty: float = Field(gt=0)
+    type: str = Field(default="market", pattern="^(?i)(market|limit)$")
+    time_in_force: str = Field(default="day", pattern="^(?i)(day|gtc|ioc|fok|opg|cls)$")
+    limit_price: float | None = None
+    stop_price: float | None = None
+    target_price: float | None = None
+    client_order_id: str | None = None
+    extended_hours: bool = False
+
+
+def _auth_headers() -> Dict[str, str] | None:
+    creds = _credentials()
+    if not creds["key"] or not creds["secret"]:
+        return None
+    return {
+        "APCA-API-KEY-ID": creds["key"],
+        "APCA-API-SECRET-KEY": creds["secret"],
+        "Content-Type": "application/json",
+    }
+
+
+def _shape_order(item: Dict[str, Any]) -> Dict[str, Any]:
+    """Normalises an Alpaca order payload into the OS contract."""
+    legs = item.get("legs") or []
+    return {
+        "broker_order_id": str(item.get("id", "")),
+        "client_order_id": item.get("client_order_id"),
+        "symbol": str(item.get("symbol", "")),
+        "side": str(item.get("side", "")).upper(),
+        "type": str(item.get("type", "")).upper(),
+        "time_in_force": str(item.get("time_in_force", "")).upper(),
+        "qty": _to_float(item.get("qty")),
+        "filled_qty": _to_float(item.get("filled_qty")),
+        "filled_avg_price": _to_float(item.get("filled_avg_price")),
+        "limit_price": _to_float(item.get("limit_price")) or None,
+        "stop_price": _to_float(item.get("stop_price")) or None,
+        "status": str(item.get("status", "")).upper(),
+        "order_class": str(item.get("order_class", "")),
+        "submitted_at": item.get("submitted_at"),
+        "filled_at": item.get("filled_at"),
+        "canceled_at": item.get("canceled_at"),
+        "legs": [_shape_order(leg) for leg in legs if isinstance(leg, dict)],
+    }
+
+
+@router.post("/orders")
+async def submit_bracket_order(payload: BracketOrderRequest) -> Dict[str, Any]:
+    """
+    Submits a real bracket order to the broker.
+
+    Returns `accepted: false` with an explicit `error` when credentials or
+    connectivity are missing — the order is never silently pretended to exist.
+    """
+    headers = _auth_headers()
+    if headers is None:
+        return {
+            "accepted": False,
+            "error": "ALPACA_API_KEY / ALPACA_SECRET_KEY are not configured in the environment.",
+            "as_of": _utc_now_iso(),
+        }
+    if httpx is None:
+        return {"accepted": False, "error": "httpx is not installed in the backend venv.", "as_of": _utc_now_iso()}
+
+    body: Dict[str, Any] = {
+        "symbol": payload.symbol.upper().strip(),
+        "side": payload.side.lower(),
+        "qty": str(payload.qty),
+        "type": payload.type.lower(),
+        "time_in_force": payload.time_in_force.lower(),
+        "extended_hours": payload.extended_hours,
+    }
+    if payload.type.lower() == "limit":
+        if not payload.limit_price:
+            raise HTTPException(status_code=422, detail="limit_price is required for a LIMIT order.")
+        body["limit_price"] = str(payload.limit_price)
+    if payload.client_order_id:
+        body["client_order_id"] = payload.client_order_id[:48]
+
+    has_stop = bool(payload.stop_price)
+    has_target = bool(payload.target_price)
+    if has_stop and has_target:
+        body["order_class"] = "bracket"
+        body["stop_loss"] = {"stop_price": str(payload.stop_price)}
+        body["take_profit"] = {"limit_price": str(payload.target_price)}
+    elif has_stop or has_target:
+        body["order_class"] = "oto"
+        if has_stop:
+            body["stop_loss"] = {"stop_price": str(payload.stop_price)}
+        else:
+            body["take_profit"] = {"limit_price": str(payload.target_price)}
+
+    url = f"{_resolve_base_url()}/v2/orders"
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.post(url, headers=headers, json=body)
+    except Exception as err:
+        return {"accepted": False, "error": f"Alpaca request failed: {err}", "as_of": _utc_now_iso()}
+
+    if response.status_code >= 400:
+        detail = ""
+        try:
+            detail = str(response.json().get("message", ""))
+        except Exception:
+            detail = response.text[:300]
+        return {
+            "accepted": False,
+            "error": f"Alpaca rejected the order (HTTP {response.status_code}): {detail}",
+            "as_of": _utc_now_iso(),
+        }
+
+    return {"accepted": True, "order": _shape_order(response.json()), "as_of": _utc_now_iso()}
+
+
+@router.get("/orders")
+async def list_broker_orders(status: str = "open", limit: int = 100) -> Dict[str, Any]:
+    """Lists real broker orders so the local book can be reconciled against them."""
+    headers = _auth_headers()
+    if headers is None:
+        return {"orders": [], "is_simulated": True, "as_of": _utc_now_iso(),
+                "error": "ALPACA_API_KEY / ALPACA_SECRET_KEY are not configured in the environment."}
+    if httpx is None:
+        return {"orders": [], "is_simulated": True, "as_of": _utc_now_iso(),
+                "error": "httpx is not installed in the backend venv."}
+
+    url = f"{_resolve_base_url()}/v2/orders"
+    params = {"status": status, "limit": max(1, min(limit, 500)), "nested": "true"}
+    try:
+        async with httpx.AsyncClient(timeout=12.0) as client:
+            response = await client.get(url, headers=headers, params=params)
+    except Exception as err:
+        return {"orders": [], "is_simulated": True, "as_of": _utc_now_iso(), "error": f"Alpaca request failed: {err}"}
+
+    if response.status_code >= 400:
+        return {"orders": [], "is_simulated": True, "as_of": _utc_now_iso(),
+                "error": f"Alpaca returned HTTP {response.status_code}"}
+
+    raw = response.json()
+    orders = [_shape_order(item) for item in (raw if isinstance(raw, list) else []) if isinstance(item, dict)]
+    return {"orders": orders, "count": len(orders), "is_simulated": False, "as_of": _utc_now_iso()}
+
+
+@router.delete("/orders/{broker_order_id}")
+async def cancel_broker_order(broker_order_id: str) -> Dict[str, Any]:
+    """Cancels a single working broker order."""
+    headers = _auth_headers()
+    if headers is None:
+        return {"cancelled": False, "error": "Alpaca credentials are not configured.", "as_of": _utc_now_iso()}
+    if httpx is None:
+        return {"cancelled": False, "error": "httpx is not installed in the backend venv.", "as_of": _utc_now_iso()}
+
+    url = f"{_resolve_base_url()}/v2/orders/{broker_order_id}"
+    try:
+        async with httpx.AsyncClient(timeout=12.0) as client:
+            response = await client.delete(url, headers=headers)
+    except Exception as err:
+        return {"cancelled": False, "error": f"Alpaca request failed: {err}", "as_of": _utc_now_iso()}
+
+    ok = response.status_code in (200, 204)
+    return {
+        "cancelled": ok,
+        "broker_order_id": broker_order_id,
+        "error": None if ok else f"Alpaca returned HTTP {response.status_code}",
+        "as_of": _utc_now_iso(),
+    }
+
+
+@router.delete("/orders")
+async def cancel_all_broker_orders() -> Dict[str, Any]:
+    """Cancels every working broker order — used by the emergency kill-switch."""
+    headers = _auth_headers()
+    if headers is None:
+        return {"cancelled": 0, "error": "Alpaca credentials are not configured.", "as_of": _utc_now_iso()}
+    if httpx is None:
+        return {"cancelled": 0, "error": "httpx is not installed in the backend venv.", "as_of": _utc_now_iso()}
+
+    url = f"{_resolve_base_url()}/v2/orders"
+    try:
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            response = await client.delete(url, headers=headers)
+    except Exception as err:
+        return {"cancelled": 0, "error": f"Alpaca request failed: {err}", "as_of": _utc_now_iso()}
+
+    if response.status_code >= 400:
+        return {"cancelled": 0, "error": f"Alpaca returned HTTP {response.status_code}", "as_of": _utc_now_iso()}
+
+    try:
+        body = response.json()
+        count = len(body) if isinstance(body, list) else 0
+    except Exception:
+        count = 0
+    return {"cancelled": count, "error": None, "as_of": _utc_now_iso()}

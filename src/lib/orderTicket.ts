@@ -18,6 +18,14 @@ import { portableGetJson, portableSetJson } from "@/lib/portableStorage";
 import { fetchQuotes } from "@/lib/liveQuotes";
 import { isKilled } from "@/lib/killSwitch";
 import { getApiBase } from "@/lib/apiConfig";
+import {
+  cancelAllBrokerOrders,
+  cancelBrokerOrder,
+  listBrokerOrders,
+  mapBrokerStatus,
+  submitBrokerBracket,
+} from "@/lib/brokerOrders";
+import { journal } from "@/lib/tradeJournal";
 
 export const ORDER_BOOK_KEY = "ofer.orders.book.v1";
 export const ORDER_EVENT = "ofer:orders-changed";
@@ -177,6 +185,7 @@ export interface SubmitResult {
   ok: boolean;
   order?: BracketOrder;
   errors: string[];
+  warnings?: string[];
 }
 
 async function mirrorToOms(order: BracketOrder): Promise<string | null> {
@@ -218,8 +227,100 @@ export async function submitBracket(draft: DraftOrder): Promise<SubmitResult> {
   }
   if (errors.length) return { ok: false, errors };
 
+  // Portfolio-level gate: concentration, gross exposure and the daily stop.
+  const { preTradeCheck } = await import("@/lib/riskGuard");
+  const gate = preTradeCheck({
+    symbol,
+    qty: draft.qty,
+    price: (draft.type === "LIMIT" ? draft.limitPrice : refPrice) ?? refPrice ?? 0,
+  });
+  if (!gate.allowed) {
+    return { ok: false, errors: gate.reasons, warnings: gate.warnings };
+  }
+
   const now = new Date().toISOString();
   const isMarket = draft.type === "MARKET";
+  const live = !draft.paper;
+
+  /* ----- Live route: the broker is the source of truth ----- */
+  if (live) {
+    const res = await submitBrokerBracket({
+      symbol,
+      side: draft.side.toLowerCase() as "buy" | "sell",
+      qty: draft.qty,
+      type: draft.type.toLowerCase() as "market" | "limit",
+      time_in_force: draft.tif.toLowerCase() as "day" | "gtc" | "ioc",
+      limit_price: draft.limitPrice,
+      stop_price: draft.stopPrice,
+      target_price: draft.targetPrice,
+    });
+
+    if (!res.accepted || !res.order) {
+      const reason = res.error ?? "The broker did not accept the order.";
+      journal({
+        eventType: "ORDER_REJECTED",
+        severity: "warn",
+        source: "broker",
+        symbol,
+        side: draft.side,
+        qty: draft.qty,
+        message: `Broker rejected the ${draft.side} ${draft.qty} ${symbol}: ${reason}`,
+        details: { draft },
+      });
+      return { ok: false, errors: [reason], warnings: gate.warnings };
+    }
+
+    const bo = res.order;
+    const status = mapBrokerStatus(bo.status);
+    const fill = bo.filled_avg_price > 0 ? bo.filled_avg_price : null;
+    const order: BracketOrder = {
+      id: uid(),
+      symbol,
+      side: draft.side,
+      type: draft.type,
+      tif: draft.tif,
+      qty: draft.qty,
+      limitPrice: draft.limitPrice,
+      stopPrice: draft.stopPrice,
+      targetPrice: draft.targetPrice,
+      status,
+      createdAt: now,
+      updatedAt: now,
+      realizedUsd: 0,
+      entryFill: fill,
+      exitFill: null,
+      exitReason: null,
+      paper: false,
+      note: `Broker ${bo.status} — ${bo.order_class || "simple"} #${bo.broker_order_id.slice(0, 8)}`,
+      legs: [
+        { ...leg("ENTRY", draft.limitPrice ?? fill), status, filledAt: bo.filled_at, fillPrice: fill },
+        { ...leg("STOP", draft.stopPrice), status: draft.stopPrice ? "WORKING" : "CANCELLED" },
+        { ...leg("TARGET", draft.targetPrice), status: draft.targetPrice ? "WORKING" : "CANCELLED" },
+      ],
+      brokerOrderId: bo.broker_order_id,
+    };
+
+    const book = getBook();
+    write({ ...book, orders: [order, ...book.orders], feedError: feed.ok ? null : (feed.error ?? "feed unavailable") });
+
+    journal({
+      eventType: "ORDER_SUBMITTED",
+      severity: "info",
+      source: "broker",
+      symbol,
+      side: draft.side,
+      qty: draft.qty,
+      price: fill ?? draft.limitPrice ?? refPrice,
+      orderId: order.id,
+      brokerOrderId: bo.broker_order_id,
+      message: `LIVE ${draft.side} ${draft.qty} ${symbol} sent to the broker (stop ${draft.stopPrice ?? "—"} / target ${draft.targetPrice ?? "—"})`,
+      details: { brokerStatus: bo.status, orderClass: bo.order_class, tif: draft.tif },
+    });
+
+    return { ok: true, order, errors: [], warnings: gate.warnings };
+  }
+
+  /* ----- Paper route: simulated locally against the real feed ----- */
   const entryFill = isMarket ? refPrice : null;
 
   const order: BracketOrder = {
@@ -239,9 +340,9 @@ export async function submitBracket(draft: DraftOrder): Promise<SubmitResult> {
     entryFill,
     exitFill: null,
     exitReason: null,
-    paper: draft.paper,
+    paper: true,
     note: isMarket
-      ? `Market entry filled @ ${entryFill?.toFixed(2)} (${quote?.provider ?? "feed"})`
+      ? `Paper entry filled @ ${entryFill?.toFixed(2)} (${quote?.provider ?? "feed"})`
       : `Resting ${draft.type} ${draft.side} @ ${draft.limitPrice}`,
     legs: [
       { ...leg("ENTRY", isMarket ? entryFill : draft.limitPrice), status: isMarket ? "FILLED" : "WORKING", filledAt: isMarket ? now : null, fillPrice: entryFill },
@@ -254,10 +355,23 @@ export async function submitBracket(draft: DraftOrder): Promise<SubmitResult> {
   const book = getBook();
   write({ ...book, orders: [order, ...book.orders], feedError: feed.ok ? null : (feed.error ?? "feed unavailable") });
 
+  journal({
+    eventType: "ORDER_SUBMITTED",
+    severity: "info",
+    source: "local",
+    symbol,
+    side: draft.side,
+    qty: draft.qty,
+    price: entryFill ?? draft.limitPrice,
+    orderId: order.id,
+    message: `PAPER ${draft.side} ${draft.qty} ${symbol} (stop ${draft.stopPrice ?? "—"} / target ${draft.targetPrice ?? "—"})`,
+    details: { tif: draft.tif, type: draft.type, feed: quote?.provider ?? null },
+  });
+
   const brokerId = await mirrorToOms(order);
   if (brokerId) updateOrder(order.id, { brokerOrderId: brokerId });
 
-  return { ok: true, order, errors: [] };
+  return { ok: true, order, errors: [], warnings: gate.warnings };
 }
 
 export function updateOrder(id: string, p: Partial<BracketOrder>): void {
@@ -268,9 +382,15 @@ export function updateOrder(id: string, p: Partial<BracketOrder>): void {
   });
 }
 
-/** Cancel a working order (or a still-open bracket's protective legs). */
+/**
+ * Cancel a working order (or a still-open bracket's protective legs).
+ * Live orders are cancelled at the broker too — the local book never diverges
+ * silently from the real one.
+ */
 export function cancelOrder(id: string, reason = "Cancelled by operator"): void {
   const book = getBook();
+  const target = book.orders.find((o) => o.id === id);
+
   write({
     ...book,
     orders: book.orders.map((o) => {
@@ -278,31 +398,64 @@ export function cancelOrder(id: string, reason = "Cancelled by operator"): void 
       if (o.status === "FILLED") {
         return {
           ...o,
-          status: "CLOSED",
+          status: "CLOSED" as OrderStatus,
           exitReason: reason,
           updatedAt: new Date().toISOString(),
           legs: o.legs.map((l) =>
-            l.kind === "ENTRY" ? l : { ...l, status: l.status === "FILLED" ? l.status : "CANCELLED" },
+            l.kind === "ENTRY" ? l : { ...l, status: l.status === "FILLED" ? l.status : ("CANCELLED" as OrderStatus) },
           ),
         };
       }
       return {
         ...o,
-        status: "CANCELLED",
+        status: "CANCELLED" as OrderStatus,
         note: reason,
         updatedAt: new Date().toISOString(),
-        legs: o.legs.map((l) => ({ ...l, status: l.status === "FILLED" ? l.status : "CANCELLED" })),
+        legs: o.legs.map((l) => ({ ...l, status: l.status === "FILLED" ? l.status : ("CANCELLED" as OrderStatus) })),
       };
     }),
   });
+
+  if (target) {
+    journal({
+      eventType: target.status === "FILLED" ? "POSITION_CLOSED" : "ORDER_CANCELLED",
+      severity: "info",
+      source: target.paper ? "local" : "broker",
+      symbol: target.symbol,
+      side: target.side,
+      qty: target.qty,
+      orderId: target.id,
+      brokerOrderId: target.brokerOrderId,
+      message: `${target.paper ? "PAPER" : "LIVE"} ${target.symbol} — ${reason}`,
+      details: { previousStatus: target.status },
+    });
+    if (!target.paper && target.brokerOrderId) {
+      void cancelBrokerOrder(target.brokerOrderId).then((r) => {
+        if (!r.cancelled) {
+          journal({
+            eventType: "ORDER_CANCELLED",
+            severity: "warn",
+            source: "broker",
+            symbol: target.symbol,
+            orderId: target.id,
+            brokerOrderId: target.brokerOrderId,
+            message: `Broker cancel failed for ${target.symbol}: ${r.error ?? "unknown error"} — verify manually.`,
+            details: {},
+          });
+        }
+      });
+    }
+  }
 }
 
 export function cancelAllWorking(reason = "Bulk cancel"): number {
   const book = getBook();
   let n = 0;
+  let hadLive = false;
   const orders = book.orders.map((o) => {
     if (o.status === "WORKING" || o.status === "PENDING") {
       n += 1;
+      if (!o.paper) hadLive = true;
       return {
         ...o,
         status: "CANCELLED" as OrderStatus,
@@ -314,12 +467,75 @@ export function cancelAllWorking(reason = "Bulk cancel"): number {
     return o;
   });
   write({ ...book, orders });
+
+  if (n > 0) {
+    journal({
+      eventType: "ORDER_CANCELLED",
+      severity: "warn",
+      source: hadLive ? "broker" : "local",
+      message: `${reason}: ${n} working order(s) cancelled.`,
+      details: { count: n, includedLiveOrders: hadLive },
+    });
+  }
+  if (hadLive) void cancelAllBrokerOrders();
   return n;
+}
+
+/**
+ * Pulls real broker order state and applies it to the local book, so fills and
+ * broker-side cancellations show up here instead of drifting apart.
+ */
+export async function reconcileBrokerOrders(): Promise<{ updated: number; error: string | null }> {
+  const book = getBook();
+  const liveOrders = book.orders.filter((o) => !o.paper && o.brokerOrderId);
+  if (liveOrders.length === 0) return { updated: 0, error: null };
+
+  const { orders: remote, error } = await listBrokerOrders("all");
+  if (error && remote.length === 0) return { updated: 0, error };
+
+  const byId = new Map(remote.map((r) => [r.broker_order_id, r]));
+  let updated = 0;
+
+  const next = book.orders.map((o) => {
+    if (o.paper || !o.brokerOrderId) return o;
+    const r = byId.get(o.brokerOrderId);
+    if (!r) return o;
+    const status = mapBrokerStatus(r.status);
+    const fill = r.filled_avg_price > 0 ? r.filled_avg_price : o.entryFill;
+    if (status === o.status && fill === o.entryFill) return o;
+    updated += 1;
+    if (status === "FILLED" && o.status !== "FILLED") {
+      journal({
+        eventType: "ORDER_FILLED",
+        severity: "info",
+        source: "broker",
+        symbol: o.symbol,
+        side: o.side,
+        qty: r.filled_qty || o.qty,
+        price: fill,
+        orderId: o.id,
+        brokerOrderId: o.brokerOrderId,
+        message: `Broker filled ${o.side} ${r.filled_qty || o.qty} ${o.symbol} @ ${fill ?? "?"}`,
+        details: { brokerStatus: r.status },
+      });
+    }
+    return {
+      ...o,
+      status,
+      entryFill: fill,
+      updatedAt: new Date().toISOString(),
+      note: `Broker ${r.status}${fill ? ` @ ${fill}` : ""}`,
+    };
+  });
+
+  if (updated > 0) write({ ...getBook(), orders: next });
+  return { updated, error: error ?? null };
 }
 
 /** Move stop / target on a live bracket. */
 export function amendProtection(id: string, stopPrice: number | null, targetPrice: number | null): void {
   const book = getBook();
+  const target = book.orders.find((o) => o.id === id);
   write({
     ...book,
     orders: book.orders.map((o) =>
@@ -341,6 +557,18 @@ export function amendProtection(id: string, stopPrice: number | null, targetPric
         : o,
     ),
   });
+  if (target) {
+    journal({
+      eventType: "PROTECTION_AMENDED",
+      severity: "info",
+      source: target.paper ? "local" : "broker",
+      symbol: target.symbol,
+      orderId: target.id,
+      brokerOrderId: target.brokerOrderId,
+      message: `${target.symbol} protection moved → stop ${stopPrice ?? "—"} / target ${targetPrice ?? "—"}`,
+      details: { previousStop: target.stopPrice, previousTarget: target.targetPrice },
+    });
+  }
 }
 
 export function clearHistory(): void {
@@ -414,14 +642,25 @@ export function markBook(prices: Record<string, number>): OrderBook {
         o.stopPrice != null && (o.side === "BUY" ? price <= o.stopPrice : price >= o.stopPrice);
       const targetHit =
         o.targetPrice != null && (o.side === "BUY" ? price >= o.targetPrice : price <= o.targetPrice);
-      if (stopHit) {
-        const closed = closeAt(o, o.stopPrice as number, "Stop-loss");
+      if (stopHit || targetHit) {
+        const reason = stopHit ? "Stop-loss" : "Target";
+        const exitPrice = (stopHit ? o.stopPrice : o.targetPrice) as number;
+        const closed = closeAt(o, exitPrice, reason);
         realized += closed.realizedUsd;
-        return closed;
-      }
-      if (targetHit) {
-        const closed = closeAt(o, o.targetPrice as number, "Target");
-        realized += closed.realizedUsd;
+        journal({
+          eventType: "POSITION_CLOSED",
+          severity: closed.realizedUsd < 0 ? "warn" : "info",
+          source: o.paper ? "local" : "broker",
+          symbol: o.symbol,
+          side: o.side,
+          qty: o.qty,
+          price: exitPrice,
+          realizedUsd: closed.realizedUsd,
+          orderId: o.id,
+          brokerOrderId: o.brokerOrderId,
+          message: `${reason} closed ${o.side} ${o.qty} ${o.symbol} @ ${exitPrice} → ${closed.realizedUsd >= 0 ? "+" : ""}${closed.realizedUsd}`,
+          details: { entryFill: o.entryFill, stopPrice: o.stopPrice, targetPrice: o.targetPrice },
+        });
         return closed;
       }
     }
@@ -456,8 +695,13 @@ export function bookPositions(prices: Record<string, number> = {}): BookPosition
     });
 }
 
-/** Refresh prices from the real feed and re-run the trigger engine. */
+/**
+ * Refresh prices from the real feed, pull broker state for live orders and
+ * re-run the trigger engine. Also enforces the portfolio daily-loss stop.
+ */
 export async function syncBook(): Promise<OrderBook> {
+  await reconcileBrokerOrders();
+
   const book = getBook();
   const symbols = Array.from(
     new Set(
@@ -474,6 +718,14 @@ export async function syncBook(): Promise<OrderBook> {
     if (q.price > 0) prices[q.symbol.toUpperCase()] = q.price;
   });
   const next = markBook(prices);
+
+  try {
+    const { enforceDailyLossStop } = await import("@/lib/riskGuard");
+    enforceDailyLossStop();
+  } catch {
+    /* risk module unavailable — never block the price sync */
+  }
+
   return patch({ ...next, feedError: feed.ok ? null : (feed.error ?? "feed unavailable") });
 }
 

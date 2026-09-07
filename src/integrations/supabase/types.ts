@@ -185,6 +185,63 @@ export type Database = {
         }
         Relationships: []
       }
+      trade_journal: {
+        Row: {
+          broker_order_id: string | null
+          created_at: string
+          details: Json
+          event_type: string
+          id: string
+          message: string
+          occurred_at: string
+          order_id: string | null
+          owner_session: string
+          price: number | null
+          qty: number | null
+          realized_usd: number | null
+          severity: string
+          side: string | null
+          source: string
+          symbol: string | null
+        }
+        Insert: {
+          broker_order_id?: string | null
+          created_at?: string
+          details?: Json
+          event_type: string
+          id?: string
+          message: string
+          occurred_at?: string
+          order_id?: string | null
+          owner_session: string
+          price?: number | null
+          qty?: number | null
+          realized_usd?: number | null
+          severity?: string
+          side?: string | null
+          source?: string
+          symbol?: string | null
+        }
+        Update: {
+          broker_order_id?: string | null
+          created_at?: string
+          details?: Json
+          event_type?: string
+          id?: string
+          message?: string
+          occurred_at?: string
+          order_id?: string | null
+          owner_session?: string
+          price?: number | null
+          qty?: number | null
+          realized_usd?: number | null
+          severity?: string
+          side?: string | null
+          source?: string
+          symbol?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

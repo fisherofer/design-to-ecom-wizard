@@ -3,7 +3,7 @@
  *
  * Compares the app's local view (dual-loop book + order-ticket brackets)
  * against the broker account/positions returned by the backend at
- * `/api/trading-account/summary` and `/api/trading-account/positions`.
+ * `/api/account/summary` and `/api/account/positions`.
  * Differences in quantity, average price, unrealised P&L and open interest
  * are flagged so the operator can see when the local book has drifted.
  */
@@ -66,8 +66,8 @@ export function BrokerReconciliation() {
     setError(null);
     try {
       const [aRes, pRes] = await Promise.all([
-        fetch(`${getApiBase()}/api/trading-account/summary`, { signal: AbortSignal.timeout(10_000) }),
-        fetch(`${getApiBase()}/api/trading-account/positions`, { signal: AbortSignal.timeout(10_000) }),
+        fetch(`${getApiBase()}/api/account/summary`, { signal: AbortSignal.timeout(10_000) }),
+        fetch(`${getApiBase()}/api/account/positions`, { signal: AbortSignal.timeout(10_000) }),
       ]);
       if (!aRes.ok) throw new Error(`account HTTP ${aRes.status}`);
       const acc = (await aRes.json()) as AccountSummary;

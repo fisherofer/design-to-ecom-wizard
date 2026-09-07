@@ -18,6 +18,7 @@ export const TRADING_ROUTES: readonly string[] = [
   "/live-trading",
   "/order-ticket",
   "/backtesting",
+  "/journal",
   "/portfolio",
   "/triggers",
   "/alerts",
