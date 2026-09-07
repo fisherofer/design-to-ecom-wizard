@@ -47,12 +47,30 @@ export function isKilled(): boolean {
 export function engageKillSwitch(reason = "Manual emergency halt", by = "operator"): KillState {
   const next: KillState = { engaged: true, at: new Date().toISOString(), reason, by };
   write(next);
+  void import("@/lib/tradeJournal").then(({ journal }) =>
+    journal({
+      eventType: "KILL_SWITCH",
+      severity: "critical",
+      source: by === "risk-guard" ? "risk" : "local",
+      message: `Emergency halt engaged — ${reason}`,
+      details: { by },
+    }),
+  );
   return next;
 }
 
 export function releaseKillSwitch(): KillState {
   const next: KillState = { engaged: false, at: new Date().toISOString(), reason: "", by: "" };
   write(next);
+  void import("@/lib/tradeJournal").then(({ journal }) =>
+    journal({
+      eventType: "KILL_SWITCH",
+      severity: "warn",
+      source: "local",
+      message: "Emergency halt released — trading re-enabled",
+      details: {},
+    }),
+  );
   return next;
 }
 
