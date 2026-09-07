@@ -22,6 +22,7 @@ import { Route as RepoAnalyzerRouteImport } from './routes/repo-analyzer'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PersonasRouteImport } from './routes/personas'
 import { Route as OrderTicketRouteImport } from './routes/order-ticket'
+import { Route as MoneyFlowRouteImport } from './routes/money-flow'
 import { Route as MicrostructureRouteImport } from './routes/microstructure'
 import { Route as LiveTradingRouteImport } from './routes/live-trading'
 import { Route as JournalRouteImport } from './routes/journal'
@@ -104,6 +105,11 @@ const PersonasRoute = PersonasRouteImport.update({
 const OrderTicketRoute = OrderTicketRouteImport.update({
   id: '/order-ticket',
   path: '/order-ticket',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MoneyFlowRoute = MoneyFlowRouteImport.update({
+  id: '/money-flow',
+  path: '/money-flow',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MicrostructureRoute = MicrostructureRouteImport.update({
@@ -215,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/journal': typeof JournalRoute
   '/live-trading': typeof LiveTradingRoute
   '/microstructure': typeof MicrostructureRoute
+  '/money-flow': typeof MoneyFlowRoute
   '/order-ticket': typeof OrderTicketRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
@@ -248,6 +255,7 @@ export interface FileRoutesByTo {
   '/journal': typeof JournalRoute
   '/live-trading': typeof LiveTradingRoute
   '/microstructure': typeof MicrostructureRoute
+  '/money-flow': typeof MoneyFlowRoute
   '/order-ticket': typeof OrderTicketRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
@@ -282,6 +290,7 @@ export interface FileRoutesById {
   '/journal': typeof JournalRoute
   '/live-trading': typeof LiveTradingRoute
   '/microstructure': typeof MicrostructureRoute
+  '/money-flow': typeof MoneyFlowRoute
   '/order-ticket': typeof OrderTicketRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
@@ -317,6 +326,7 @@ export interface FileRouteTypes {
     | '/journal'
     | '/live-trading'
     | '/microstructure'
+    | '/money-flow'
     | '/order-ticket'
     | '/personas'
     | '/portfolio'
@@ -350,6 +360,7 @@ export interface FileRouteTypes {
     | '/journal'
     | '/live-trading'
     | '/microstructure'
+    | '/money-flow'
     | '/order-ticket'
     | '/personas'
     | '/portfolio'
@@ -383,6 +394,7 @@ export interface FileRouteTypes {
     | '/journal'
     | '/live-trading'
     | '/microstructure'
+    | '/money-flow'
     | '/order-ticket'
     | '/personas'
     | '/portfolio'
@@ -417,6 +429,7 @@ export interface RootRouteChildren {
   JournalRoute: typeof JournalRoute
   LiveTradingRoute: typeof LiveTradingRoute
   MicrostructureRoute: typeof MicrostructureRoute
+  MoneyFlowRoute: typeof MoneyFlowRoute
   OrderTicketRoute: typeof OrderTicketRoute
   PersonasRoute: typeof PersonasRoute
   PortfolioRoute: typeof PortfolioRoute
@@ -525,6 +538,13 @@ declare module '@tanstack/react-router' {
       path: '/order-ticket'
       fullPath: '/order-ticket'
       preLoaderRoute: typeof OrderTicketRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/money-flow': {
+      id: '/money-flow'
+      path: '/money-flow'
+      fullPath: '/money-flow'
+      preLoaderRoute: typeof MoneyFlowRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/microstructure': {
@@ -673,6 +693,7 @@ const rootRouteChildren: RootRouteChildren = {
   JournalRoute: JournalRoute,
   LiveTradingRoute: LiveTradingRoute,
   MicrostructureRoute: MicrostructureRoute,
+  MoneyFlowRoute: MoneyFlowRoute,
   OrderTicketRoute: OrderTicketRoute,
   PersonasRoute: PersonasRoute,
   PortfolioRoute: PortfolioRoute,
