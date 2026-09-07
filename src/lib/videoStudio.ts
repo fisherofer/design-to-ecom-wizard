@@ -204,6 +204,19 @@ function coerceScenes(raw: unknown, band: BandMember[]): Scene[] {
     .filter((s): s is Scene => s !== null);
 }
 
+/** Pull the JSON scene array out of a model reply, tolerating fences and prose. */
+function parseScenes(reply: string, band: BandMember[]): Scene[] {
+  const cleaned = reply.replace(/```(?:json)?/gi, "").trim();
+  const start = cleaned.indexOf("[");
+  const end = cleaned.lastIndexOf("]");
+  if (start < 0 || end <= start) return [];
+  try {
+    return coerceScenes(JSON.parse(cleaned.slice(start, end + 1)), band);
+  } catch {
+    return [];
+  }
+}
+
 export interface ScriptResult {
   ok: boolean;
   detail: string;
@@ -211,8 +224,20 @@ export interface ScriptResult {
   modelId?: string;
 }
 
-/** Generate a full shooting script performed by the enabled house band. */
-export async function generateScript(ep: Episode, context?: string): Promise<ScriptResult> {
+export type ScriptEngine = "cloud" | "local";
+
+/**
+ * Generate a full shooting script performed by the enabled house band.
+ *
+ * `engine: "local"` runs the script on the on-device model through the local
+ * hub (Ollama / LM Studio / GGUF). If the hub is not running the call fails
+ * with the real reason — it does not silently fall back to the cloud.
+ */
+export async function generateScript(
+  ep: Episode,
+  context?: string,
+  engine: ScriptEngine = "cloud",
+): Promise<ScriptResult> {
   const band = studio.band().filter((m) => m.enabled);
   if (!band.length) return { ok: false, detail: "Enable at least one house band member.", scenes: [] };
   if (!ep.topic.trim()) return { ok: false, detail: "Describe the episode topic first.", scenes: [] };
@@ -239,6 +264,20 @@ export async function generateScript(ep: Episode, context?: string): Promise<Scr
     .filter(Boolean)
     .join("\n");
 
+  if (engine === "local") {
+    try {
+      const res = await localGenerate(`${system}\n\n${user}`, undefined, { maxTokens: 2400, temperature: 0.7 });
+      if (!res.ok || !res.text) {
+        return { ok: false, detail: "Local model returned nothing. Is the local AI hub running with a loaded model?", scenes: [] };
+      }
+      const scenes = parseScenes(res.text, band);
+      if (!scenes.length) return { ok: false, detail: `Local model ${res.model} did not return a usable script array.`, scenes: [] };
+      return { ok: true, detail: `Script written locally by ${res.model} (${res.runtime}).`, scenes, modelId: res.model };
+    } catch (e) {
+      return { ok: false, detail: `Local AI unavailable: ${String(e)}`, scenes: [] };
+    }
+  }
+
   try {
     const res = await chatComplete({
       data: {
@@ -252,12 +291,7 @@ export async function generateScript(ep: Episode, context?: string): Promise<Scr
     });
     if (!res.ok) return { ok: false, detail: res.error ?? "Model call failed.", scenes: [] };
 
-    const cleaned = res.reply.replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
-    const start = cleaned.indexOf("[");
-    const end = cleaned.lastIndexOf("]");
-    if (start < 0 || end < 0) return { ok: false, detail: "Model did not return a script array.", scenes: [] };
-
-    const scenes = coerceScenes(JSON.parse(cleaned.slice(start, end + 1)), band);
+    const scenes = parseScenes(res.reply, band);
     if (!scenes.length) return { ok: false, detail: "Script came back empty.", scenes: [] };
     return { ok: true, detail: `Script written by ${res.modelId}.`, scenes, modelId: res.modelId };
   } catch (e) {
