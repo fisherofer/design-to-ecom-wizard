@@ -283,7 +283,7 @@ function TreasuryPage() {
           {ledger.map((e) => (
             <li key={e.id} className="flex items-center justify-between rounded-md border border-border px-3 py-2 text-xs">
               <span>
-                {new Date(e.occurred_at * 1000).toLocaleDateString()} · {e.source}
+                {new Date(e.created_at * 1000).toLocaleDateString()} · {e.source}
                 {e.note ? ` · ${e.note}` : ""}
               </span>
               <span className="font-mono">
