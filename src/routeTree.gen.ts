@@ -28,6 +28,7 @@ import { Route as NewsRouteImport } from './routes/news'
 import { Route as MoneyFlowRouteImport } from './routes/money-flow'
 import { Route as MicrostructureRouteImport } from './routes/microstructure'
 import { Route as MacroRouteImport } from './routes/macro'
+import { Route as LocalChatRouteImport } from './routes/local-chat'
 import { Route as LiveTradingRouteImport } from './routes/live-trading'
 import { Route as JournalRouteImport } from './routes/journal'
 import { Route as IntelligenceRouteImport } from './routes/intelligence'
@@ -142,6 +143,11 @@ const MacroRoute = MacroRouteImport.update({
   path: '/macro',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LocalChatRoute = LocalChatRouteImport.update({
+  id: '/local-chat',
+  path: '/local-chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LiveTradingRoute = LiveTradingRouteImport.update({
   id: '/live-trading',
   path: '/live-trading',
@@ -251,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/intelligence': typeof IntelligenceRoute
   '/journal': typeof JournalRoute
   '/live-trading': typeof LiveTradingRoute
+  '/local-chat': typeof LocalChatRoute
   '/macro': typeof MacroRoute
   '/microstructure': typeof MicrostructureRoute
   '/money-flow': typeof MoneyFlowRoute
@@ -290,6 +297,7 @@ export interface FileRoutesByTo {
   '/intelligence': typeof IntelligenceRoute
   '/journal': typeof JournalRoute
   '/live-trading': typeof LiveTradingRoute
+  '/local-chat': typeof LocalChatRoute
   '/macro': typeof MacroRoute
   '/microstructure': typeof MicrostructureRoute
   '/money-flow': typeof MoneyFlowRoute
@@ -330,6 +338,7 @@ export interface FileRoutesById {
   '/intelligence': typeof IntelligenceRoute
   '/journal': typeof JournalRoute
   '/live-trading': typeof LiveTradingRoute
+  '/local-chat': typeof LocalChatRoute
   '/macro': typeof MacroRoute
   '/microstructure': typeof MicrostructureRoute
   '/money-flow': typeof MoneyFlowRoute
@@ -371,6 +380,7 @@ export interface FileRouteTypes {
     | '/intelligence'
     | '/journal'
     | '/live-trading'
+    | '/local-chat'
     | '/macro'
     | '/microstructure'
     | '/money-flow'
@@ -410,6 +420,7 @@ export interface FileRouteTypes {
     | '/intelligence'
     | '/journal'
     | '/live-trading'
+    | '/local-chat'
     | '/macro'
     | '/microstructure'
     | '/money-flow'
@@ -449,6 +460,7 @@ export interface FileRouteTypes {
     | '/intelligence'
     | '/journal'
     | '/live-trading'
+    | '/local-chat'
     | '/macro'
     | '/microstructure'
     | '/money-flow'
@@ -489,6 +501,7 @@ export interface RootRouteChildren {
   IntelligenceRoute: typeof IntelligenceRoute
   JournalRoute: typeof JournalRoute
   LiveTradingRoute: typeof LiveTradingRoute
+  LocalChatRoute: typeof LocalChatRoute
   MacroRoute: typeof MacroRoute
   MicrostructureRoute: typeof MicrostructureRoute
   MoneyFlowRoute: typeof MoneyFlowRoute
@@ -647,6 +660,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MacroRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/local-chat': {
+      id: '/local-chat'
+      path: '/local-chat'
+      fullPath: '/local-chat'
+      preLoaderRoute: typeof LocalChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/live-trading': {
       id: '/live-trading'
       path: '/live-trading'
@@ -793,6 +813,7 @@ const rootRouteChildren: RootRouteChildren = {
   IntelligenceRoute: IntelligenceRoute,
   JournalRoute: JournalRoute,
   LiveTradingRoute: LiveTradingRoute,
+  LocalChatRoute: LocalChatRoute,
   MacroRoute: MacroRoute,
   MicrostructureRoute: MicrostructureRoute,
   MoneyFlowRoute: MoneyFlowRoute,
