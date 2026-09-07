@@ -25,6 +25,7 @@ import {
   type SecretHit,
 } from "@/lib/cyberGuard";
 import { engageKillSwitch, releaseKillSwitch, useKillSwitch } from "@/lib/killSwitch";
+import { SecretVaultPanel } from "@/components/security/SecretVaultPanel";
 
 export const Route = createFileRoute("/security")({
   head: () => ({
@@ -121,6 +122,8 @@ function SecurityPage() {
           </div>
         </div>
       </section>
+
+      <SecretVaultPanel />
 
       <section className="rounded-xl border border-border bg-card/40 p-4">
         <h2 className="flex items-center gap-2 text-sm font-semibold">

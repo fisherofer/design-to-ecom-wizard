@@ -13,6 +13,7 @@ import { useCallback, useEffect, useState } from "react";
 import { getSyncSession } from "@/lib/cloudSync";
 import { engageKillSwitch, getKillState } from "@/lib/killSwitch";
 import { journal } from "@/lib/tradeJournal";
+import { secureVault } from "@/lib/secureVault";
 
 export type CheckSeverity = "critical" | "high" | "medium" | "low";
 export type CheckStatus = "pass" | "warn" | "fail" | "unknown";
@@ -303,6 +304,7 @@ export function startIdleWatchdog(): () => void {
       source: "risk",
       message: `Idle auto-lock engaged after ${s.autoLockMinutes} minutes of inactivity`,
     });
+    secureVault.lock();
     window.dispatchEvent(new CustomEvent("ofer:cyber-locked"));
   };
 
