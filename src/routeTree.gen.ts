@@ -18,6 +18,7 @@ import { Route as StudioRouteImport } from './routes/studio'
 import { Route as StrategyRouteImport } from './routes/strategy'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SecurityRouteImport } from './routes/security'
+import { Route as RiskRouteImport } from './routes/risk'
 import { Route as RepoAnalyzerRouteImport } from './routes/repo-analyzer'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PersonasRouteImport } from './routes/personas'
@@ -85,6 +86,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const SecurityRoute = SecurityRouteImport.update({
   id: '/security',
   path: '/security',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RiskRoute = RiskRouteImport.update({
+  id: '/risk',
+  path: '/risk',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RepoAnalyzerRoute = RepoAnalyzerRouteImport.update({
@@ -226,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
   '/repo-analyzer': typeof RepoAnalyzerRoute
+  '/risk': typeof RiskRoute
   '/security': typeof SecurityRoute
   '/settings': typeof SettingsRoute
   '/strategy': typeof StrategyRoute
@@ -260,6 +267,7 @@ export interface FileRoutesByTo {
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
   '/repo-analyzer': typeof RepoAnalyzerRoute
+  '/risk': typeof RiskRoute
   '/security': typeof SecurityRoute
   '/settings': typeof SettingsRoute
   '/strategy': typeof StrategyRoute
@@ -295,6 +303,7 @@ export interface FileRoutesById {
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
   '/repo-analyzer': typeof RepoAnalyzerRoute
+  '/risk': typeof RiskRoute
   '/security': typeof SecurityRoute
   '/settings': typeof SettingsRoute
   '/strategy': typeof StrategyRoute
@@ -331,6 +340,7 @@ export interface FileRouteTypes {
     | '/personas'
     | '/portfolio'
     | '/repo-analyzer'
+    | '/risk'
     | '/security'
     | '/settings'
     | '/strategy'
@@ -365,6 +375,7 @@ export interface FileRouteTypes {
     | '/personas'
     | '/portfolio'
     | '/repo-analyzer'
+    | '/risk'
     | '/security'
     | '/settings'
     | '/strategy'
@@ -399,6 +410,7 @@ export interface FileRouteTypes {
     | '/personas'
     | '/portfolio'
     | '/repo-analyzer'
+    | '/risk'
     | '/security'
     | '/settings'
     | '/strategy'
@@ -434,6 +446,7 @@ export interface RootRouteChildren {
   PersonasRoute: typeof PersonasRoute
   PortfolioRoute: typeof PortfolioRoute
   RepoAnalyzerRoute: typeof RepoAnalyzerRoute
+  RiskRoute: typeof RiskRoute
   SecurityRoute: typeof SecurityRoute
   SettingsRoute: typeof SettingsRoute
   StrategyRoute: typeof StrategyRoute
@@ -510,6 +523,13 @@ declare module '@tanstack/react-router' {
       path: '/security'
       fullPath: '/security'
       preLoaderRoute: typeof SecurityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/risk': {
+      id: '/risk'
+      path: '/risk'
+      fullPath: '/risk'
+      preLoaderRoute: typeof RiskRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/repo-analyzer': {
@@ -698,6 +718,7 @@ const rootRouteChildren: RootRouteChildren = {
   PersonasRoute: PersonasRoute,
   PortfolioRoute: PortfolioRoute,
   RepoAnalyzerRoute: RepoAnalyzerRoute,
+  RiskRoute: RiskRoute,
   SecurityRoute: SecurityRoute,
   SettingsRoute: SettingsRoute,
   StrategyRoute: StrategyRoute,
