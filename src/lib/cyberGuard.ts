@@ -11,7 +11,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { getSyncSession } from "@/lib/cloudSync";
-import { killSwitch } from "@/lib/killSwitch";
+import { engageKillSwitch, getKillState } from "@/lib/killSwitch";
 import { journal } from "@/lib/tradeJournal";
 
 export type CheckSeverity = "critical" | "high" | "medium" | "low";
@@ -231,7 +231,7 @@ export async function runSecurityAudit(): Promise<SecurityReport> {
   });
 
   // Trading safety
-  const ks = killSwitch.state();
+  const ks = getKillState();
   checks.push({
     id: "kill-switch",
     title: "Emergency kill-switch",
@@ -289,14 +289,14 @@ export function startIdleWatchdog(): () => void {
 
   const trigger = () => {
     const s = getCyberSettings();
-    if (s.lockEngagesKillSwitch && !killSwitch.state().engaged) {
-      killSwitch.engage(`Idle auto-lock after ${s.autoLockMinutes} minutes`, "cyber-guard");
+    if (s.lockEngagesKillSwitch && !getKillState().engaged) {
+      engageKillSwitch(`Idle auto-lock after ${s.autoLockMinutes} minutes`, "cyber-guard");
     }
-    void journal.append({
+    journal({
       eventType: "KILL_SWITCH",
       severity: "warn",
-      source: "cyber-guard",
-      message: `Idle auto-lock engaged after ${getCyberSettings().autoLockMinutes} minutes of inactivity`,
+      source: "risk",
+      message: `Idle auto-lock engaged after ${s.autoLockMinutes} minutes of inactivity`,
     });
     window.dispatchEvent(new CustomEvent("ofer:cyber-locked"));
   };
