@@ -671,8 +671,13 @@ export function bookPositions(prices: Record<string, number> = {}): BookPosition
     });
 }
 
-/** Refresh prices from the real feed and re-run the trigger engine. */
+/**
+ * Refresh prices from the real feed, pull broker state for live orders and
+ * re-run the trigger engine. Also enforces the portfolio daily-loss stop.
+ */
 export async function syncBook(): Promise<OrderBook> {
+  await reconcileBrokerOrders();
+
   const book = getBook();
   const symbols = Array.from(
     new Set(
@@ -689,6 +694,14 @@ export async function syncBook(): Promise<OrderBook> {
     if (q.price > 0) prices[q.symbol.toUpperCase()] = q.price;
   });
   const next = markBook(prices);
+
+  try {
+    const { enforceDailyLossStop } = await import("@/lib/riskGuard");
+    enforceDailyLossStop();
+  } catch {
+    /* risk module unavailable — never block the price sync */
+  }
+
   return patch({ ...next, feedError: feed.ok ? null : (feed.error ?? "feed unavailable") });
 }
 
