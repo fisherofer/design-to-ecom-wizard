@@ -83,22 +83,36 @@ async function deliver(ch: Channel, subject: string, body: string): Promise<Deli
       notifications.push({ level: "warn", title: subject, message: body });
       return { ...base, status: "sent" };
     case "push": {
+      // Prefer real Web Push (works with the screen off / app closed on Android).
+      const res = await pushToAllDevices(subject, body, "/alerts");
+      if (res.ok) return { ...base, status: "sent", note: res.detail };
+      // Fall back to a foreground Notification so the alert is never lost.
       if (typeof window === "undefined" || !("Notification" in window)) {
-        return { ...base, status: "failed", note: "Notification API unsupported" };
+        return { ...base, status: "failed", note: res.detail };
       }
       if (Notification.permission === "default") await Notification.requestPermission();
       if (Notification.permission !== "granted") {
-        return { ...base, status: "failed", note: "Permission denied" };
+        return { ...base, status: "failed", note: `${res.detail} · permission denied` };
       }
-      new Notification(subject, { body, icon: "/favicon.ico" });
-      return { ...base, status: "sent" };
+      new Notification(subject, { body, icon: "/icon-192.png" });
+      return { ...base, status: "sent", note: `Foreground only — ${res.detail}` };
+    }
+    case "telegram": {
+      if (!ch.target) return { ...base, status: "failed", note: "No chat_id configured" };
+      const r = await sendTelegram({ data: { chatId: ch.target, subject, body, silent: false } });
+      return { ...base, status: r.ok ? "sent" : "failed", note: r.detail };
+    }
+    case "webhook": {
+      if (!ch.target) return { ...base, status: "failed", note: "No webhook URL" };
+      const r = await sendWebhookRelay({ data: { url: ch.target, subject, body } });
+      return { ...base, status: r.ok ? "sent" : "failed", note: r.detail };
     }
     case "email":
       if (!ch.target) return { ...base, status: "failed", note: "No recipient address" };
-      return { ...base, status: "queued", note: `Queued for ${ch.target} (backend relay)` };
+      return { ...base, status: "queued", note: `Queued for ${ch.target} (email relay not wired)` };
     default:
       if (!ch.target) return { ...base, status: "failed", note: "Missing target" };
-      return { ...base, status: "queued", note: "Queued for backend relay" };
+      return { ...base, status: "queued", note: "WhatsApp Cloud API relay not wired" };
   }
 }
 
