@@ -1,11 +1,12 @@
-import { Bell, MessageCircle, Send, Smartphone, TestTube2, Mail, Webhook } from "lucide-react";
-import { useState } from "react";
+import { Bell, MessageCircle, Send, Smartphone, TestTube2, Mail, Webhook, ShieldCheck, ShieldAlert } from "lucide-react";
+import { useEffect, useState } from "react";
 import { channels, useChannels, type ChannelKind } from "@/lib/alertChannels";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { NotWiredBadge } from "@/components/common/NotWiredBadge";
 import { NotificationDispatcherPanel } from "@/components/settings/NotificationDispatcherPanel";
+import { sendTelegram, sendWebhookRelay, telegramStatus } from "@/lib/relay.functions";
+import { disablePush, enablePush, pushState, pushToAllDevices, type PushState } from "@/lib/pushClient";
 
 const ICON: Record<ChannelKind, typeof Bell> = {
   bell: Bell,
@@ -16,25 +17,71 @@ const ICON: Record<ChannelKind, typeof Bell> = {
   webhook: Webhook,
 };
 
-
 export function AlertChannelsTab() {
   const list = useChannels();
   const [notice, setNotice] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+  const [tg, setTg] = useState<{ configured: boolean; botUsername?: string; detail: string } | null>(null);
+  const [push, setPush] = useState<PushState | null>(null);
+
+  useEffect(() => {
+    void telegramStatus().then(setTg).catch(() => setTg(null));
+    void pushState().then(setPush);
+  }, []);
+
+  async function refreshPush() {
+    setPush(await pushState());
+  }
 
   async function test(id: string, label: string) {
-    if (id === "push") {
-      const r = await channels.testPush(label);
-      setNotice(r === "ok" ? "Push sent." : r === "denied" ? "Permission denied." : "Not supported.");
-      return;
+    const ch = list.find((c) => c.id === id);
+    setBusy(id);
+    setNotice("");
+    try {
+      if (id === "push") {
+        const r = await pushToAllDevices("AI Executive OS", `Test push · ${label}`, "/alerts");
+        setNotice(r.ok ? `${r.detail}` : `Push failed: ${r.detail}`);
+        return;
+      }
+      if (ch?.kind === "telegram") {
+        if (!ch.target) return setNotice("Enter your Telegram chat_id first.");
+        const r = await sendTelegram({
+          data: { chatId: ch.target, subject: "AI Executive OS · test alert", body: "Telegram relay is live.", silent: false },
+        });
+        return setNotice(r.detail);
+      }
+      if (ch?.kind === "webhook") {
+        if (!ch.target) return setNotice("Enter the webhook URL first.");
+        const r = await sendWebhookRelay({
+          data: { url: ch.target, subject: "AI Executive OS · test alert", body: "Webhook relay is live." },
+        });
+        return setNotice(r.detail);
+      }
+      if (ch?.kind === "bell") {
+        return setNotice("In-app bell always delivers locally.");
+      }
+      setNotice(`${label}: relay not wired yet — config is saved locally.`);
+    } finally {
+      setBusy(null);
     }
-    setNotice(`Backend delivery for ${label} is queued once /api/alerts/send is wired.`);
   }
 
   return (
     <div className="space-y-4">
       <header className="flex items-center gap-2">
         <h2 className="text-lg font-semibold">Alert Channels</h2>
-        <NotWiredBadge detail="Telegram / WhatsApp delivery requires the backend /api/alerts/send endpoint. Config is saved locally in the meantime." />
+        {tg && (
+          <span
+            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] uppercase ${
+              tg.configured && tg.botUsername
+                ? "border-success/40 bg-success/10 text-success"
+                : "border-warning/40 bg-warning/10 text-warning"
+            }`}
+          >
+            {tg.configured && tg.botUsername ? <ShieldCheck className="h-3 w-3" /> : <ShieldAlert className="h-3 w-3" />}
+            {tg.botUsername ? `@${tg.botUsername}` : "telegram token"}
+          </span>
+        )}
       </header>
 
       <div className="grid gap-3">
@@ -52,8 +99,8 @@ export function AlertChannelsTab() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Switch checked={c.enabled} onCheckedChange={(v) => channels.update(c.id, { enabled: v })} />
-                  <Button size="sm" variant="outline" onClick={() => test(c.id, c.label)}>
-                    <TestTube2 className="h-3.5 w-3.5" /> Test
+                  <Button size="sm" variant="outline" disabled={busy === c.id} onClick={() => test(c.id, c.label)}>
+                    <TestTube2 className="h-3.5 w-3.5" /> {busy === c.id ? "Sending…" : "Test"}
                   </Button>
                 </div>
               </div>
@@ -82,6 +129,10 @@ export function AlertChannelsTab() {
                 </div>
               )}
 
+              {c.kind === "telegram" && tg && (
+                <p className="mt-2 text-xs text-muted-foreground">{tg.detail}</p>
+              )}
+
               {(c.kind === "email" || c.kind === "webhook") && (
                 <Input
                   className="mt-3"
@@ -92,10 +143,48 @@ export function AlertChannelsTab() {
               )}
 
               {c.kind === "push" && (
-                <p className="mt-3 text-xs text-muted-foreground">
-                  Uses the browser Notification API. For Android background delivery, install the site as a PWA
-                  or wire a Firebase Cloud Messaging device token in the backend.
-                </p>
+                <div className="mt-3 space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    Background Web Push (VAPID). Install the app to your Android home screen, then register this device —
+                    alerts arrive with the app closed.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      size="sm"
+                      disabled={busy === "push-reg"}
+                      onClick={async () => {
+                        setBusy("push-reg");
+                        const r = await enablePush();
+                        setNotice(r.detail);
+                        await refreshPush();
+                        setBusy(null);
+                      }}
+                    >
+                      Register this device
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={busy === "push-unreg"}
+                      onClick={async () => {
+                        setBusy("push-unreg");
+                        const r = await disablePush();
+                        setNotice(r.detail);
+                        await refreshPush();
+                        setBusy(null);
+                      }}
+                    >
+                      Remove device
+                    </Button>
+                    <span className="font-mono text-[10px] uppercase text-muted-foreground">
+                      {push
+                        ? push.supported
+                          ? `${push.subscribed ? "registered" : "not registered"} · ${push.permission}${push.endpointHint ? ` · ${push.endpointHint}` : ""}`
+                          : "unsupported browser"
+                        : "checking…"}
+                    </span>
+                  </div>
+                </div>
               )}
             </div>
           );
@@ -108,4 +197,3 @@ export function AlertChannelsTab() {
     </div>
   );
 }
-

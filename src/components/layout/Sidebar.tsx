@@ -11,6 +11,8 @@ import {
   Bot,
   Users,
   ShieldCheck,
+  ShieldHalf,
+  Clapperboard,
   Archive,
   SlidersHorizontal,
   TrendingUp,
@@ -52,6 +54,8 @@ type NavTo =
   | "/order-ticket"
   | "/backtesting"
   | "/journal"
+  | "/security"
+  | "/studio"
   | "/settings";
 
 type NavItem = {
@@ -112,6 +116,8 @@ const NAV_GROUPS: NavGroup[] = [
     label: "System",
     items: [
       { to: "/system", label: "System Health", icon: ShieldCheck },
+      { to: "/security", label: "Cyber Defence", icon: ShieldHalf },
+      { to: "/studio", label: "Video Studio", icon: Clapperboard },
       { to: "/terminal", label: "Terminal Logs", icon: Terminal },
       { to: "/backup", label: "Backup & Restore", icon: Archive },
       { to: "/settings", label: "Settings", icon: SlidersHorizontal },
