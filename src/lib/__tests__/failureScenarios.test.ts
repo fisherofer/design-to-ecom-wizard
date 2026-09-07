@@ -164,7 +164,7 @@ describe("broker status mapping is total", () => {
 
 describe("backtest engine — degenerate market data", () => {
   const bar = (t: number, c: number) => ({
-    t: new Date(t).toISOString(),
+    t: Math.floor(t / 1000),
     o: c,
     h: c,
     l: c,
@@ -176,6 +176,11 @@ describe("backtest engine — degenerate market data", () => {
     const out = simulate([], DEFAULT_PARAMS);
     expect(out.trades).toEqual([]);
     expect(Number.isFinite(out.metrics.totalReturnPct)).toBe(true);
+  });
+
+  it("does not crash on bars carrying a malformed timestamp", () => {
+    const bars = Array.from({ length: 60 }, (_, i) => ({ ...bar(0, 100 + i), t: Number.NaN }));
+    expect(() => simulate(bars, DEFAULT_PARAMS)).not.toThrow();
   });
 
   it("produces finite metrics on a flat market (zero volatility)", () => {
