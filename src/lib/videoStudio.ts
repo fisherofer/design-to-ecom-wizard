@@ -372,3 +372,131 @@ export function useStudio() {
   }, [sync]);
   return { ...state, refresh: sync };
 }
+
+/* ------------------------------------------------------------------ *
+ * Narration preview (browser speech synthesis)
+ * ------------------------------------------------------------------ */
+
+export function speechAvailable(): boolean {
+  return typeof window !== "undefined" && "speechSynthesis" in window;
+}
+
+/** Pick a browser voice that loosely matches the member's voice description. */
+function pickVoice(hint: string | undefined): SpeechSynthesisVoice | null {
+  if (!speechAvailable()) return null;
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return null;
+  const h = (hint ?? "").toLowerCase();
+  const en = voices.filter((v) => v.lang.toLowerCase().startsWith("en"));
+  const pool = en.length ? en : voices;
+  const match = pool.find((v) => h && v.name.toLowerCase().includes(h.split(/[\s,]/)[0] ?? ""));
+  return match ?? pool[0] ?? null;
+}
+
+/**
+ * Reads the episode aloud with the browser's speech engine.
+ * This is a live preview only — it produces sound, not an audio file.
+ */
+export function narrateEpisode(ep: Episode, band: BandMember[]): { ok: boolean; detail: string } {
+  if (!speechAvailable()) return { ok: false, detail: "This browser has no speech synthesis engine." };
+  if (!ep.scenes.length) return { ok: false, detail: "The episode has no scenes yet." };
+  window.speechSynthesis.cancel();
+  for (const sc of ep.scenes) {
+    const member = band.find((b) => b.id === sc.speakerId);
+    const u = new SpeechSynthesisUtterance(sc.line);
+    const v = pickVoice(member?.voice);
+    if (v) u.voice = v;
+    u.rate = 1.02;
+    u.pitch = member?.role === "comic" ? 1.15 : member?.role === "skeptic" ? 0.9 : 1;
+    window.speechSynthesis.speak(u);
+  }
+  return { ok: true, detail: `Narrating ${ep.scenes.length} lines with the house band.` };
+}
+
+export function stopNarration(): void {
+  if (speechAvailable()) window.speechSynthesis.cancel();
+}
+
+/* ------------------------------------------------------------------ *
+ * Render package (offline ffmpeg pipeline)
+ * ------------------------------------------------------------------ */
+
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "episode";
+
+/**
+ * Builds a self-contained render package: a manifest plus a shell script that
+ * turns per-scene stills + narration audio into an MP4 with burned captions.
+ *
+ * The app does NOT render video — it has no encoder. This exports exactly what
+ * an offline ffmpeg run needs, so nothing here claims a finished film.
+ */
+export function episodeToRenderPackage(
+  ep: Episode,
+  band: BandMember[],
+  opts?: { width?: number; height?: number; fps?: number },
+): { manifest: string; script: string; baseName: string } {
+  const width = opts?.width ?? 1920;
+  const height = opts?.height ?? 1080;
+  const fps = opts?.fps ?? 30;
+  const baseName = `${slug(ep.title)}-${ep.id.slice(0, 6)}`;
+
+  let cursor = 0;
+  const shots = ep.scenes.map((sc, i) => {
+    const start = cursor;
+    cursor += sc.seconds;
+    const member = band.find((b) => b.id === sc.speakerId);
+    return {
+      index: i + 1,
+      startSeconds: start,
+      endSeconds: cursor,
+      seconds: sc.seconds,
+      beat: sc.beat,
+      speaker: member?.name ?? sc.speakerId,
+      voice: member?.voice ?? null,
+      line: sc.line,
+      bRoll: sc.bRoll ?? null,
+      stillFile: `stills/shot-${String(i + 1).padStart(3, "0")}.png`,
+      audioFile: `audio/shot-${String(i + 1).padStart(3, "0")}.wav`,
+    };
+  });
+
+  const manifest = JSON.stringify(
+    {
+      episodeId: ep.id,
+      title: ep.title,
+      totalSeconds: totalSeconds(ep),
+      video: { width, height, fps, container: "mp4", codec: "libx264" },
+      audio: { codec: "aac", sampleRate: 48000 },
+      captions: `${baseName}.srt`,
+      cast: band.filter((b) => b.enabled).map((b) => ({ id: b.id, name: b.name, role: b.role, voice: b.voice })),
+      shots,
+      note: "Place the referenced stills/ and audio/ files next to this manifest, then run render.sh.",
+    },
+    null,
+    2,
+  );
+
+  const lines = [
+    "#!/usr/bin/env bash",
+    "# Offline render for: " + ep.title,
+    "# Requires ffmpeg. Run from the folder holding this script, stills/ and audio/.",
+    "set -euo pipefail",
+    "",
+    'rm -rf parts && mkdir -p parts',
+    "",
+    ...shots.map(
+      (s) =>
+        `ffmpeg -y -loop 1 -i "${s.stillFile}" -i "${s.audioFile}" -t ${s.seconds} ` +
+        `-vf "scale=${width}:${height},format=yuv420p,fps=${fps}" ` +
+        `-c:v libx264 -preset medium -crf 20 -c:a aac -ar 48000 -shortest "parts/shot-${String(s.index).padStart(3, "0")}.mp4"`,
+    ),
+    "",
+    'printf "file \'%s\'\\n" parts/shot-*.mp4 > parts/list.txt',
+    `ffmpeg -y -f concat -safe 0 -i parts/list.txt -c copy "${baseName}.raw.mp4"`,
+    `ffmpeg -y -i "${baseName}.raw.mp4" -vf "subtitles=${baseName}.srt" -c:a copy "${baseName}.mp4"`,
+    "",
+    `echo "Done -> ${baseName}.mp4"`,
+  ];
+
+  return { manifest, script: lines.join("\n"), baseName };
+}
