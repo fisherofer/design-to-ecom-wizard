@@ -34,6 +34,7 @@ import { Route as BackupRouteImport } from './routes/backup'
 import { Route as BacktestingRouteImport } from './routes/backtesting'
 import { Route as ApiVaultRouteImport } from './routes/api-vault'
 import { Route as AlertsRouteImport } from './routes/alerts'
+import { Route as AiModelsRouteImport } from './routes/ai-models'
 import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TickerSymbolRouteImport } from './routes/ticker.$symbol'
@@ -164,6 +165,11 @@ const AlertsRoute = AlertsRouteImport.update({
   path: '/alerts',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AiModelsRoute = AiModelsRouteImport.update({
+  id: '/ai-models',
+  path: '/ai-models',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AgentsRoute = AgentsRouteImport.update({
   id: '/agents',
   path: '/agents',
@@ -189,6 +195,7 @@ const ApiPublicHooksDriveBackupDailyRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
+  '/ai-models': typeof AiModelsRoute
   '/alerts': typeof AlertsRoute
   '/api-vault': typeof ApiVaultRoute
   '/backtesting': typeof BacktestingRoute
@@ -220,6 +227,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
+  '/ai-models': typeof AiModelsRoute
   '/alerts': typeof AlertsRoute
   '/api-vault': typeof ApiVaultRoute
   '/backtesting': typeof BacktestingRoute
@@ -252,6 +260,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
+  '/ai-models': typeof AiModelsRoute
   '/alerts': typeof AlertsRoute
   '/api-vault': typeof ApiVaultRoute
   '/backtesting': typeof BacktestingRoute
@@ -285,6 +294,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/agents'
+    | '/ai-models'
     | '/alerts'
     | '/api-vault'
     | '/backtesting'
@@ -316,6 +326,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/agents'
+    | '/ai-models'
     | '/alerts'
     | '/api-vault'
     | '/backtesting'
@@ -347,6 +358,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/agents'
+    | '/ai-models'
     | '/alerts'
     | '/api-vault'
     | '/backtesting'
@@ -379,6 +391,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgentsRoute: typeof AgentsRoute
+  AiModelsRoute: typeof AiModelsRoute
   AlertsRoute: typeof AlertsRoute
   ApiVaultRoute: typeof ApiVaultRoute
   BacktestingRoute: typeof BacktestingRoute
@@ -585,6 +598,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ai-models': {
+      id: '/ai-models'
+      path: '/ai-models'
+      fullPath: '/ai-models'
+      preLoaderRoute: typeof AiModelsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/agents': {
       id: '/agents'
       path: '/agents'
@@ -619,6 +639,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgentsRoute: AgentsRoute,
+  AiModelsRoute: AiModelsRoute,
   AlertsRoute: AlertsRoute,
   ApiVaultRoute: ApiVaultRoute,
   BacktestingRoute: BacktestingRoute,
