@@ -11,6 +11,7 @@ import {
   Bot,
   Users,
   ShieldCheck,
+  ShieldHalf,
   Archive,
   SlidersHorizontal,
   TrendingUp,
