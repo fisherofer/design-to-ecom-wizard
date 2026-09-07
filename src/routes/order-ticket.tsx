@@ -447,6 +447,8 @@ function OrderTicketScreen() {
             </footer>
           </section>
 
+          <RiskGuardPanel />
+
           <BrokerReconciliation />
 
           <section className="rounded-lg border border-border bg-card">
