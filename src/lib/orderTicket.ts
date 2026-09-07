@@ -185,6 +185,7 @@ export interface SubmitResult {
   ok: boolean;
   order?: BracketOrder;
   errors: string[];
+  warnings?: string[];
 }
 
 async function mirrorToOms(order: BracketOrder): Promise<string | null> {
@@ -226,8 +227,100 @@ export async function submitBracket(draft: DraftOrder): Promise<SubmitResult> {
   }
   if (errors.length) return { ok: false, errors };
 
+  // Portfolio-level gate: concentration, gross exposure and the daily stop.
+  const { preTradeCheck } = await import("@/lib/riskGuard");
+  const gate = preTradeCheck({
+    symbol,
+    qty: draft.qty,
+    price: (draft.type === "LIMIT" ? draft.limitPrice : refPrice) ?? refPrice ?? 0,
+  });
+  if (!gate.allowed) {
+    return { ok: false, errors: gate.reasons, warnings: gate.warnings };
+  }
+
   const now = new Date().toISOString();
   const isMarket = draft.type === "MARKET";
+  const live = !draft.paper;
+
+  /* ----- Live route: the broker is the source of truth ----- */
+  if (live) {
+    const res = await submitBrokerBracket({
+      symbol,
+      side: draft.side.toLowerCase() as "buy" | "sell",
+      qty: draft.qty,
+      type: draft.type.toLowerCase() as "market" | "limit",
+      time_in_force: draft.tif.toLowerCase() as "day" | "gtc" | "ioc",
+      limit_price: draft.limitPrice,
+      stop_price: draft.stopPrice,
+      target_price: draft.targetPrice,
+    });
+
+    if (!res.accepted || !res.order) {
+      const reason = res.error ?? "The broker did not accept the order.";
+      journal({
+        eventType: "ORDER_REJECTED",
+        severity: "warn",
+        source: "broker",
+        symbol,
+        side: draft.side,
+        qty: draft.qty,
+        message: `Broker rejected the ${draft.side} ${draft.qty} ${symbol}: ${reason}`,
+        details: { draft },
+      });
+      return { ok: false, errors: [reason], warnings: gate.warnings };
+    }
+
+    const bo = res.order;
+    const status = mapBrokerStatus(bo.status);
+    const fill = bo.filled_avg_price > 0 ? bo.filled_avg_price : null;
+    const order: BracketOrder = {
+      id: uid(),
+      symbol,
+      side: draft.side,
+      type: draft.type,
+      tif: draft.tif,
+      qty: draft.qty,
+      limitPrice: draft.limitPrice,
+      stopPrice: draft.stopPrice,
+      targetPrice: draft.targetPrice,
+      status,
+      createdAt: now,
+      updatedAt: now,
+      realizedUsd: 0,
+      entryFill: fill,
+      exitFill: null,
+      exitReason: null,
+      paper: false,
+      note: `Broker ${bo.status} — ${bo.order_class || "simple"} #${bo.broker_order_id.slice(0, 8)}`,
+      legs: [
+        { ...leg("ENTRY", draft.limitPrice ?? fill), status, filledAt: bo.filled_at, fillPrice: fill },
+        { ...leg("STOP", draft.stopPrice), status: draft.stopPrice ? "WORKING" : "CANCELLED" },
+        { ...leg("TARGET", draft.targetPrice), status: draft.targetPrice ? "WORKING" : "CANCELLED" },
+      ],
+      brokerOrderId: bo.broker_order_id,
+    };
+
+    const book = getBook();
+    write({ ...book, orders: [order, ...book.orders], feedError: feed.ok ? null : (feed.error ?? "feed unavailable") });
+
+    journal({
+      eventType: "ORDER_SUBMITTED",
+      severity: "info",
+      source: "broker",
+      symbol,
+      side: draft.side,
+      qty: draft.qty,
+      price: fill ?? draft.limitPrice ?? refPrice,
+      orderId: order.id,
+      brokerOrderId: bo.broker_order_id,
+      message: `LIVE ${draft.side} ${draft.qty} ${symbol} sent to the broker (stop ${draft.stopPrice ?? "—"} / target ${draft.targetPrice ?? "—"})`,
+      details: { brokerStatus: bo.status, orderClass: bo.order_class, tif: draft.tif },
+    });
+
+    return { ok: true, order, errors: [], warnings: gate.warnings };
+  }
+
+  /* ----- Paper route: simulated locally against the real feed ----- */
   const entryFill = isMarket ? refPrice : null;
 
   const order: BracketOrder = {
@@ -247,9 +340,9 @@ export async function submitBracket(draft: DraftOrder): Promise<SubmitResult> {
     entryFill,
     exitFill: null,
     exitReason: null,
-    paper: draft.paper,
+    paper: true,
     note: isMarket
-      ? `Market entry filled @ ${entryFill?.toFixed(2)} (${quote?.provider ?? "feed"})`
+      ? `Paper entry filled @ ${entryFill?.toFixed(2)} (${quote?.provider ?? "feed"})`
       : `Resting ${draft.type} ${draft.side} @ ${draft.limitPrice}`,
     legs: [
       { ...leg("ENTRY", isMarket ? entryFill : draft.limitPrice), status: isMarket ? "FILLED" : "WORKING", filledAt: isMarket ? now : null, fillPrice: entryFill },
@@ -262,10 +355,23 @@ export async function submitBracket(draft: DraftOrder): Promise<SubmitResult> {
   const book = getBook();
   write({ ...book, orders: [order, ...book.orders], feedError: feed.ok ? null : (feed.error ?? "feed unavailable") });
 
+  journal({
+    eventType: "ORDER_SUBMITTED",
+    severity: "info",
+    source: "local",
+    symbol,
+    side: draft.side,
+    qty: draft.qty,
+    price: entryFill ?? draft.limitPrice,
+    orderId: order.id,
+    message: `PAPER ${draft.side} ${draft.qty} ${symbol} (stop ${draft.stopPrice ?? "—"} / target ${draft.targetPrice ?? "—"})`,
+    details: { tif: draft.tif, type: draft.type, feed: quote?.provider ?? null },
+  });
+
   const brokerId = await mirrorToOms(order);
   if (brokerId) updateOrder(order.id, { brokerOrderId: brokerId });
 
-  return { ok: true, order, errors: [] };
+  return { ok: true, order, errors: [], warnings: gate.warnings };
 }
 
 export function updateOrder(id: string, p: Partial<BracketOrder>): void {
