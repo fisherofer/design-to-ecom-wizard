@@ -600,7 +600,6 @@ export async function amendProtection(
   }
   return { ok, detail: brokerNote };
 }
-}
 
 export function clearHistory(): void {
   const book = getBook();
