@@ -642,14 +642,25 @@ export function markBook(prices: Record<string, number>): OrderBook {
         o.stopPrice != null && (o.side === "BUY" ? price <= o.stopPrice : price >= o.stopPrice);
       const targetHit =
         o.targetPrice != null && (o.side === "BUY" ? price >= o.targetPrice : price <= o.targetPrice);
-      if (stopHit) {
-        const closed = closeAt(o, o.stopPrice as number, "Stop-loss");
+      if (stopHit || targetHit) {
+        const reason = stopHit ? "Stop-loss" : "Target";
+        const exitPrice = (stopHit ? o.stopPrice : o.targetPrice) as number;
+        const closed = closeAt(o, exitPrice, reason);
         realized += closed.realizedUsd;
-        return closed;
-      }
-      if (targetHit) {
-        const closed = closeAt(o, o.targetPrice as number, "Target");
-        realized += closed.realizedUsd;
+        journal({
+          eventType: "POSITION_CLOSED",
+          severity: closed.realizedUsd < 0 ? "warn" : "info",
+          source: o.paper ? "local" : "broker",
+          symbol: o.symbol,
+          side: o.side,
+          qty: o.qty,
+          price: exitPrice,
+          realizedUsd: closed.realizedUsd,
+          orderId: o.id,
+          brokerOrderId: o.brokerOrderId,
+          message: `${reason} closed ${o.side} ${o.qty} ${o.symbol} @ ${exitPrice} → ${closed.realizedUsd >= 0 ? "+" : ""}${closed.realizedUsd}`,
+          details: { entryFill: o.entryFill, stopPrice: o.stopPrice, targetPrice: o.targetPrice },
+        });
         return closed;
       }
     }
