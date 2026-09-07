@@ -12,7 +12,7 @@
 import { useEffect, useState } from "react";
 import { channels, type Channel } from "./alertChannels";
 import { notifications } from "./notifications";
-import { sendTelegram, sendWebhookRelay } from "./relay.functions";
+import { sendEmailRelay, sendTelegram, sendWebhookRelay, sendWhatsAppRelay } from "./relay.functions";
 import { pushToAllDevices } from "./pushClient";
 
 export interface DispatchPayload {
@@ -109,12 +109,18 @@ async function deliver(ch: Channel, subject: string, body: string): Promise<Deli
       const r = await sendWebhookRelay({ data: { url: ch.target, subject, body } });
       return { ...base, status: r.ok ? "sent" : "failed", note: r.detail };
     }
-    case "email":
+    case "email": {
       if (!ch.target) return { ...base, status: "failed", note: "No recipient address" };
-      return { ...base, status: "queued", note: `Queued for ${ch.target} (email relay not wired)` };
+      const r = await sendEmailRelay({ data: { to: ch.target, subject, body } });
+      return { ...base, status: r.ok ? "sent" : "failed", note: r.detail };
+    }
+    case "whatsapp": {
+      if (!ch.target) return { ...base, status: "failed", note: "No WhatsApp number" };
+      const r = await sendWhatsAppRelay({ data: { to: ch.target, subject, body } });
+      return { ...base, status: r.ok ? "sent" : "failed", note: r.detail };
+    }
     default:
-      if (!ch.target) return { ...base, status: "failed", note: "Missing target" };
-      return { ...base, status: "queued", note: "WhatsApp Cloud API relay not wired" };
+      return { ...base, status: "failed", note: `Unsupported channel kind: ${ch.kind}` };
   }
 }
 
