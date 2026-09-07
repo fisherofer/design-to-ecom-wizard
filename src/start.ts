@@ -23,7 +23,8 @@ const securityHeaders = createMiddleware({ type: "request" }).server(async ({ ne
       "font-src 'self' data: https://fonts.gstatic.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.gpteng.co https://*.lovable.dev",
-      "connect-src 'self' https: wss:",
+      // The local hub / Ollama / LM Studio run on loopback when the system is self-hosted.
+      "connect-src 'self' https: wss: http://localhost:* ws://localhost:* http://127.0.0.1:* ws://127.0.0.1:*",
       "worker-src 'self' blob:",
     ].join("; "),
   );
