@@ -19,6 +19,7 @@ import { fetchQuotes } from "@/lib/liveQuotes";
 import { isKilled } from "@/lib/killSwitch";
 import { getApiBase } from "@/lib/apiConfig";
 import {
+  amendBrokerProtection,
   cancelAllBrokerOrders,
   cancelBrokerOrder,
   listBrokerOrders,
