@@ -10,6 +10,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { chatComplete } from "@/lib/chatCompletion.functions";
+import { localGenerate } from "@/lib/localAiScan";
 import { portableGetJson, portableSetJson } from "@/lib/portableStorage";
 
 export const STUDIO_KEY = "ofer.videoStudio.v1";
