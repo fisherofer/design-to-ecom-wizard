@@ -114,3 +114,30 @@ export function mapBrokerStatus(status: string): "PENDING" | "WORKING" | "FILLED
   if (s === "NEW" || s === "ACCEPTED" || s === "PARTIALLY_FILLED" || s === "PENDING_NEW") return "WORKING";
   return "PENDING";
 }
+
+export interface ProtectionLegResult {
+  leg_id: string;
+  kind: "STOP" | "TARGET";
+  action: "replaced" | "cancelled";
+  price?: number;
+  ok: boolean;
+  detail?: string | null;
+}
+
+/**
+ * Moves the stop / take-profit legs of a live bracket at the broker.
+ * `amended` is only true when every touched leg was accepted by Alpaca.
+ */
+export async function amendBrokerProtection(
+  brokerOrderId: string,
+  stopPrice: number | null,
+  targetPrice: number | null,
+): Promise<{ amended: boolean; legs: ProtectionLegResult[]; error: string | null }> {
+  const r = await call<{ amended?: boolean; legs?: ProtectionLegResult[]; error?: string }>(
+    `/orders/${encodeURIComponent(brokerOrderId)}/protection`,
+    { method: "PATCH", body: JSON.stringify({ stop_price: stopPrice, target_price: targetPrice }) },
+  );
+  if ("error" in r && !("amended" in r)) return { amended: false, legs: [], error: r.error as string };
+  const body = r as { amended?: boolean; legs?: ProtectionLegResult[]; error?: string };
+  return { amended: Boolean(body.amended), legs: body.legs ?? [], error: body.error ?? null };
+}

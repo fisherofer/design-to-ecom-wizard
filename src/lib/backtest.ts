@@ -196,7 +196,11 @@ interface SimOutput {
   metrics: BacktestMetrics;
 }
 
-const iso = (t: number) => new Date(t * 1000).toISOString().slice(0, 10);
+const iso = (t: number) => {
+  // Bars carry unix seconds. A malformed feed must not crash the whole run.
+  const d = new Date((Number(t) || 0) * 1000);
+  return Number.isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
+};
 
 export function simulate(bars: AlpacaBar[], p: BacktestParams): SimOutput {
   const closes = bars.map((b) => b.c);

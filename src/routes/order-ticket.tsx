@@ -411,13 +411,14 @@ function OrderTicketScreen() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => {
+                              onClick={async () => {
                                 const s = window.prompt("New stop price (blank to remove)", String(o.stopPrice ?? ""));
                                 if (s === null) return;
                                 const t = window.prompt("New target price (blank to remove)", String(o.targetPrice ?? ""));
                                 if (t === null) return;
-                                amendProtection(o.id, num(s), num(t));
-                                toast.success("Protection amended");
+                                const res = await amendProtection(o.id, num(s), num(t));
+                                if (res.ok) toast.success(`Protection amended — ${res.detail}`);
+                                else toast.error(`Protection not confirmed — ${res.detail}`);
                               }}
                             >
                               Amend
