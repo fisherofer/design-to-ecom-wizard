@@ -50,6 +50,7 @@ type NavTo =
   | "/live-trading"
   | "/order-ticket"
   | "/backtesting"
+  | "/journal"
   | "/settings";
 
 type NavItem = {
