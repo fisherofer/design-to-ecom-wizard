@@ -117,8 +117,13 @@ async function checkHeaders(): Promise<SecurityCheck[]> {
       { header: "referrer-policy", title: "Referrer policy", severity: "low", remediation: "Send Referrer-Policy: strict-origin-when-cross-origin." },
       { header: "strict-transport-security", title: "HSTS", severity: "medium", remediation: "Send Strict-Transport-Security on the published domain." },
     ];
+    const csp = h.get("content-security-policy") ?? "";
     for (const w of wanted) {
-      const value = h.get(w.header);
+      let value = h.get(w.header);
+      // frame-ancestors in CSP is the modern replacement for X-Frame-Options.
+      if (!value && w.header === "x-frame-options" && csp.includes("frame-ancestors")) {
+        value = "covered by CSP frame-ancestors";
+      }
       out.push({
         id: `hdr-${w.header}`,
         title: w.title,
