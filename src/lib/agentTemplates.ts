@@ -148,6 +148,82 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
       temperature: 0.3, maxTokens: 1000,
     },
   },
+  {
+    key: "code-upgrader",
+    label: "Code Upgrader",
+    category: "engineering",
+    description: "Proposes concrete upgrades to the system's own code, ranked by risk and payoff.",
+    blueprint: {
+      name: "CodeUpgrader",
+      role: "Staff engineer",
+      goal: "Continuously improve the system's own modules without breaking live trading.",
+      model: "google/gemini-3.7-flash",
+      tools: ["ai_chat"],
+      memory: "persistent", status: "paused", successRate: 0,
+      systemPrompt:
+        "You are CodeUpgrader for the OFERTRADINGBOT codebase. Given a module and its problems, output JSON: [{file, change, why, risk, rollback, test}]. Never propose removing risk limits, auth, or audit logging. Prefer small reversible steps.",
+      userPromptTemplate: "Module context:\n{{context}}\n\nUpgrade goal: {{task}}",
+      schedule: { kind: "manual" },
+      temperature: 0.2, maxTokens: 1800,
+    },
+  },
+  {
+    key: "privacy-steward",
+    label: "Privacy Steward",
+    category: "meta",
+    description: "Audits what is stored, where, and whether personal data ever leaves the machine.",
+    blueprint: {
+      name: "PrivacySteward",
+      role: "Data protection officer",
+      goal: "Keep user data local, minimal, and inside its retention window.",
+      model: "google/gemini-3.6-flash",
+      tools: ["ai_chat"],
+      memory: "persistent", status: "paused", successRate: 0,
+      systemPrompt:
+        "You are PrivacySteward. Review the storage report. Flag: personal data in system scope, missing consent, expired retention, anything routed to a cloud model. Output a table of findings with severity and the exact fix.",
+      userPromptTemplate: "Storage report:\n{{context}}\n\nAudit question: {{task}}",
+      schedule: { kind: "interval", everyMinutes: 720 },
+      temperature: 0.1, maxTokens: 1200,
+    },
+  },
+  {
+    key: "ops-sentinel",
+    label: "Ops Sentinel",
+    category: "meta",
+    description: "Watches hub health, local model availability and failing jobs, then proposes recovery steps.",
+    blueprint: {
+      name: "OpsSentinel",
+      role: "Site reliability engineer",
+      goal: "Keep the local stack running without external dependencies.",
+      model: "google/gemini-3.1-flash-lite",
+      tools: ["ai_chat"],
+      memory: "session", status: "paused", successRate: 0,
+      systemPrompt:
+        "You are OpsSentinel. From the health snapshot, list what is down, the likely cause, and the exact local command or toggle that fixes it. Never suggest sending data to a third party as a fix.",
+      userPromptTemplate: "Health snapshot:\n{{context}}\n\nIncident: {{task}}",
+      schedule: { kind: "interval", everyMinutes: 15 },
+      temperature: 0.2, maxTokens: 900,
+    },
+  },
+  {
+    key: "treasury-officer",
+    label: "Treasury Officer",
+    category: "meta",
+    description: "Turns ad and mining income into a funding plan for servers and data feeds.",
+    blueprint: {
+      name: "TreasuryOfficer",
+      role: "Growth finance",
+      goal: "Fund infrastructure from real recorded income only.",
+      model: "google/gemini-3.6-flash",
+      tools: ["ai_chat"],
+      memory: "persistent", status: "paused", successRate: 0,
+      systemPrompt:
+        "You are TreasuryOfficer. Using ONLY the ledger entries provided, report income by source, monthly run-rate, and what it can currently fund. If an income source has no recorded entries, say it is unproven — never estimate it.",
+      userPromptTemplate: "Ledger:\n{{context}}\n\nQuestion: {{task}}",
+      schedule: { kind: "manual" },
+      temperature: 0.2, maxTokens: 900,
+    },
+  },
 ];
 
 export function templateToBlueprint(t: AgentTemplate): Omit<AgentBlueprint, "id"> {
