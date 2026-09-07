@@ -31,6 +31,9 @@ from hub.ownership_routes import router as ownership_router
 from hub.quant_routes import router as quant_router
 from hub.hive_routes import router as hive_router
 from hub.microstructure_routes import router as microstructure_router
+from hub.local_store_routes import router as local_store_router
+from hub.telegram_routes import router as telegram_router
+from hub.treasury_routes import router as treasury_router
 
 app = FastAPI(title="OFERTRADINGBOT Production Backend Engine")
 
@@ -71,6 +74,9 @@ app.include_router(ownership_router, prefix="/api/ownership")
 app.include_router(quant_router, prefix="/api/quant")
 app.include_router(hive_router, prefix="/api/hive")
 app.include_router(microstructure_router, prefix="/api/micro")
+app.include_router(local_store_router, prefix="/api/local-store")
+app.include_router(telegram_router, prefix="/api/telegram")
+app.include_router(treasury_router, prefix="/api/treasury")
 
 
 @app.get("/api/health")

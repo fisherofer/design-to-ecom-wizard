@@ -33,6 +33,9 @@ import {
   Radar,
   Building2,
   Cpu,
+  MessageSquare,
+  Lock,
+  Coins,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isTradingRoute, useTradingEnabled } from "@/lib/tradingMode";
@@ -72,6 +75,9 @@ type NavTo =
   | "/ai-models"
   | "/security"
   | "/studio"
+  | "/local-chat"
+  | "/privacy"
+  | "/treasury"
   | "/settings";
 
 type NavItem = {
@@ -122,6 +128,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/goose", label: "MCP Control", icon: Bird },
       { to: "/strategy", label: "Strategy Builder", icon: Layers },
       { to: "/ai-models", label: "AI Model Catalog", icon: Cpu },
+      { to: "/local-chat", label: "Local AI Chat", icon: MessageSquare },
       { to: "/hive", label: "Hive Consensus", icon: Network },
       { to: "/news", label: "News Intelligence", icon: Newspaper },
       { to: "/macro", label: "Macro Calendar", icon: CalendarClock },
@@ -141,6 +148,8 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: "/system", label: "System Health", icon: ShieldCheck },
       { to: "/security", label: "Cyber Defence", icon: ShieldHalf },
+      { to: "/privacy", label: "Privacy & Data", icon: Lock },
+      { to: "/treasury", label: "Treasury", icon: Coins },
       { to: "/studio", label: "Video Studio", icon: Clapperboard },
       { to: "/terminal", label: "Terminal Logs", icon: Terminal },
       { to: "/backup", label: "Backup & Restore", icon: Archive },

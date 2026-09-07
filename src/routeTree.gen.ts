@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WatchlistsRouteImport } from './routes/watchlists'
 import { Route as TriggersRouteImport } from './routes/triggers'
+import { Route as TreasuryRouteImport } from './routes/treasury'
 import { Route as TradingRouteImport } from './routes/trading'
 import { Route as TerminalRouteImport } from './routes/terminal'
 import { Route as SystemRouteImport } from './routes/system'
@@ -21,6 +22,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as RiskRouteImport } from './routes/risk'
 import { Route as RepoAnalyzerRouteImport } from './routes/repo-analyzer'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PersonasRouteImport } from './routes/personas'
 import { Route as OrderTicketRouteImport } from './routes/order-ticket'
@@ -28,6 +30,7 @@ import { Route as NewsRouteImport } from './routes/news'
 import { Route as MoneyFlowRouteImport } from './routes/money-flow'
 import { Route as MicrostructureRouteImport } from './routes/microstructure'
 import { Route as MacroRouteImport } from './routes/macro'
+import { Route as LocalChatRouteImport } from './routes/local-chat'
 import { Route as LiveTradingRouteImport } from './routes/live-trading'
 import { Route as JournalRouteImport } from './routes/journal'
 import { Route as IntelligenceRouteImport } from './routes/intelligence'
@@ -55,6 +58,11 @@ const WatchlistsRoute = WatchlistsRouteImport.update({
 const TriggersRoute = TriggersRouteImport.update({
   id: '/triggers',
   path: '/triggers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TreasuryRoute = TreasuryRouteImport.update({
+  id: '/treasury',
+  path: '/treasury',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TradingRoute = TradingRouteImport.update({
@@ -107,6 +115,11 @@ const RepoAnalyzerRoute = RepoAnalyzerRouteImport.update({
   path: '/repo-analyzer',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PortfolioRoute = PortfolioRouteImport.update({
   id: '/portfolio',
   path: '/portfolio',
@@ -140,6 +153,11 @@ const MicrostructureRoute = MicrostructureRouteImport.update({
 const MacroRoute = MacroRouteImport.update({
   id: '/macro',
   path: '/macro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LocalChatRoute = LocalChatRouteImport.update({
+  id: '/local-chat',
+  path: '/local-chat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LiveTradingRoute = LiveTradingRouteImport.update({
@@ -251,6 +269,7 @@ export interface FileRoutesByFullPath {
   '/intelligence': typeof IntelligenceRoute
   '/journal': typeof JournalRoute
   '/live-trading': typeof LiveTradingRoute
+  '/local-chat': typeof LocalChatRoute
   '/macro': typeof MacroRoute
   '/microstructure': typeof MicrostructureRoute
   '/money-flow': typeof MoneyFlowRoute
@@ -258,6 +277,7 @@ export interface FileRoutesByFullPath {
   '/order-ticket': typeof OrderTicketRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
+  '/privacy': typeof PrivacyRoute
   '/repo-analyzer': typeof RepoAnalyzerRoute
   '/risk': typeof RiskRoute
   '/security': typeof SecurityRoute
@@ -268,6 +288,7 @@ export interface FileRoutesByFullPath {
   '/system': typeof SystemRoute
   '/terminal': typeof TerminalRoute
   '/trading': typeof TradingRoute
+  '/treasury': typeof TreasuryRoute
   '/triggers': typeof TriggersRoute
   '/watchlists': typeof WatchlistsRoute
   '/ticker/$symbol': typeof TickerSymbolRoute
@@ -290,6 +311,7 @@ export interface FileRoutesByTo {
   '/intelligence': typeof IntelligenceRoute
   '/journal': typeof JournalRoute
   '/live-trading': typeof LiveTradingRoute
+  '/local-chat': typeof LocalChatRoute
   '/macro': typeof MacroRoute
   '/microstructure': typeof MicrostructureRoute
   '/money-flow': typeof MoneyFlowRoute
@@ -297,6 +319,7 @@ export interface FileRoutesByTo {
   '/order-ticket': typeof OrderTicketRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
+  '/privacy': typeof PrivacyRoute
   '/repo-analyzer': typeof RepoAnalyzerRoute
   '/risk': typeof RiskRoute
   '/security': typeof SecurityRoute
@@ -307,6 +330,7 @@ export interface FileRoutesByTo {
   '/system': typeof SystemRoute
   '/terminal': typeof TerminalRoute
   '/trading': typeof TradingRoute
+  '/treasury': typeof TreasuryRoute
   '/triggers': typeof TriggersRoute
   '/watchlists': typeof WatchlistsRoute
   '/ticker/$symbol': typeof TickerSymbolRoute
@@ -330,6 +354,7 @@ export interface FileRoutesById {
   '/intelligence': typeof IntelligenceRoute
   '/journal': typeof JournalRoute
   '/live-trading': typeof LiveTradingRoute
+  '/local-chat': typeof LocalChatRoute
   '/macro': typeof MacroRoute
   '/microstructure': typeof MicrostructureRoute
   '/money-flow': typeof MoneyFlowRoute
@@ -337,6 +362,7 @@ export interface FileRoutesById {
   '/order-ticket': typeof OrderTicketRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
+  '/privacy': typeof PrivacyRoute
   '/repo-analyzer': typeof RepoAnalyzerRoute
   '/risk': typeof RiskRoute
   '/security': typeof SecurityRoute
@@ -347,6 +373,7 @@ export interface FileRoutesById {
   '/system': typeof SystemRoute
   '/terminal': typeof TerminalRoute
   '/trading': typeof TradingRoute
+  '/treasury': typeof TreasuryRoute
   '/triggers': typeof TriggersRoute
   '/watchlists': typeof WatchlistsRoute
   '/ticker/$symbol': typeof TickerSymbolRoute
@@ -371,6 +398,7 @@ export interface FileRouteTypes {
     | '/intelligence'
     | '/journal'
     | '/live-trading'
+    | '/local-chat'
     | '/macro'
     | '/microstructure'
     | '/money-flow'
@@ -378,6 +406,7 @@ export interface FileRouteTypes {
     | '/order-ticket'
     | '/personas'
     | '/portfolio'
+    | '/privacy'
     | '/repo-analyzer'
     | '/risk'
     | '/security'
@@ -388,6 +417,7 @@ export interface FileRouteTypes {
     | '/system'
     | '/terminal'
     | '/trading'
+    | '/treasury'
     | '/triggers'
     | '/watchlists'
     | '/ticker/$symbol'
@@ -410,6 +440,7 @@ export interface FileRouteTypes {
     | '/intelligence'
     | '/journal'
     | '/live-trading'
+    | '/local-chat'
     | '/macro'
     | '/microstructure'
     | '/money-flow'
@@ -417,6 +448,7 @@ export interface FileRouteTypes {
     | '/order-ticket'
     | '/personas'
     | '/portfolio'
+    | '/privacy'
     | '/repo-analyzer'
     | '/risk'
     | '/security'
@@ -427,6 +459,7 @@ export interface FileRouteTypes {
     | '/system'
     | '/terminal'
     | '/trading'
+    | '/treasury'
     | '/triggers'
     | '/watchlists'
     | '/ticker/$symbol'
@@ -449,6 +482,7 @@ export interface FileRouteTypes {
     | '/intelligence'
     | '/journal'
     | '/live-trading'
+    | '/local-chat'
     | '/macro'
     | '/microstructure'
     | '/money-flow'
@@ -456,6 +490,7 @@ export interface FileRouteTypes {
     | '/order-ticket'
     | '/personas'
     | '/portfolio'
+    | '/privacy'
     | '/repo-analyzer'
     | '/risk'
     | '/security'
@@ -466,6 +501,7 @@ export interface FileRouteTypes {
     | '/system'
     | '/terminal'
     | '/trading'
+    | '/treasury'
     | '/triggers'
     | '/watchlists'
     | '/ticker/$symbol'
@@ -489,6 +525,7 @@ export interface RootRouteChildren {
   IntelligenceRoute: typeof IntelligenceRoute
   JournalRoute: typeof JournalRoute
   LiveTradingRoute: typeof LiveTradingRoute
+  LocalChatRoute: typeof LocalChatRoute
   MacroRoute: typeof MacroRoute
   MicrostructureRoute: typeof MicrostructureRoute
   MoneyFlowRoute: typeof MoneyFlowRoute
@@ -496,6 +533,7 @@ export interface RootRouteChildren {
   OrderTicketRoute: typeof OrderTicketRoute
   PersonasRoute: typeof PersonasRoute
   PortfolioRoute: typeof PortfolioRoute
+  PrivacyRoute: typeof PrivacyRoute
   RepoAnalyzerRoute: typeof RepoAnalyzerRoute
   RiskRoute: typeof RiskRoute
   SecurityRoute: typeof SecurityRoute
@@ -506,6 +544,7 @@ export interface RootRouteChildren {
   SystemRoute: typeof SystemRoute
   TerminalRoute: typeof TerminalRoute
   TradingRoute: typeof TradingRoute
+  TreasuryRoute: typeof TreasuryRoute
   TriggersRoute: typeof TriggersRoute
   WatchlistsRoute: typeof WatchlistsRoute
   TickerSymbolRoute: typeof TickerSymbolRoute
@@ -526,6 +565,13 @@ declare module '@tanstack/react-router' {
       path: '/triggers'
       fullPath: '/triggers'
       preLoaderRoute: typeof TriggersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/treasury': {
+      id: '/treasury'
+      path: '/treasury'
+      fullPath: '/treasury'
+      preLoaderRoute: typeof TreasuryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/trading': {
@@ -598,6 +644,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RepoAnalyzerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/portfolio': {
       id: '/portfolio'
       path: '/portfolio'
@@ -645,6 +698,13 @@ declare module '@tanstack/react-router' {
       path: '/macro'
       fullPath: '/macro'
       preLoaderRoute: typeof MacroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/local-chat': {
+      id: '/local-chat'
+      path: '/local-chat'
+      fullPath: '/local-chat'
+      preLoaderRoute: typeof LocalChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/live-trading': {
@@ -793,6 +853,7 @@ const rootRouteChildren: RootRouteChildren = {
   IntelligenceRoute: IntelligenceRoute,
   JournalRoute: JournalRoute,
   LiveTradingRoute: LiveTradingRoute,
+  LocalChatRoute: LocalChatRoute,
   MacroRoute: MacroRoute,
   MicrostructureRoute: MicrostructureRoute,
   MoneyFlowRoute: MoneyFlowRoute,
@@ -800,6 +861,7 @@ const rootRouteChildren: RootRouteChildren = {
   OrderTicketRoute: OrderTicketRoute,
   PersonasRoute: PersonasRoute,
   PortfolioRoute: PortfolioRoute,
+  PrivacyRoute: PrivacyRoute,
   RepoAnalyzerRoute: RepoAnalyzerRoute,
   RiskRoute: RiskRoute,
   SecurityRoute: SecurityRoute,
@@ -810,6 +872,7 @@ const rootRouteChildren: RootRouteChildren = {
   SystemRoute: SystemRoute,
   TerminalRoute: TerminalRoute,
   TradingRoute: TradingRoute,
+  TreasuryRoute: TreasuryRoute,
   TriggersRoute: TriggersRoute,
   WatchlistsRoute: WatchlistsRoute,
   TickerSymbolRoute: TickerSymbolRoute,
