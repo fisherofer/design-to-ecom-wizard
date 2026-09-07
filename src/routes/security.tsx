@@ -24,7 +24,7 @@ import {
   type CyberSettings,
   type SecretHit,
 } from "@/lib/cyberGuard";
-import { getKillState, engageKillSwitch, releaseKillSwitch, useKillSwitch } from "@/lib/killSwitch";
+import { engageKillSwitch, releaseKillSwitch, useKillSwitch } from "@/lib/killSwitch";
 
 export const Route = createFileRoute("/security")({
   head: () => ({
@@ -209,6 +209,3 @@ function SecurityPage() {
     </div>
   );
 }
-
-// keeps the import used when the page is server-rendered without a session
-void getKillState;
