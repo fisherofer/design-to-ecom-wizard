@@ -58,7 +58,7 @@ function TreasuryPage() {
     setAds(await getAdConfig());
     const l = await getLedger(100);
     setLedger(l.entries ?? []);
-    setTotal(l.total ?? 0);
+    setTotal(l.net_total ?? 0);
     setLoading(false);
   }
 
