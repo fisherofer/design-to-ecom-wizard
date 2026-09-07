@@ -535,6 +535,7 @@ export async function reconcileBrokerOrders(): Promise<{ updated: number; error:
 /** Move stop / target on a live bracket. */
 export function amendProtection(id: string, stopPrice: number | null, targetPrice: number | null): void {
   const book = getBook();
+  const target = book.orders.find((o) => o.id === id);
   write({
     ...book,
     orders: book.orders.map((o) =>
@@ -556,6 +557,18 @@ export function amendProtection(id: string, stopPrice: number | null, targetPric
         : o,
     ),
   });
+  if (target) {
+    journal({
+      eventType: "PROTECTION_AMENDED",
+      severity: "info",
+      source: target.paper ? "local" : "broker",
+      symbol: target.symbol,
+      orderId: target.id,
+      brokerOrderId: target.brokerOrderId,
+      message: `${target.symbol} protection moved → stop ${stopPrice ?? "—"} / target ${targetPrice ?? "—"}`,
+      details: { previousStop: target.stopPrice, previousTarget: target.targetPrice },
+    });
+  }
 }
 
 export function clearHistory(): void {
