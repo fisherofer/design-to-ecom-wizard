@@ -362,6 +362,100 @@ async def list_broker_orders(status: str = "open", limit: int = 100) -> Dict[str
     return {"orders": orders, "count": len(orders), "is_simulated": False, "as_of": _utc_now_iso()}
 
 
+class ProtectionAmendRequest(BaseModel):
+    stop_price: float | None = None
+    target_price: float | None = None
+
+
+@router.patch("/orders/{broker_order_id}/protection")
+async def amend_protection(broker_order_id: str, payload: ProtectionAmendRequest) -> Dict[str, Any]:
+    """
+    Moves (or cancels) the stop / take-profit legs of a live bracket at the broker.
+
+    A null price cancels that leg. Every leg result is reported individually so
+    the UI can never claim a broker change that did not happen.
+    """
+    headers = _auth_headers()
+    if headers is None:
+        return {"amended": False, "error": "Alpaca credentials are not configured.", "legs": [], "as_of": _utc_now_iso()}
+    if httpx is None:
+        return {"amended": False, "error": "httpx is not installed in the backend venv.", "legs": [], "as_of": _utc_now_iso()}
+
+    base = _resolve_base_url()
+    legs_result: list[Dict[str, Any]] = []
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            parent = await client.get(f"{base}/v2/orders/{broker_order_id}", headers=headers, params={"nested": "true"})
+            if parent.status_code >= 400:
+                return {
+                    "amended": False,
+                    "error": f"Alpaca returned HTTP {parent.status_code} for the parent order.",
+                    "legs": [],
+                    "as_of": _utc_now_iso(),
+                }
+            parent_json = parent.json()
+            legs = [leg for leg in (parent_json.get("legs") or []) if isinstance(leg, dict)]
+            if not legs:
+                return {
+                    "amended": False,
+                    "error": "The broker order has no protective legs (not a bracket / OTO order).",
+                    "legs": [],
+                    "as_of": _utc_now_iso(),
+                }
+
+            for leg in legs:
+                leg_id = str(leg.get("id", ""))
+                leg_type = str(leg.get("type", "")).lower()
+                is_stop = "stop" in leg_type
+                is_target = leg_type == "limit"
+                if is_stop:
+                    new_price = payload.stop_price
+                elif is_target:
+                    new_price = payload.target_price
+                else:
+                    continue
+
+                if new_price is None:
+                    resp = await client.delete(f"{base}/v2/orders/{leg_id}", headers=headers)
+                    legs_result.append({
+                        "leg_id": leg_id,
+                        "kind": "STOP" if is_stop else "TARGET",
+                        "action": "cancelled",
+                        "ok": resp.status_code in (200, 204),
+                        "detail": None if resp.status_code in (200, 204) else f"HTTP {resp.status_code}",
+                    })
+                    continue
+
+                body = {"stop_price": str(new_price)} if is_stop else {"limit_price": str(new_price)}
+                resp = await client.patch(f"{base}/v2/orders/{leg_id}", headers=headers, json=body)
+                ok = resp.status_code < 400
+                detail = None
+                if not ok:
+                    try:
+                        detail = str(resp.json().get("message", ""))
+                    except Exception:
+                        detail = resp.text[:200]
+                legs_result.append({
+                    "leg_id": leg_id,
+                    "kind": "STOP" if is_stop else "TARGET",
+                    "action": "replaced",
+                    "price": new_price,
+                    "ok": ok,
+                    "detail": detail,
+                })
+    except Exception as err:
+        return {"amended": False, "error": f"Alpaca request failed: {err}", "legs": legs_result, "as_of": _utc_now_iso()}
+
+    failed = [leg for leg in legs_result if not leg["ok"]]
+    return {
+        "amended": len(legs_result) > 0 and not failed,
+        "legs": legs_result,
+        "error": None if not failed else "; ".join(f"{leg['kind']}: {leg.get('detail') or 'rejected'}" for leg in failed),
+        "as_of": _utc_now_iso(),
+    }
+
+
+
 @router.delete("/orders/{broker_order_id}")
 async def cancel_broker_order(broker_order_id: str) -> Dict[str, Any]:
     """Cancels a single working broker order."""
