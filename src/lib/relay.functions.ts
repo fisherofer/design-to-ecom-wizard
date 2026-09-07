@@ -114,3 +114,143 @@ export const sendWebhookRelay = createServerFn({ method: "POST" })
       return { ok: false, detail: `Webhook request failed: ${String(e)}` };
     }
   });
+
+/* ------------------------------------------------------------------ *
+ * Email relay (Resend)
+ * ------------------------------------------------------------------ */
+
+const EmailInput = z.object({
+  to: z.string().email(),
+  subject: z.string().trim().min(1),
+  body: z.string().default(""),
+});
+
+/** Report whether an email provider is configured on the server. */
+export const emailStatus = createServerFn({ method: "GET" }).handler(
+  async (): Promise<{ configured: boolean; from?: string; detail: string }> => {
+    const key = process.env["RESEND_API_KEY"];
+    if (!key) return { configured: false, detail: "RESEND_API_KEY is not set on the server." };
+    const from = process.env["RESEND_FROM"] ?? "";
+    if (!from) return { configured: false, detail: "RESEND_FROM (verified sender address) is not set." };
+    return { configured: true, from, detail: "Email relay ready." };
+  },
+);
+
+/** Send a real email through Resend. */
+export const sendEmailRelay = createServerFn({ method: "POST" })
+  .inputValidator((raw: unknown) => EmailInput.parse(raw))
+  .handler(async ({ data }): Promise<RelayResult> => {
+    const key = process.env["RESEND_API_KEY"];
+    const from = process.env["RESEND_FROM"];
+    if (!key) return { ok: false, detail: "RESEND_API_KEY is not set on the server." };
+    if (!from) return { ok: false, detail: "RESEND_FROM (verified sender address) is not set." };
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
+        body: JSON.stringify({
+          from,
+          to: [data.to],
+          subject: data.subject,
+          text: data.body,
+          html: `<h3>${esc(data.subject)}</h3><pre style="font:13px/1.5 monospace">${esc(data.body)}</pre>`,
+        }),
+        signal: AbortSignal.timeout(15_000),
+      });
+      const json = (await res.json().catch(() => ({}))) as { id?: string; message?: string };
+      if (!res.ok) return { ok: false, detail: json.message ?? `Resend returned HTTP ${res.status}` };
+      return { ok: true, detail: `Email delivered to ${data.to}.`, providerId: json.id };
+    } catch (e) {
+      return { ok: false, detail: `Email request failed: ${String(e)}` };
+    }
+  });
+
+/* ------------------------------------------------------------------ *
+ * WhatsApp relay (Meta Cloud API, Twilio fallback)
+ * ------------------------------------------------------------------ */
+
+const WhatsAppInput = z.object({
+  to: z.string().trim().min(6),
+  subject: z.string().trim().min(1),
+  body: z.string().default(""),
+});
+
+const digits = (s: string) => s.replace(/[^\d]/g, "");
+
+/** Report which WhatsApp provider (if any) is configured. */
+export const whatsappStatus = createServerFn({ method: "GET" }).handler(
+  async (): Promise<{ configured: boolean; provider?: string; detail: string }> => {
+    if (process.env["WHATSAPP_TOKEN"] && process.env["WHATSAPP_PHONE_NUMBER_ID"])
+      return { configured: true, provider: "meta", detail: "Meta WhatsApp Cloud API ready." };
+    if (process.env["TWILIO_ACCOUNT_SID"] && process.env["TWILIO_AUTH_TOKEN"] && process.env["TWILIO_WHATSAPP_FROM"])
+      return { configured: true, provider: "twilio", detail: "Twilio WhatsApp ready." };
+    return {
+      configured: false,
+      detail:
+        "Set WHATSAPP_TOKEN + WHATSAPP_PHONE_NUMBER_ID (Meta Cloud API) or TWILIO_ACCOUNT_SID + TWILIO_AUTH_TOKEN + TWILIO_WHATSAPP_FROM.",
+    };
+  },
+);
+
+/** Send a real WhatsApp message. */
+export const sendWhatsAppRelay = createServerFn({ method: "POST" })
+  .inputValidator((raw: unknown) => WhatsAppInput.parse(raw))
+  .handler(async ({ data }): Promise<RelayResult> => {
+    const text = `*${data.subject}*\n${data.body}`.slice(0, 4000);
+    const to = digits(data.to);
+    if (!to) return { ok: false, detail: "Recipient must be a phone number in international format." };
+
+    const metaToken = process.env["WHATSAPP_TOKEN"];
+    const metaPhoneId = process.env["WHATSAPP_PHONE_NUMBER_ID"];
+    if (metaToken && metaPhoneId) {
+      try {
+        const res = await fetch(`https://graph.facebook.com/v20.0/${metaPhoneId}/messages`, {
+          method: "POST",
+          headers: { authorization: `Bearer ${metaToken}`, "content-type": "application/json" },
+          body: JSON.stringify({ messaging_product: "whatsapp", to, type: "text", text: { body: text } }),
+          signal: AbortSignal.timeout(15_000),
+        });
+        const json = (await res.json().catch(() => ({}))) as {
+          messages?: { id?: string }[];
+          error?: { message?: string };
+        };
+        if (!res.ok) return { ok: false, detail: json.error?.message ?? `Meta returned HTTP ${res.status}` };
+        return { ok: true, detail: "WhatsApp delivered (Meta Cloud API).", providerId: json.messages?.[0]?.id };
+      } catch (e) {
+        return { ok: false, detail: `WhatsApp request failed: ${String(e)}` };
+      }
+    }
+
+    const sid = process.env["TWILIO_ACCOUNT_SID"];
+    const authToken = process.env["TWILIO_AUTH_TOKEN"];
+    const from = process.env["TWILIO_WHATSAPP_FROM"];
+    if (sid && authToken && from) {
+      try {
+        const form = new URLSearchParams({
+          From: `whatsapp:${from.startsWith("+") ? from : `+${digits(from)}`}`,
+          To: `whatsapp:+${to}`,
+          Body: text,
+        });
+        const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
+          method: "POST",
+          headers: {
+            authorization: `Basic ${btoa(`${sid}:${authToken}`)}`,
+            "content-type": "application/x-www-form-urlencoded",
+          },
+          body: form.toString(),
+          signal: AbortSignal.timeout(15_000),
+        });
+        const json = (await res.json().catch(() => ({}))) as { sid?: string; message?: string };
+        if (!res.ok) return { ok: false, detail: json.message ?? `Twilio returned HTTP ${res.status}` };
+        return { ok: true, detail: "WhatsApp delivered (Twilio).", providerId: json.sid };
+      } catch (e) {
+        return { ok: false, detail: `WhatsApp request failed: ${String(e)}` };
+      }
+    }
+
+    return {
+      ok: false,
+      detail:
+        "No WhatsApp provider configured. Set WHATSAPP_TOKEN + WHATSAPP_PHONE_NUMBER_ID, or the three TWILIO_* variables.",
+    };
+  });
