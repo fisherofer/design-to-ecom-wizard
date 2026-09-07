@@ -382,9 +382,15 @@ export function updateOrder(id: string, p: Partial<BracketOrder>): void {
   });
 }
 
-/** Cancel a working order (or a still-open bracket's protective legs). */
+/**
+ * Cancel a working order (or a still-open bracket's protective legs).
+ * Live orders are cancelled at the broker too — the local book never diverges
+ * silently from the real one.
+ */
 export function cancelOrder(id: string, reason = "Cancelled by operator"): void {
   const book = getBook();
+  const target = book.orders.find((o) => o.id === id);
+
   write({
     ...book,
     orders: book.orders.map((o) => {
@@ -392,31 +398,64 @@ export function cancelOrder(id: string, reason = "Cancelled by operator"): void 
       if (o.status === "FILLED") {
         return {
           ...o,
-          status: "CLOSED",
+          status: "CLOSED" as OrderStatus,
           exitReason: reason,
           updatedAt: new Date().toISOString(),
           legs: o.legs.map((l) =>
-            l.kind === "ENTRY" ? l : { ...l, status: l.status === "FILLED" ? l.status : "CANCELLED" },
+            l.kind === "ENTRY" ? l : { ...l, status: l.status === "FILLED" ? l.status : ("CANCELLED" as OrderStatus) },
           ),
         };
       }
       return {
         ...o,
-        status: "CANCELLED",
+        status: "CANCELLED" as OrderStatus,
         note: reason,
         updatedAt: new Date().toISOString(),
-        legs: o.legs.map((l) => ({ ...l, status: l.status === "FILLED" ? l.status : "CANCELLED" })),
+        legs: o.legs.map((l) => ({ ...l, status: l.status === "FILLED" ? l.status : ("CANCELLED" as OrderStatus) })),
       };
     }),
   });
+
+  if (target) {
+    journal({
+      eventType: target.status === "FILLED" ? "POSITION_CLOSED" : "ORDER_CANCELLED",
+      severity: "info",
+      source: target.paper ? "local" : "broker",
+      symbol: target.symbol,
+      side: target.side,
+      qty: target.qty,
+      orderId: target.id,
+      brokerOrderId: target.brokerOrderId,
+      message: `${target.paper ? "PAPER" : "LIVE"} ${target.symbol} — ${reason}`,
+      details: { previousStatus: target.status },
+    });
+    if (!target.paper && target.brokerOrderId) {
+      void cancelBrokerOrder(target.brokerOrderId).then((r) => {
+        if (!r.cancelled) {
+          journal({
+            eventType: "ORDER_CANCELLED",
+            severity: "warn",
+            source: "broker",
+            symbol: target.symbol,
+            orderId: target.id,
+            brokerOrderId: target.brokerOrderId,
+            message: `Broker cancel failed for ${target.symbol}: ${r.error ?? "unknown error"} — verify manually.`,
+            details: {},
+          });
+        }
+      });
+    }
+  }
 }
 
 export function cancelAllWorking(reason = "Bulk cancel"): number {
   const book = getBook();
   let n = 0;
+  let hadLive = false;
   const orders = book.orders.map((o) => {
     if (o.status === "WORKING" || o.status === "PENDING") {
       n += 1;
+      if (!o.paper) hadLive = true;
       return {
         ...o,
         status: "CANCELLED" as OrderStatus,
@@ -428,7 +467,69 @@ export function cancelAllWorking(reason = "Bulk cancel"): number {
     return o;
   });
   write({ ...book, orders });
+
+  if (n > 0) {
+    journal({
+      eventType: "ORDER_CANCELLED",
+      severity: "warn",
+      source: hadLive ? "broker" : "local",
+      message: `${reason}: ${n} working order(s) cancelled.`,
+      details: { count: n, includedLiveOrders: hadLive },
+    });
+  }
+  if (hadLive) void cancelAllBrokerOrders();
   return n;
+}
+
+/**
+ * Pulls real broker order state and applies it to the local book, so fills and
+ * broker-side cancellations show up here instead of drifting apart.
+ */
+export async function reconcileBrokerOrders(): Promise<{ updated: number; error: string | null }> {
+  const book = getBook();
+  const liveOrders = book.orders.filter((o) => !o.paper && o.brokerOrderId);
+  if (liveOrders.length === 0) return { updated: 0, error: null };
+
+  const { orders: remote, error } = await listBrokerOrders("all");
+  if (error && remote.length === 0) return { updated: 0, error };
+
+  const byId = new Map(remote.map((r) => [r.broker_order_id, r]));
+  let updated = 0;
+
+  const next = book.orders.map((o) => {
+    if (o.paper || !o.brokerOrderId) return o;
+    const r = byId.get(o.brokerOrderId);
+    if (!r) return o;
+    const status = mapBrokerStatus(r.status);
+    const fill = r.filled_avg_price > 0 ? r.filled_avg_price : o.entryFill;
+    if (status === o.status && fill === o.entryFill) return o;
+    updated += 1;
+    if (status === "FILLED" && o.status !== "FILLED") {
+      journal({
+        eventType: "ORDER_FILLED",
+        severity: "info",
+        source: "broker",
+        symbol: o.symbol,
+        side: o.side,
+        qty: r.filled_qty || o.qty,
+        price: fill,
+        orderId: o.id,
+        brokerOrderId: o.brokerOrderId,
+        message: `Broker filled ${o.side} ${r.filled_qty || o.qty} ${o.symbol} @ ${fill ?? "?"}`,
+        details: { brokerStatus: r.status },
+      });
+    }
+    return {
+      ...o,
+      status,
+      entryFill: fill,
+      updatedAt: new Date().toISOString(),
+      note: `Broker ${r.status}${fill ? ` @ ${fill}` : ""}`,
+    };
+  });
+
+  if (updated > 0) write({ ...getBook(), orders: next });
+  return { updated, error: error ?? null };
 }
 
 /** Move stop / target on a live bracket. */
