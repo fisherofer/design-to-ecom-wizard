@@ -533,20 +533,48 @@ export async function reconcileBrokerOrders(): Promise<{ updated: number; error:
   return { updated, error: error ?? null };
 }
 
-/** Move stop / target on a live bracket. */
-export function amendProtection(id: string, stopPrice: number | null, targetPrice: number | null): void {
+/**
+ * Move stop / target on a bracket.
+ *
+ * For a live (non-paper) order the change is pushed to the broker first; the
+ * local book is only marked as broker-confirmed when Alpaca accepted every
+ * touched leg. Otherwise the local values still move but the note and the
+ * journal say plainly that the broker did not confirm.
+ */
+export async function amendProtection(
+  id: string,
+  stopPrice: number | null,
+  targetPrice: number | null,
+): Promise<{ ok: boolean; detail: string }> {
   const book = getBook();
   const target = book.orders.find((o) => o.id === id);
+
+  let brokerNote = "local only (paper)";
+  let ok = true;
+  if (target && !target.paper) {
+    if (!target.brokerOrderId) {
+      ok = false;
+      brokerNote = "no broker order id — broker legs unchanged";
+    } else {
+      const res = await amendBrokerProtection(target.brokerOrderId, stopPrice, targetPrice);
+      ok = res.amended;
+      brokerNote = res.amended
+        ? `broker confirmed ${res.legs.length} leg(s)`
+        : `broker did NOT confirm: ${res.error ?? "unknown error"}`;
+    }
+  }
+
+  const current = getBook();
   write({
-    ...book,
-    orders: book.orders.map((o) =>
+    ...current,
+    orders: current.orders.map((o) =>
       o.id === id
         ? {
             ...o,
             stopPrice,
             targetPrice,
             updatedAt: new Date().toISOString(),
-            note: `Protection amended → stop ${stopPrice ?? "—"} / target ${targetPrice ?? "—"}`,
+            note: `Protection → stop ${stopPrice ?? "—"} / target ${targetPrice ?? "—"} · ${brokerNote}`,
             legs: o.legs.map((l) =>
               l.kind === "STOP"
                 ? { ...l, price: stopPrice, status: stopPrice ? "WORKING" : "CANCELLED" }
@@ -561,15 +589,17 @@ export function amendProtection(id: string, stopPrice: number | null, targetPric
   if (target) {
     journal({
       eventType: "PROTECTION_AMENDED",
-      severity: "info",
+      severity: ok ? "info" : "warn",
       source: target.paper ? "local" : "broker",
       symbol: target.symbol,
       orderId: target.id,
       brokerOrderId: target.brokerOrderId,
-      message: `${target.symbol} protection moved → stop ${stopPrice ?? "—"} / target ${targetPrice ?? "—"}`,
-      details: { previousStop: target.stopPrice, previousTarget: target.targetPrice },
+      message: `${target.symbol} protection moved → stop ${stopPrice ?? "—"} / target ${targetPrice ?? "—"} (${brokerNote})`,
+      details: { previousStop: target.stopPrice, previousTarget: target.targetPrice, brokerNote },
     });
   }
+  return { ok, detail: brokerNote };
+}
 }
 
 export function clearHistory(): void {
