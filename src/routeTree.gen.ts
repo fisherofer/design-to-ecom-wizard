@@ -26,6 +26,7 @@ import { Route as MicrostructureRouteImport } from './routes/microstructure'
 import { Route as LiveTradingRouteImport } from './routes/live-trading'
 import { Route as JournalRouteImport } from './routes/journal'
 import { Route as IntelligenceRouteImport } from './routes/intelligence'
+import { Route as InsiderRouteImport } from './routes/insider'
 import { Route as GooseRouteImport } from './routes/goose'
 import { Route as ConfigRouteImport } from './routes/config'
 import { Route as CommandRouteImport } from './routes/command'
@@ -125,6 +126,11 @@ const IntelligenceRoute = IntelligenceRouteImport.update({
   path: '/intelligence',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InsiderRoute = InsiderRouteImport.update({
+  id: '/insider',
+  path: '/insider',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GooseRoute = GooseRouteImport.update({
   id: '/goose',
   path: '/goose',
@@ -204,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
   '/goose': typeof GooseRoute
+  '/insider': typeof InsiderRoute
   '/intelligence': typeof IntelligenceRoute
   '/journal': typeof JournalRoute
   '/live-trading': typeof LiveTradingRoute
@@ -236,6 +243,7 @@ export interface FileRoutesByTo {
   '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
   '/goose': typeof GooseRoute
+  '/insider': typeof InsiderRoute
   '/intelligence': typeof IntelligenceRoute
   '/journal': typeof JournalRoute
   '/live-trading': typeof LiveTradingRoute
@@ -269,6 +277,7 @@ export interface FileRoutesById {
   '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
   '/goose': typeof GooseRoute
+  '/insider': typeof InsiderRoute
   '/intelligence': typeof IntelligenceRoute
   '/journal': typeof JournalRoute
   '/live-trading': typeof LiveTradingRoute
@@ -303,6 +312,7 @@ export interface FileRouteTypes {
     | '/command'
     | '/config'
     | '/goose'
+    | '/insider'
     | '/intelligence'
     | '/journal'
     | '/live-trading'
@@ -335,6 +345,7 @@ export interface FileRouteTypes {
     | '/command'
     | '/config'
     | '/goose'
+    | '/insider'
     | '/intelligence'
     | '/journal'
     | '/live-trading'
@@ -367,6 +378,7 @@ export interface FileRouteTypes {
     | '/command'
     | '/config'
     | '/goose'
+    | '/insider'
     | '/intelligence'
     | '/journal'
     | '/live-trading'
@@ -400,6 +412,7 @@ export interface RootRouteChildren {
   CommandRoute: typeof CommandRoute
   ConfigRoute: typeof ConfigRoute
   GooseRoute: typeof GooseRoute
+  InsiderRoute: typeof InsiderRoute
   IntelligenceRoute: typeof IntelligenceRoute
   JournalRoute: typeof JournalRoute
   LiveTradingRoute: typeof LiveTradingRoute
@@ -542,6 +555,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IntelligenceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/insider': {
+      id: '/insider'
+      path: '/insider'
+      fullPath: '/insider'
+      preLoaderRoute: typeof InsiderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/goose': {
       id: '/goose'
       path: '/goose'
@@ -648,6 +668,7 @@ const rootRouteChildren: RootRouteChildren = {
   CommandRoute: CommandRoute,
   ConfigRoute: ConfigRoute,
   GooseRoute: GooseRoute,
+  InsiderRoute: InsiderRoute,
   IntelligenceRoute: IntelligenceRoute,
   JournalRoute: JournalRoute,
   LiveTradingRoute: LiveTradingRoute,
