@@ -30,18 +30,18 @@ interface VaultState {
   cursor: Partial<Record<ProviderId, number>>;
 }
 
-const EMPTY: VaultState = { keys: {}, cursor: {} };
+const empty = (): VaultState => ({ keys: {}, cursor: {} });
 
 function read(): VaultState {
-  if (typeof window === "undefined") return EMPTY;
+  if (typeof window === "undefined") return empty();
   const status = secureVault.status();
   if (status !== "off") {
-    return status === "unlocked" ? (secureVault.getSection<VaultState>(KEY) ?? EMPTY) : EMPTY;
+    return status === "unlocked" ? (secureVault.getSection<VaultState>(KEY) ?? empty()) : empty();
   }
   try {
     return JSON.parse(localStorage.getItem(KEY) ?? "") as VaultState;
   } catch {
-    return EMPTY;
+    return empty();
   }
 }
 
