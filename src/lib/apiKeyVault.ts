@@ -1,12 +1,17 @@
 /**
- * Multi-key vault — stores an array of API keys per provider in localStorage
- * with a rotation cursor so callers can round-robin between keys when one
- * hits rate-limits / quota. Values never leave the browser.
+ * Multi-key vault — stores an array of API keys per provider with a rotation
+ * cursor so callers can round-robin between keys when one hits rate-limits.
+ * Values never leave the browser, and when the encrypted secret vault is
+ * enabled they are held only inside it (AES-GCM at rest, plaintext in memory
+ * while unlocked). Locked vault ⇒ no keys are readable or writable.
  */
 import type { ProviderId } from "./modelDiscovery";
+import { secureVault, VAULT_EVENT } from "./secureVault";
 
 const KEY = "ai-os.settings.providerKeyVault.v1";
 const EVENT = "ai-os:provider-key-vault-changed";
+
+export const PROVIDER_KEY_STORE = KEY;
 
 export type KeyStatus = "active" | "exhausted" | "invalid";
 
@@ -25,20 +30,36 @@ interface VaultState {
   cursor: Partial<Record<ProviderId, number>>;
 }
 
+const empty = (): VaultState => ({ keys: {}, cursor: {} });
+
 function read(): VaultState {
-  if (typeof window === "undefined") return { keys: {}, cursor: {} };
+  if (typeof window === "undefined") return empty();
+  const status = secureVault.status();
+  if (status !== "off") {
+    return status === "unlocked" ? (secureVault.getSection<VaultState>(KEY) ?? empty()) : empty();
+  }
   try {
     return JSON.parse(localStorage.getItem(KEY) ?? "") as VaultState;
   } catch {
-    return { keys: {}, cursor: {} };
+    return empty();
   }
 }
 
 function write(state: VaultState) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(KEY, JSON.stringify(state));
+  if (secureVault.status() !== "off") {
+    secureVault.setSection(KEY, state);
+  } else {
+    localStorage.setItem(KEY, JSON.stringify(state));
+  }
   window.dispatchEvent(new CustomEvent(EVENT));
 }
+
+if (typeof window !== "undefined") {
+  // Unlock / lock changes what is readable — let subscribers refresh.
+  window.addEventListener(VAULT_EVENT, () => window.dispatchEvent(new CustomEvent(EVENT)));
+}
+
 
 function newId() {
   return `k_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
