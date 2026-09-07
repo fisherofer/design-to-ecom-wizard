@@ -5,7 +5,7 @@ import { MarketClock } from "@/components/dashboard/MarketClock";
 import { LiveKpis } from "@/components/dashboard/LiveKpis";
 import { MarketHeatmap } from "@/components/dashboard/MarketHeatmap";
 import { HotNews } from "@/components/dashboard/HotNews";
-import { AgentStatusBoard } from "@/components/agents/AgentStatusBoard";
+import { AgentFleetManager } from "@/components/quant/AgentFleetManager";
 import { RiskGuardPanel } from "@/components/trading/RiskGuardPanel";
 
 export const Route = createFileRoute("/situation-room")({
@@ -52,7 +52,7 @@ function SituationRoomPage() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <AgentStatusBoard />
+        <AgentFleetManager />
         <RiskGuardPanel />
       </div>
     </div>
