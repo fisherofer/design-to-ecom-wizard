@@ -21,6 +21,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as RiskRouteImport } from './routes/risk'
 import { Route as RepoAnalyzerRouteImport } from './routes/repo-analyzer'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PersonasRouteImport } from './routes/personas'
 import { Route as OrderTicketRouteImport } from './routes/order-ticket'
@@ -106,6 +107,11 @@ const RiskRoute = RiskRouteImport.update({
 const RepoAnalyzerRoute = RepoAnalyzerRouteImport.update({
   id: '/repo-analyzer',
   path: '/repo-analyzer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PortfolioRoute = PortfolioRouteImport.update({
@@ -265,6 +271,7 @@ export interface FileRoutesByFullPath {
   '/order-ticket': typeof OrderTicketRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
+  '/privacy': typeof PrivacyRoute
   '/repo-analyzer': typeof RepoAnalyzerRoute
   '/risk': typeof RiskRoute
   '/security': typeof SecurityRoute
@@ -305,6 +312,7 @@ export interface FileRoutesByTo {
   '/order-ticket': typeof OrderTicketRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
+  '/privacy': typeof PrivacyRoute
   '/repo-analyzer': typeof RepoAnalyzerRoute
   '/risk': typeof RiskRoute
   '/security': typeof SecurityRoute
@@ -346,6 +354,7 @@ export interface FileRoutesById {
   '/order-ticket': typeof OrderTicketRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
+  '/privacy': typeof PrivacyRoute
   '/repo-analyzer': typeof RepoAnalyzerRoute
   '/risk': typeof RiskRoute
   '/security': typeof SecurityRoute
@@ -388,6 +397,7 @@ export interface FileRouteTypes {
     | '/order-ticket'
     | '/personas'
     | '/portfolio'
+    | '/privacy'
     | '/repo-analyzer'
     | '/risk'
     | '/security'
@@ -428,6 +438,7 @@ export interface FileRouteTypes {
     | '/order-ticket'
     | '/personas'
     | '/portfolio'
+    | '/privacy'
     | '/repo-analyzer'
     | '/risk'
     | '/security'
@@ -468,6 +479,7 @@ export interface FileRouteTypes {
     | '/order-ticket'
     | '/personas'
     | '/portfolio'
+    | '/privacy'
     | '/repo-analyzer'
     | '/risk'
     | '/security'
@@ -509,6 +521,7 @@ export interface RootRouteChildren {
   OrderTicketRoute: typeof OrderTicketRoute
   PersonasRoute: typeof PersonasRoute
   PortfolioRoute: typeof PortfolioRoute
+  PrivacyRoute: typeof PrivacyRoute
   RepoAnalyzerRoute: typeof RepoAnalyzerRoute
   RiskRoute: typeof RiskRoute
   SecurityRoute: typeof SecurityRoute
@@ -609,6 +622,13 @@ declare module '@tanstack/react-router' {
       path: '/repo-analyzer'
       fullPath: '/repo-analyzer'
       preLoaderRoute: typeof RepoAnalyzerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/portfolio': {
@@ -821,6 +841,7 @@ const rootRouteChildren: RootRouteChildren = {
   OrderTicketRoute: OrderTicketRoute,
   PersonasRoute: PersonasRoute,
   PortfolioRoute: PortfolioRoute,
+  PrivacyRoute: PrivacyRoute,
   RepoAnalyzerRoute: RepoAnalyzerRoute,
   RiskRoute: RiskRoute,
   SecurityRoute: SecurityRoute,
