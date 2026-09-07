@@ -42,6 +42,7 @@ import {
   type TimeInForce,
 } from "@/lib/orderTicket";
 import { BrokerReconciliation } from "@/components/trading/BrokerReconciliation";
+import { RiskGuardPanel } from "@/components/trading/RiskGuardPanel";
 
 export const Route = createFileRoute("/order-ticket")({
   head: () => ({
