@@ -69,7 +69,7 @@ def status() -> dict[str, Any]:
 def install() -> dict[str, Any]:
     """Install playwright into the venv and download its Chromium build."""
     results = [venv_manager.install_package(venv_manager.DEFAULT_VENV_DIR, pkg) for pkg in status()["missing"]]
-    python = venv_manager.venv_python(venv_manager.DEFAULT_VENV_DIR)
+    python = venv_manager.venv_python_path(venv_manager.DEFAULT_VENV_DIR)
     browser: dict[str, Any]
     try:
         proc = subprocess.run(
