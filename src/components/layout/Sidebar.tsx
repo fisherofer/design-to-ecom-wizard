@@ -25,6 +25,14 @@ import {
   Ticket,
   LineChart,
   NotebookPen,
+  Waves,
+  ShieldAlert,
+  Newspaper,
+  CalendarClock,
+  Network,
+  Radar,
+  Building2,
+  Cpu,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isTradingRoute, useTradingEnabled } from "@/lib/tradingMode";
@@ -54,6 +62,14 @@ type NavTo =
   | "/order-ticket"
   | "/backtesting"
   | "/journal"
+  | "/money-flow"
+  | "/risk"
+  | "/news"
+  | "/macro"
+  | "/hive"
+  | "/situation-room"
+  | "/insider"
+  | "/ai-models"
   | "/security"
   | "/studio"
   | "/settings";
@@ -76,6 +92,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
       { to: "/command", label: "Quant Command", icon: Activity },
+      { to: "/situation-room", label: "Situation Room", icon: Radar },
     ],
   },
   {
@@ -91,6 +108,9 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/watchlists", label: "Watchlists", icon: Layers },
       { to: "/alerts", label: "Alerts", icon: BellRing },
       { to: "/triggers", label: "AI Triggers", icon: Zap },
+      { to: "/money-flow", label: "Money Flow", icon: Waves },
+      { to: "/insider", label: "Insider & Ownership", icon: Building2 },
+      { to: "/risk", label: "Risk Management", icon: ShieldAlert },
     ],
   },
   {
@@ -101,6 +121,10 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/agents", label: "Agent Studio", icon: Bot },
       { to: "/goose", label: "MCP Control", icon: Bird },
       { to: "/strategy", label: "Strategy Builder", icon: Layers },
+      { to: "/ai-models", label: "AI Model Catalog", icon: Cpu },
+      { to: "/hive", label: "Hive Consensus", icon: Network },
+      { to: "/news", label: "News Intelligence", icon: Newspaper },
+      { to: "/macro", label: "Macro Calendar", icon: CalendarClock },
     ],
   },
   {

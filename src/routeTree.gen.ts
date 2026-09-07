@@ -16,16 +16,23 @@ import { Route as TerminalRouteImport } from './routes/terminal'
 import { Route as SystemRouteImport } from './routes/system'
 import { Route as StudioRouteImport } from './routes/studio'
 import { Route as StrategyRouteImport } from './routes/strategy'
+import { Route as SituationRoomRouteImport } from './routes/situation-room'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SecurityRouteImport } from './routes/security'
+import { Route as RiskRouteImport } from './routes/risk'
 import { Route as RepoAnalyzerRouteImport } from './routes/repo-analyzer'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PersonasRouteImport } from './routes/personas'
 import { Route as OrderTicketRouteImport } from './routes/order-ticket'
+import { Route as NewsRouteImport } from './routes/news'
+import { Route as MoneyFlowRouteImport } from './routes/money-flow'
 import { Route as MicrostructureRouteImport } from './routes/microstructure'
+import { Route as MacroRouteImport } from './routes/macro'
 import { Route as LiveTradingRouteImport } from './routes/live-trading'
 import { Route as JournalRouteImport } from './routes/journal'
 import { Route as IntelligenceRouteImport } from './routes/intelligence'
+import { Route as InsiderRouteImport } from './routes/insider'
+import { Route as HiveRouteImport } from './routes/hive'
 import { Route as GooseRouteImport } from './routes/goose'
 import { Route as ConfigRouteImport } from './routes/config'
 import { Route as CommandRouteImport } from './routes/command'
@@ -34,6 +41,7 @@ import { Route as BackupRouteImport } from './routes/backup'
 import { Route as BacktestingRouteImport } from './routes/backtesting'
 import { Route as ApiVaultRouteImport } from './routes/api-vault'
 import { Route as AlertsRouteImport } from './routes/alerts'
+import { Route as AiModelsRouteImport } from './routes/ai-models'
 import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TickerSymbolRouteImport } from './routes/ticker.$symbol'
@@ -74,6 +82,11 @@ const StrategyRoute = StrategyRouteImport.update({
   path: '/strategy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SituationRoomRoute = SituationRoomRouteImport.update({
+  id: '/situation-room',
+  path: '/situation-room',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -82,6 +95,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const SecurityRoute = SecurityRouteImport.update({
   id: '/security',
   path: '/security',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RiskRoute = RiskRouteImport.update({
+  id: '/risk',
+  path: '/risk',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RepoAnalyzerRoute = RepoAnalyzerRouteImport.update({
@@ -104,9 +122,24 @@ const OrderTicketRoute = OrderTicketRouteImport.update({
   path: '/order-ticket',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NewsRoute = NewsRouteImport.update({
+  id: '/news',
+  path: '/news',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MoneyFlowRoute = MoneyFlowRouteImport.update({
+  id: '/money-flow',
+  path: '/money-flow',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MicrostructureRoute = MicrostructureRouteImport.update({
   id: '/microstructure',
   path: '/microstructure',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MacroRoute = MacroRouteImport.update({
+  id: '/macro',
+  path: '/macro',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LiveTradingRoute = LiveTradingRouteImport.update({
@@ -122,6 +155,16 @@ const JournalRoute = JournalRouteImport.update({
 const IntelligenceRoute = IntelligenceRouteImport.update({
   id: '/intelligence',
   path: '/intelligence',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InsiderRoute = InsiderRouteImport.update({
+  id: '/insider',
+  path: '/insider',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HiveRoute = HiveRouteImport.update({
+  id: '/hive',
+  path: '/hive',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GooseRoute = GooseRouteImport.update({
@@ -164,6 +207,11 @@ const AlertsRoute = AlertsRouteImport.update({
   path: '/alerts',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AiModelsRoute = AiModelsRouteImport.update({
+  id: '/ai-models',
+  path: '/ai-models',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AgentsRoute = AgentsRouteImport.update({
   id: '/agents',
   path: '/agents',
@@ -189,6 +237,7 @@ const ApiPublicHooksDriveBackupDailyRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
+  '/ai-models': typeof AiModelsRoute
   '/alerts': typeof AlertsRoute
   '/api-vault': typeof ApiVaultRoute
   '/backtesting': typeof BacktestingRoute
@@ -197,16 +246,23 @@ export interface FileRoutesByFullPath {
   '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
   '/goose': typeof GooseRoute
+  '/hive': typeof HiveRoute
+  '/insider': typeof InsiderRoute
   '/intelligence': typeof IntelligenceRoute
   '/journal': typeof JournalRoute
   '/live-trading': typeof LiveTradingRoute
+  '/macro': typeof MacroRoute
   '/microstructure': typeof MicrostructureRoute
+  '/money-flow': typeof MoneyFlowRoute
+  '/news': typeof NewsRoute
   '/order-ticket': typeof OrderTicketRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
   '/repo-analyzer': typeof RepoAnalyzerRoute
+  '/risk': typeof RiskRoute
   '/security': typeof SecurityRoute
   '/settings': typeof SettingsRoute
+  '/situation-room': typeof SituationRoomRoute
   '/strategy': typeof StrategyRoute
   '/studio': typeof StudioRoute
   '/system': typeof SystemRoute
@@ -220,6 +276,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
+  '/ai-models': typeof AiModelsRoute
   '/alerts': typeof AlertsRoute
   '/api-vault': typeof ApiVaultRoute
   '/backtesting': typeof BacktestingRoute
@@ -228,16 +285,23 @@ export interface FileRoutesByTo {
   '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
   '/goose': typeof GooseRoute
+  '/hive': typeof HiveRoute
+  '/insider': typeof InsiderRoute
   '/intelligence': typeof IntelligenceRoute
   '/journal': typeof JournalRoute
   '/live-trading': typeof LiveTradingRoute
+  '/macro': typeof MacroRoute
   '/microstructure': typeof MicrostructureRoute
+  '/money-flow': typeof MoneyFlowRoute
+  '/news': typeof NewsRoute
   '/order-ticket': typeof OrderTicketRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
   '/repo-analyzer': typeof RepoAnalyzerRoute
+  '/risk': typeof RiskRoute
   '/security': typeof SecurityRoute
   '/settings': typeof SettingsRoute
+  '/situation-room': typeof SituationRoomRoute
   '/strategy': typeof StrategyRoute
   '/studio': typeof StudioRoute
   '/system': typeof SystemRoute
@@ -252,6 +316,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
+  '/ai-models': typeof AiModelsRoute
   '/alerts': typeof AlertsRoute
   '/api-vault': typeof ApiVaultRoute
   '/backtesting': typeof BacktestingRoute
@@ -260,16 +325,23 @@ export interface FileRoutesById {
   '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
   '/goose': typeof GooseRoute
+  '/hive': typeof HiveRoute
+  '/insider': typeof InsiderRoute
   '/intelligence': typeof IntelligenceRoute
   '/journal': typeof JournalRoute
   '/live-trading': typeof LiveTradingRoute
+  '/macro': typeof MacroRoute
   '/microstructure': typeof MicrostructureRoute
+  '/money-flow': typeof MoneyFlowRoute
+  '/news': typeof NewsRoute
   '/order-ticket': typeof OrderTicketRoute
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
   '/repo-analyzer': typeof RepoAnalyzerRoute
+  '/risk': typeof RiskRoute
   '/security': typeof SecurityRoute
   '/settings': typeof SettingsRoute
+  '/situation-room': typeof SituationRoomRoute
   '/strategy': typeof StrategyRoute
   '/studio': typeof StudioRoute
   '/system': typeof SystemRoute
@@ -285,6 +357,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/agents'
+    | '/ai-models'
     | '/alerts'
     | '/api-vault'
     | '/backtesting'
@@ -293,16 +366,23 @@ export interface FileRouteTypes {
     | '/command'
     | '/config'
     | '/goose'
+    | '/hive'
+    | '/insider'
     | '/intelligence'
     | '/journal'
     | '/live-trading'
+    | '/macro'
     | '/microstructure'
+    | '/money-flow'
+    | '/news'
     | '/order-ticket'
     | '/personas'
     | '/portfolio'
     | '/repo-analyzer'
+    | '/risk'
     | '/security'
     | '/settings'
+    | '/situation-room'
     | '/strategy'
     | '/studio'
     | '/system'
@@ -316,6 +396,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/agents'
+    | '/ai-models'
     | '/alerts'
     | '/api-vault'
     | '/backtesting'
@@ -324,16 +405,23 @@ export interface FileRouteTypes {
     | '/command'
     | '/config'
     | '/goose'
+    | '/hive'
+    | '/insider'
     | '/intelligence'
     | '/journal'
     | '/live-trading'
+    | '/macro'
     | '/microstructure'
+    | '/money-flow'
+    | '/news'
     | '/order-ticket'
     | '/personas'
     | '/portfolio'
     | '/repo-analyzer'
+    | '/risk'
     | '/security'
     | '/settings'
+    | '/situation-room'
     | '/strategy'
     | '/studio'
     | '/system'
@@ -347,6 +435,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/agents'
+    | '/ai-models'
     | '/alerts'
     | '/api-vault'
     | '/backtesting'
@@ -355,16 +444,23 @@ export interface FileRouteTypes {
     | '/command'
     | '/config'
     | '/goose'
+    | '/hive'
+    | '/insider'
     | '/intelligence'
     | '/journal'
     | '/live-trading'
+    | '/macro'
     | '/microstructure'
+    | '/money-flow'
+    | '/news'
     | '/order-ticket'
     | '/personas'
     | '/portfolio'
     | '/repo-analyzer'
+    | '/risk'
     | '/security'
     | '/settings'
+    | '/situation-room'
     | '/strategy'
     | '/studio'
     | '/system'
@@ -379,6 +475,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgentsRoute: typeof AgentsRoute
+  AiModelsRoute: typeof AiModelsRoute
   AlertsRoute: typeof AlertsRoute
   ApiVaultRoute: typeof ApiVaultRoute
   BacktestingRoute: typeof BacktestingRoute
@@ -387,16 +484,23 @@ export interface RootRouteChildren {
   CommandRoute: typeof CommandRoute
   ConfigRoute: typeof ConfigRoute
   GooseRoute: typeof GooseRoute
+  HiveRoute: typeof HiveRoute
+  InsiderRoute: typeof InsiderRoute
   IntelligenceRoute: typeof IntelligenceRoute
   JournalRoute: typeof JournalRoute
   LiveTradingRoute: typeof LiveTradingRoute
+  MacroRoute: typeof MacroRoute
   MicrostructureRoute: typeof MicrostructureRoute
+  MoneyFlowRoute: typeof MoneyFlowRoute
+  NewsRoute: typeof NewsRoute
   OrderTicketRoute: typeof OrderTicketRoute
   PersonasRoute: typeof PersonasRoute
   PortfolioRoute: typeof PortfolioRoute
   RepoAnalyzerRoute: typeof RepoAnalyzerRoute
+  RiskRoute: typeof RiskRoute
   SecurityRoute: typeof SecurityRoute
   SettingsRoute: typeof SettingsRoute
+  SituationRoomRoute: typeof SituationRoomRoute
   StrategyRoute: typeof StrategyRoute
   StudioRoute: typeof StudioRoute
   SystemRoute: typeof SystemRoute
@@ -459,6 +563,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StrategyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/situation-room': {
+      id: '/situation-room'
+      path: '/situation-room'
+      fullPath: '/situation-room'
+      preLoaderRoute: typeof SituationRoomRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -471,6 +582,13 @@ declare module '@tanstack/react-router' {
       path: '/security'
       fullPath: '/security'
       preLoaderRoute: typeof SecurityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/risk': {
+      id: '/risk'
+      path: '/risk'
+      fullPath: '/risk'
+      preLoaderRoute: typeof RiskRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/repo-analyzer': {
@@ -501,11 +619,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrderTicketRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/news': {
+      id: '/news'
+      path: '/news'
+      fullPath: '/news'
+      preLoaderRoute: typeof NewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/money-flow': {
+      id: '/money-flow'
+      path: '/money-flow'
+      fullPath: '/money-flow'
+      preLoaderRoute: typeof MoneyFlowRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/microstructure': {
       id: '/microstructure'
       path: '/microstructure'
       fullPath: '/microstructure'
       preLoaderRoute: typeof MicrostructureRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/macro': {
+      id: '/macro'
+      path: '/macro'
+      fullPath: '/macro'
+      preLoaderRoute: typeof MacroRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/live-trading': {
@@ -527,6 +666,20 @@ declare module '@tanstack/react-router' {
       path: '/intelligence'
       fullPath: '/intelligence'
       preLoaderRoute: typeof IntelligenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/insider': {
+      id: '/insider'
+      path: '/insider'
+      fullPath: '/insider'
+      preLoaderRoute: typeof InsiderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hive': {
+      id: '/hive'
+      path: '/hive'
+      fullPath: '/hive'
+      preLoaderRoute: typeof HiveRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/goose': {
@@ -585,6 +738,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ai-models': {
+      id: '/ai-models'
+      path: '/ai-models'
+      fullPath: '/ai-models'
+      preLoaderRoute: typeof AiModelsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/agents': {
       id: '/agents'
       path: '/agents'
@@ -619,6 +779,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgentsRoute: AgentsRoute,
+  AiModelsRoute: AiModelsRoute,
   AlertsRoute: AlertsRoute,
   ApiVaultRoute: ApiVaultRoute,
   BacktestingRoute: BacktestingRoute,
@@ -627,16 +788,23 @@ const rootRouteChildren: RootRouteChildren = {
   CommandRoute: CommandRoute,
   ConfigRoute: ConfigRoute,
   GooseRoute: GooseRoute,
+  HiveRoute: HiveRoute,
+  InsiderRoute: InsiderRoute,
   IntelligenceRoute: IntelligenceRoute,
   JournalRoute: JournalRoute,
   LiveTradingRoute: LiveTradingRoute,
+  MacroRoute: MacroRoute,
   MicrostructureRoute: MicrostructureRoute,
+  MoneyFlowRoute: MoneyFlowRoute,
+  NewsRoute: NewsRoute,
   OrderTicketRoute: OrderTicketRoute,
   PersonasRoute: PersonasRoute,
   PortfolioRoute: PortfolioRoute,
   RepoAnalyzerRoute: RepoAnalyzerRoute,
+  RiskRoute: RiskRoute,
   SecurityRoute: SecurityRoute,
   SettingsRoute: SettingsRoute,
+  SituationRoomRoute: SituationRoomRoute,
   StrategyRoute: StrategyRoute,
   StudioRoute: StudioRoute,
   SystemRoute: SystemRoute,
