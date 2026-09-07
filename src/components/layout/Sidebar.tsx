@@ -33,6 +33,9 @@ import {
   Radar,
   Building2,
   Cpu,
+  MessageSquare,
+  Lock,
+  Coins,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isTradingRoute, useTradingEnabled } from "@/lib/tradingMode";
