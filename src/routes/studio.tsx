@@ -17,8 +17,12 @@ import {
   download,
   episodeToMarkdown,
   episodeToSrt,
+  episodeToRenderPackage,
   episodeToStoryboard,
   generateScript,
+  narrateEpisode,
+  speechAvailable,
+  stopNarration,
   newEpisode,
   studio,
   totalSeconds,
@@ -203,6 +207,35 @@ function StudioPage() {
                   onClick={() => download(`${draft.id}.storyboard.json`, episodeToStoryboard(draft, band), "application/json")}
                 >
                   <Download className="h-3.5 w-3.5" /> Storyboard
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={!draft.scenes.length}
+                  onClick={() => {
+                    const pkg = episodeToRenderPackage(draft, band);
+                    download(`${pkg.baseName}.render.json`, pkg.manifest, "application/json");
+                    download(`${pkg.baseName}.srt`, episodeToSrt(draft, band));
+                    download("render.sh", pkg.script, "text/x-shellscript");
+                    toast.success("Render package exported — run render.sh with ffmpeg offline");
+                  }}
+                >
+                  <Download className="h-3.5 w-3.5" /> Render package
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={!draft.scenes.length}
+                  onClick={() => {
+                    const r = narrateEpisode(draft, band);
+                    if (r.ok) toast.success(r.detail);
+                    else toast.error(r.detail);
+                  }}
+                >
+                  <Mic2 className="h-3.5 w-3.5" /> {speechAvailable() ? "Read aloud" : "No voice engine"}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => stopNarration()}>
+                  Stop
                 </Button>
               </div>
             </div>
