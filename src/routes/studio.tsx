@@ -4,7 +4,7 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Clapperboard, Download, Film, Mic2, Plus, Sparkles, Trash2, Users } from "lucide-react";
+import { CalendarClock, Clapperboard, Download, Film, Mic2, Plus, Sparkles, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +28,9 @@ import {
   totalSeconds,
   useStudio,
   type Episode,
+  type ScriptEngine,
 } from "@/lib/videoStudio";
+import { buildDayRecap, recapTopic } from "@/lib/tradingDayRecap";
 
 export const Route = createFileRoute("/studio")({
   head: () => ({
@@ -58,6 +60,8 @@ function StudioPage() {
   const [draft, setDraft] = useState<Episode>(() => newEpisode());
   const [context, setContext] = useState("");
   const [writing, setWriting] = useState(false);
+  const [engine, setEngine] = useState<ScriptEngine>("cloud");
+  const [loadingRecap, setLoadingRecap] = useState(false);
   const [symbolsText, setSymbolsText] = useState("");
 
   useEffect(() => {
@@ -68,7 +72,7 @@ function StudioPage() {
 
   async function write() {
     setWriting(true);
-    const res = await generateScript(draft, context.trim() || undefined);
+    const res = await generateScript(draft, context.trim() || undefined, engine);
     setWriting(false);
     if (!res.ok) {
       toast.error(res.detail);
@@ -79,6 +83,29 @@ function StudioPage() {
     studio.saveEpisode(next);
     refresh();
     toast.success(res.detail);
+  }
+
+  /** Pull the real numbers of the last session into the episode. */
+  async function loadTradingDay() {
+    setLoadingRecap(true);
+    try {
+      const recap = await buildDayRecap(draft.symbols);
+      setContext(recap.context);
+      setDraft({
+        ...draft,
+        title: draft.title.trim() || `Market recap — ${recap.sessionDate}`,
+        topic: recapTopic(recap),
+        symbols: recap.symbols,
+      });
+      if (!recap.hasVerifiedNumbers) {
+        toast.warning("No verified session data found — the script will stay qualitative.");
+      } else {
+        toast.success(`Loaded ${recap.moves.length} verified move(s) and ${recap.fills.length} desk event(s).`);
+      }
+      if (recap.gaps.length) toast.message(recap.gaps[0]!);
+    } finally {
+      setLoadingRecap(false);
+    }
   }
 
   return (
@@ -159,7 +186,20 @@ function StudioPage() {
               <div className="flex flex-wrap gap-2">
                 <Button onClick={() => void write()} disabled={writing}>
                   <Sparkles className={cn("h-4 w-4", writing && "animate-pulse")} />
-                  {writing ? "Writing…" : "Write script"}
+                  {writing ? "Writing…" : engine === "local" ? "Write on local AI" : "Write script"}
+                </Button>
+                <select
+                  className="rounded-md border border-border bg-background px-2 text-sm"
+                  value={engine}
+                  onChange={(e) => setEngine(e.target.value as ScriptEngine)}
+                  aria-label="Script engine"
+                >
+                  <option value="cloud">Cloud model</option>
+                  <option value="local">Local AI (on this machine)</option>
+                </select>
+                <Button variant="outline" onClick={() => void loadTradingDay()} disabled={loadingRecap}>
+                  <CalendarClock className={cn("h-4 w-4", loadingRecap && "animate-pulse")} />
+                  {loadingRecap ? "Reading session…" : "Last trading day"}
                 </Button>
                 <Button
                   variant="outline"

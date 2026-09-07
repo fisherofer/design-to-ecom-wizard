@@ -85,10 +85,19 @@ export async function loadedModels() {
   return call<{ ok: boolean; models: { name: string; path: string; n_ctx: number }[] }>("/loaded");
 }
 
-export async function localGenerate(prompt: string, model?: string) {
+export async function localGenerate(
+  prompt: string,
+  model?: string,
+  opts?: { maxTokens?: number; temperature?: number },
+) {
   return call<{ ok: boolean; runtime: string; model: string; text: string }>("/generate", {
     method: "POST",
-    body: JSON.stringify({ prompt, model, max_tokens: 256, temperature: 0.1 }),
+    body: JSON.stringify({
+      prompt,
+      model,
+      max_tokens: opts?.maxTokens ?? 256,
+      temperature: opts?.temperature ?? 0.1,
+    }),
   });
 }
 
