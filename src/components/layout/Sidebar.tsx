@@ -22,6 +22,7 @@ import {
   GitBranch,
   Ticket,
   LineChart,
+  NotebookPen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isTradingRoute, useTradingEnabled } from "@/lib/tradingMode";
