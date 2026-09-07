@@ -4,6 +4,8 @@
  * store exists so the operator can wire missing services from a modal and the
  * UI can show exactly what is still required for server-side use.
  */
+import { secureVault, VAULT_EVENT } from "./secureVault";
+
 export interface CredentialEntry {
   envVar: string;
   value: string;
@@ -23,10 +25,15 @@ export interface ProviderSetupInfo {
 }
 
 const KEY = "ai-os.apiCredentials.v1";
+export const CREDENTIALS_STORE = KEY;
 export const CREDENTIALS_EVENT = "ai-os:api-credentials-changed";
 
 function read(): Record<string, CredentialEntry> {
   if (typeof localStorage === "undefined") return {};
+  const status = secureVault.status();
+  if (status !== "off") {
+    return status === "unlocked" ? (secureVault.getSection<Record<string, CredentialEntry>>(KEY) ?? {}) : {};
+  }
   try {
     return JSON.parse(localStorage.getItem(KEY) ?? "{}") as Record<string, CredentialEntry>;
   } catch {
@@ -36,8 +43,13 @@ function read(): Record<string, CredentialEntry> {
 
 function write(v: Record<string, CredentialEntry>) {
   if (typeof localStorage === "undefined") return;
-  localStorage.setItem(KEY, JSON.stringify(v));
+  if (secureVault.status() !== "off") secureVault.setSection(KEY, v);
+  else localStorage.setItem(KEY, JSON.stringify(v));
   window.dispatchEvent(new CustomEvent(CREDENTIALS_EVENT));
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener(VAULT_EVENT, () => window.dispatchEvent(new CustomEvent(CREDENTIALS_EVENT)));
 }
 
 export const apiCredentials = {
