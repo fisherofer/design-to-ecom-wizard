@@ -14,6 +14,7 @@ import { Route as TriggersRouteImport } from './routes/triggers'
 import { Route as TradingRouteImport } from './routes/trading'
 import { Route as TerminalRouteImport } from './routes/terminal'
 import { Route as SystemRouteImport } from './routes/system'
+import { Route as StudioRouteImport } from './routes/studio'
 import { Route as StrategyRouteImport } from './routes/strategy'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SecurityRouteImport } from './routes/security'
@@ -61,6 +62,11 @@ const TerminalRoute = TerminalRouteImport.update({
 const SystemRoute = SystemRouteImport.update({
   id: '/system',
   path: '/system',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudioRoute = StudioRouteImport.update({
+  id: '/studio',
+  path: '/studio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StrategyRoute = StrategyRouteImport.update({
@@ -202,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/security': typeof SecurityRoute
   '/settings': typeof SettingsRoute
   '/strategy': typeof StrategyRoute
+  '/studio': typeof StudioRoute
   '/system': typeof SystemRoute
   '/terminal': typeof TerminalRoute
   '/trading': typeof TradingRoute
@@ -232,6 +239,7 @@ export interface FileRoutesByTo {
   '/security': typeof SecurityRoute
   '/settings': typeof SettingsRoute
   '/strategy': typeof StrategyRoute
+  '/studio': typeof StudioRoute
   '/system': typeof SystemRoute
   '/terminal': typeof TerminalRoute
   '/trading': typeof TradingRoute
@@ -263,6 +271,7 @@ export interface FileRoutesById {
   '/security': typeof SecurityRoute
   '/settings': typeof SettingsRoute
   '/strategy': typeof StrategyRoute
+  '/studio': typeof StudioRoute
   '/system': typeof SystemRoute
   '/terminal': typeof TerminalRoute
   '/trading': typeof TradingRoute
@@ -295,6 +304,7 @@ export interface FileRouteTypes {
     | '/security'
     | '/settings'
     | '/strategy'
+    | '/studio'
     | '/system'
     | '/terminal'
     | '/trading'
@@ -325,6 +335,7 @@ export interface FileRouteTypes {
     | '/security'
     | '/settings'
     | '/strategy'
+    | '/studio'
     | '/system'
     | '/terminal'
     | '/trading'
@@ -355,6 +366,7 @@ export interface FileRouteTypes {
     | '/security'
     | '/settings'
     | '/strategy'
+    | '/studio'
     | '/system'
     | '/terminal'
     | '/trading'
@@ -386,6 +398,7 @@ export interface RootRouteChildren {
   SecurityRoute: typeof SecurityRoute
   SettingsRoute: typeof SettingsRoute
   StrategyRoute: typeof StrategyRoute
+  StudioRoute: typeof StudioRoute
   SystemRoute: typeof SystemRoute
   TerminalRoute: typeof TerminalRoute
   TradingRoute: typeof TradingRoute
@@ -430,6 +443,13 @@ declare module '@tanstack/react-router' {
       path: '/system'
       fullPath: '/system'
       preLoaderRoute: typeof SystemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/studio': {
+      id: '/studio'
+      path: '/studio'
+      fullPath: '/studio'
+      preLoaderRoute: typeof StudioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/strategy': {
@@ -618,6 +638,7 @@ const rootRouteChildren: RootRouteChildren = {
   SecurityRoute: SecurityRoute,
   SettingsRoute: SettingsRoute,
   StrategyRoute: StrategyRoute,
+  StudioRoute: StudioRoute,
   SystemRoute: SystemRoute,
   TerminalRoute: TerminalRoute,
   TradingRoute: TradingRoute,
