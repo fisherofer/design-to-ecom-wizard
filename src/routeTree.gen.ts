@@ -31,6 +31,7 @@ import { Route as LiveTradingRouteImport } from './routes/live-trading'
 import { Route as JournalRouteImport } from './routes/journal'
 import { Route as IntelligenceRouteImport } from './routes/intelligence'
 import { Route as InsiderRouteImport } from './routes/insider'
+import { Route as HiveRouteImport } from './routes/hive'
 import { Route as GooseRouteImport } from './routes/goose'
 import { Route as ConfigRouteImport } from './routes/config'
 import { Route as CommandRouteImport } from './routes/command'
@@ -155,6 +156,11 @@ const InsiderRoute = InsiderRouteImport.update({
   path: '/insider',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HiveRoute = HiveRouteImport.update({
+  id: '/hive',
+  path: '/hive',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GooseRoute = GooseRouteImport.update({
   id: '/goose',
   path: '/goose',
@@ -234,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
   '/goose': typeof GooseRoute
+  '/hive': typeof HiveRoute
   '/insider': typeof InsiderRoute
   '/intelligence': typeof IntelligenceRoute
   '/journal': typeof JournalRoute
@@ -271,6 +278,7 @@ export interface FileRoutesByTo {
   '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
   '/goose': typeof GooseRoute
+  '/hive': typeof HiveRoute
   '/insider': typeof InsiderRoute
   '/intelligence': typeof IntelligenceRoute
   '/journal': typeof JournalRoute
@@ -309,6 +317,7 @@ export interface FileRoutesById {
   '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
   '/goose': typeof GooseRoute
+  '/hive': typeof HiveRoute
   '/insider': typeof InsiderRoute
   '/intelligence': typeof IntelligenceRoute
   '/journal': typeof JournalRoute
@@ -348,6 +357,7 @@ export interface FileRouteTypes {
     | '/command'
     | '/config'
     | '/goose'
+    | '/hive'
     | '/insider'
     | '/intelligence'
     | '/journal'
@@ -385,6 +395,7 @@ export interface FileRouteTypes {
     | '/command'
     | '/config'
     | '/goose'
+    | '/hive'
     | '/insider'
     | '/intelligence'
     | '/journal'
@@ -422,6 +433,7 @@ export interface FileRouteTypes {
     | '/command'
     | '/config'
     | '/goose'
+    | '/hive'
     | '/insider'
     | '/intelligence'
     | '/journal'
@@ -460,6 +472,7 @@ export interface RootRouteChildren {
   CommandRoute: typeof CommandRoute
   ConfigRoute: typeof ConfigRoute
   GooseRoute: typeof GooseRoute
+  HiveRoute: typeof HiveRoute
   InsiderRoute: typeof InsiderRoute
   IntelligenceRoute: typeof IntelligenceRoute
   JournalRoute: typeof JournalRoute
@@ -642,6 +655,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InsiderRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/hive': {
+      id: '/hive'
+      path: '/hive'
+      fullPath: '/hive'
+      preLoaderRoute: typeof HiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/goose': {
       id: '/goose'
       path: '/goose'
@@ -748,6 +768,7 @@ const rootRouteChildren: RootRouteChildren = {
   CommandRoute: CommandRoute,
   ConfigRoute: ConfigRoute,
   GooseRoute: GooseRoute,
+  HiveRoute: HiveRoute,
   InsiderRoute: InsiderRoute,
   IntelligenceRoute: IntelligenceRoute,
   JournalRoute: JournalRoute,
