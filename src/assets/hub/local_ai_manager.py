@@ -266,7 +266,17 @@ def generate(prompt: str, model: str | None = None, max_tokens: int = 512,
     """
     # 1. in-process GGUF
     key = str(_resolve_model_path(model)) if model and model.endswith(".gguf") else next(iter(_LOADED), None)
+    if not key:
+        # built-in engine: re-load the weights used before the last shutdown
+        try:
+            from hub import local_engine  # local import: local_engine imports this module
+
+            local_engine.autostart()
+        except Exception:  # noqa: BLE001
+            pass
+        key = next(iter(_LOADED), None)
     if key and key in _LOADED:
+
         try:
             out = _LOADED[key].create_completion(
                 prompt=prompt, max_tokens=max_tokens, temperature=temperature

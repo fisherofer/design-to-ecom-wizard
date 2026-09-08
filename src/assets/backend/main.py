@@ -34,6 +34,8 @@ from hub.microstructure_routes import router as microstructure_router
 from hub.local_store_routes import router as local_store_router
 from hub.telegram_routes import router as telegram_router
 from hub.treasury_routes import router as treasury_router
+from hub import autonomy_routes
+
 
 app = FastAPI(title="OFERTRADINGBOT Production Backend Engine")
 
@@ -77,6 +79,12 @@ app.include_router(microstructure_router, prefix="/api/micro")
 app.include_router(local_store_router, prefix="/api/local-store")
 app.include_router(telegram_router, prefix="/api/telegram")
 app.include_router(treasury_router, prefix="/api/treasury")
+app.include_router(autonomy_routes.browser_router, prefix="/api/browser")
+app.include_router(autonomy_routes.engine_router, prefix="/api/engine")
+app.include_router(autonomy_routes.memory_router, prefix="/api/memory")
+app.include_router(autonomy_routes.autopilot_router, prefix="/api/autopilot")
+app.include_router(autonomy_routes.wallet_router, prefix="/api/wallets")
+
 
 
 @app.get("/api/health")
