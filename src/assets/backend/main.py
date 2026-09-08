@@ -34,6 +34,8 @@ from hub.microstructure_routes import router as microstructure_router
 from hub.local_store_routes import router as local_store_router
 from hub.telegram_routes import router as telegram_router
 from hub.treasury_routes import router as treasury_router
+from hub import autonomy_routes
+
 
 app = FastAPI(title="OFERTRADINGBOT Production Backend Engine")
 
