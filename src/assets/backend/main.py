@@ -79,6 +79,12 @@ app.include_router(microstructure_router, prefix="/api/micro")
 app.include_router(local_store_router, prefix="/api/local-store")
 app.include_router(telegram_router, prefix="/api/telegram")
 app.include_router(treasury_router, prefix="/api/treasury")
+app.include_router(autonomy_routes.browser_router, prefix="/api/browser")
+app.include_router(autonomy_routes.engine_router, prefix="/api/engine")
+app.include_router(autonomy_routes.memory_router, prefix="/api/memory")
+app.include_router(autonomy_routes.autopilot_router, prefix="/api/autopilot")
+app.include_router(autonomy_routes.wallet_router, prefix="/api/wallets")
+
 
 
 @app.get("/api/health")
