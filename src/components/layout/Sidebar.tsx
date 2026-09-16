@@ -153,8 +153,11 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/security", label: "Cyber Defence", icon: ShieldHalf },
       { to: "/privacy", label: "Privacy & Data", icon: Lock },
       { to: "/treasury", label: "Treasury", icon: Coins },
+      { to: "/autonomy", label: "Autonomy Control", icon: Bot },
+      { to: "/wallets", label: "Payout Wallets", icon: Wallet },
       { to: "/studio", label: "Video Studio", icon: Clapperboard },
       { to: "/terminal", label: "Terminal Logs", icon: Terminal },
+
       { to: "/backup", label: "Backup & Restore", icon: Archive },
       { to: "/settings", label: "Settings", icon: SlidersHorizontal },
     ],
