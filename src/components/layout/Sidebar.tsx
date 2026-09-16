@@ -78,7 +78,10 @@ type NavTo =
   | "/local-chat"
   | "/privacy"
   | "/treasury"
+  | "/autonomy"
+  | "/wallets"
   | "/settings";
+
 
 type NavItem = {
   to: NavTo;
