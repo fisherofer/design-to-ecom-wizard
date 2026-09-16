@@ -20,3 +20,7 @@
 - [ ] Live email + WhatsApp send once RESEND_* / WHATSAPP_* or TWILIO_* secrets are set
 - [ ] Actual video encode: run the exported `render.sh` with ffmpeg outside the app
 - [ ] Real market WebSocket verification against Polygon / Alpaca IEX under load
+
+## 2026-09-16
+- [x] Analyze backup snapshot ofertradingbot_system_env_clean_backup_2026-09-16_12-59-30.json: findings, code problems, recommendations
+- [x] Autonomy layer: built-in local engine (llama-cpp + GGUF), local research browser, learning memory with owner approval, autopilot scheduler + continuity journal, watch-only payout wallets
