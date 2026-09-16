@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WatchlistsRouteImport } from './routes/watchlists'
+import { Route as WalletsRouteImport } from './routes/wallets'
 import { Route as TriggersRouteImport } from './routes/triggers'
 import { Route as TreasuryRouteImport } from './routes/treasury'
 import { Route as TradingRouteImport } from './routes/trading'
@@ -54,6 +55,11 @@ import { Route as ApiPublicHooksDriveBackupDailyRouteImport } from './routes/api
 const WatchlistsRoute = WatchlistsRouteImport.update({
   id: '/watchlists',
   path: '/watchlists',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WalletsRoute = WalletsRouteImport.update({
+  id: '/wallets',
+  path: '/wallets',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TriggersRoute = TriggersRouteImport.update({
@@ -297,6 +303,7 @@ export interface FileRoutesByFullPath {
   '/trading': typeof TradingRoute
   '/treasury': typeof TreasuryRoute
   '/triggers': typeof TriggersRoute
+  '/wallets': typeof WalletsRoute
   '/watchlists': typeof WatchlistsRoute
   '/ticker/$symbol': typeof TickerSymbolRoute
   '/api/public/hooks/drive-backup-daily': typeof ApiPublicHooksDriveBackupDailyRoute
@@ -340,6 +347,7 @@ export interface FileRoutesByTo {
   '/trading': typeof TradingRoute
   '/treasury': typeof TreasuryRoute
   '/triggers': typeof TriggersRoute
+  '/wallets': typeof WalletsRoute
   '/watchlists': typeof WatchlistsRoute
   '/ticker/$symbol': typeof TickerSymbolRoute
   '/api/public/hooks/drive-backup-daily': typeof ApiPublicHooksDriveBackupDailyRoute
@@ -384,6 +392,7 @@ export interface FileRoutesById {
   '/trading': typeof TradingRoute
   '/treasury': typeof TreasuryRoute
   '/triggers': typeof TriggersRoute
+  '/wallets': typeof WalletsRoute
   '/watchlists': typeof WatchlistsRoute
   '/ticker/$symbol': typeof TickerSymbolRoute
   '/api/public/hooks/drive-backup-daily': typeof ApiPublicHooksDriveBackupDailyRoute
@@ -429,6 +438,7 @@ export interface FileRouteTypes {
     | '/trading'
     | '/treasury'
     | '/triggers'
+    | '/wallets'
     | '/watchlists'
     | '/ticker/$symbol'
     | '/api/public/hooks/drive-backup-daily'
@@ -472,6 +482,7 @@ export interface FileRouteTypes {
     | '/trading'
     | '/treasury'
     | '/triggers'
+    | '/wallets'
     | '/watchlists'
     | '/ticker/$symbol'
     | '/api/public/hooks/drive-backup-daily'
@@ -515,6 +526,7 @@ export interface FileRouteTypes {
     | '/trading'
     | '/treasury'
     | '/triggers'
+    | '/wallets'
     | '/watchlists'
     | '/ticker/$symbol'
     | '/api/public/hooks/drive-backup-daily'
@@ -559,6 +571,7 @@ export interface RootRouteChildren {
   TradingRoute: typeof TradingRoute
   TreasuryRoute: typeof TreasuryRoute
   TriggersRoute: typeof TriggersRoute
+  WalletsRoute: typeof WalletsRoute
   WatchlistsRoute: typeof WatchlistsRoute
   TickerSymbolRoute: typeof TickerSymbolRoute
   ApiPublicHooksDriveBackupDailyRoute: typeof ApiPublicHooksDriveBackupDailyRoute
@@ -571,6 +584,13 @@ declare module '@tanstack/react-router' {
       path: '/watchlists'
       fullPath: '/watchlists'
       preLoaderRoute: typeof WatchlistsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wallets': {
+      id: '/wallets'
+      path: '/wallets'
+      fullPath: '/wallets'
+      preLoaderRoute: typeof WalletsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/triggers': {
@@ -895,6 +915,7 @@ const rootRouteChildren: RootRouteChildren = {
   TradingRoute: TradingRoute,
   TreasuryRoute: TreasuryRoute,
   TriggersRoute: TriggersRoute,
+  WalletsRoute: WalletsRoute,
   WatchlistsRoute: WatchlistsRoute,
   TickerSymbolRoute: TickerSymbolRoute,
   ApiPublicHooksDriveBackupDailyRoute: ApiPublicHooksDriveBackupDailyRoute,
