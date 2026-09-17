@@ -38,6 +38,7 @@ import { Route as IntelligenceRouteImport } from './routes/intelligence'
 import { Route as InsiderRouteImport } from './routes/insider'
 import { Route as HiveRouteImport } from './routes/hive'
 import { Route as GooseRouteImport } from './routes/goose'
+import { Route as FleetRouteImport } from './routes/fleet'
 import { Route as ConfigRouteImport } from './routes/config'
 import { Route as CommandRouteImport } from './routes/command'
 import { Route as CodeStudioRouteImport } from './routes/code-studio'
@@ -197,6 +198,11 @@ const GooseRoute = GooseRouteImport.update({
   path: '/goose',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FleetRoute = FleetRouteImport.update({
+  id: '/fleet',
+  path: '/fleet',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConfigRoute = ConfigRouteImport.update({
   id: '/config',
   path: '/config',
@@ -276,6 +282,7 @@ export interface FileRoutesByFullPath {
   '/code-studio': typeof CodeStudioRoute
   '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
+  '/fleet': typeof FleetRoute
   '/goose': typeof GooseRoute
   '/hive': typeof HiveRoute
   '/insider': typeof InsiderRoute
@@ -320,6 +327,7 @@ export interface FileRoutesByTo {
   '/code-studio': typeof CodeStudioRoute
   '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
+  '/fleet': typeof FleetRoute
   '/goose': typeof GooseRoute
   '/hive': typeof HiveRoute
   '/insider': typeof InsiderRoute
@@ -365,6 +373,7 @@ export interface FileRoutesById {
   '/code-studio': typeof CodeStudioRoute
   '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
+  '/fleet': typeof FleetRoute
   '/goose': typeof GooseRoute
   '/hive': typeof HiveRoute
   '/insider': typeof InsiderRoute
@@ -411,6 +420,7 @@ export interface FileRouteTypes {
     | '/code-studio'
     | '/command'
     | '/config'
+    | '/fleet'
     | '/goose'
     | '/hive'
     | '/insider'
@@ -455,6 +465,7 @@ export interface FileRouteTypes {
     | '/code-studio'
     | '/command'
     | '/config'
+    | '/fleet'
     | '/goose'
     | '/hive'
     | '/insider'
@@ -499,6 +510,7 @@ export interface FileRouteTypes {
     | '/code-studio'
     | '/command'
     | '/config'
+    | '/fleet'
     | '/goose'
     | '/hive'
     | '/insider'
@@ -544,6 +556,7 @@ export interface RootRouteChildren {
   CodeStudioRoute: typeof CodeStudioRoute
   CommandRoute: typeof CommandRoute
   ConfigRoute: typeof ConfigRoute
+  FleetRoute: typeof FleetRoute
   GooseRoute: typeof GooseRoute
   HiveRoute: typeof HiveRoute
   InsiderRoute: typeof InsiderRoute
@@ -782,6 +795,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GooseRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/fleet': {
+      id: '/fleet'
+      path: '/fleet'
+      fullPath: '/fleet'
+      preLoaderRoute: typeof FleetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/config': {
       id: '/config'
       path: '/config'
@@ -888,6 +908,7 @@ const rootRouteChildren: RootRouteChildren = {
   CodeStudioRoute: CodeStudioRoute,
   CommandRoute: CommandRoute,
   ConfigRoute: ConfigRoute,
+  FleetRoute: FleetRoute,
   GooseRoute: GooseRoute,
   HiveRoute: HiveRoute,
   InsiderRoute: InsiderRoute,
