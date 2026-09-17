@@ -19,13 +19,14 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from hub import ai_memory, autopilot, browser_agent, local_engine, wallet_manager
+from hub import agent_fleet, ai_memory, autopilot, browser_agent, local_engine, wallet_manager
 
 browser_router = APIRouter(tags=["browser"])
 engine_router = APIRouter(tags=["local-engine"])
 memory_router = APIRouter(tags=["ai-memory"])
 autopilot_router = APIRouter(tags=["autopilot"])
 wallet_router = APIRouter(tags=["wallets"])
+fleet_router = APIRouter(tags=["fleet"])
 
 
 # ------------------------------------------------------------------ browser
@@ -239,3 +240,127 @@ def wallet_receipt(body: ReceiptRequest) -> dict:
 @wallet_router.delete("/{chain}/{address}")
 def wallet_remove(chain: str, address: str) -> dict:
     return wallet_manager.remove_wallet(chain, address)
+
+
+# -------------------------------------------------------------------- fleet
+class WorkerRequest(BaseModel):
+    name: str
+    role: str = "general"
+    capabilities: list[str] | None = None
+    note: str | None = None
+
+
+class HeartbeatRequest(BaseModel):
+    name: str
+    status: str = "idle"
+
+
+class TaskRequest(BaseModel):
+    title: str
+    role: str = "general"
+    spec: dict | None = None
+    priority: int = 5
+
+
+class ClaimRequest(BaseModel):
+    worker: str
+    role: str | None = None
+
+
+class CompleteRequest(BaseModel):
+    task_id: int
+    worker: str
+    result: object | None = None
+    error: str | None = None
+
+
+class ProposalRequest(BaseModel):
+    title: str
+    rationale: str = ""
+    target_path: str | None = None
+    patch: str = ""
+    risk: str = "unknown"
+    source: str | None = None
+
+
+@fleet_router.get("/status")
+def fleet_status() -> dict:
+    return agent_fleet.status()
+
+
+@fleet_router.get("/workers")
+def fleet_workers() -> dict:
+    return agent_fleet.list_workers()
+
+
+@fleet_router.post("/workers")
+def fleet_register(body: WorkerRequest) -> dict:
+    result = agent_fleet.register_worker(body.name, body.role, body.capabilities, body.note)
+    if not result["ok"]:
+        raise HTTPException(status_code=400, detail=result)
+    return result
+
+
+@fleet_router.post("/heartbeat")
+def fleet_heartbeat(body: HeartbeatRequest) -> dict:
+    return agent_fleet.heartbeat(body.name, body.status)
+
+
+@fleet_router.delete("/workers/{name}")
+def fleet_remove_worker(name: str) -> dict:
+    return agent_fleet.remove_worker(name)
+
+
+@fleet_router.get("/tasks")
+def fleet_tasks(status: str | None = None, limit: int = 100) -> dict:
+    return agent_fleet.list_tasks(status, limit)
+
+
+@fleet_router.post("/tasks")
+def fleet_submit(body: TaskRequest) -> dict:
+    result = agent_fleet.submit_task(body.title, body.role, body.spec, body.priority)
+    if not result["ok"]:
+        raise HTTPException(status_code=400, detail=result)
+    return result
+
+
+@fleet_router.post("/claim")
+def fleet_claim(body: ClaimRequest) -> dict:
+    return agent_fleet.claim_task(body.worker, body.role)
+
+
+@fleet_router.post("/complete")
+def fleet_complete(body: CompleteRequest) -> dict:
+    return agent_fleet.complete_task(body.task_id, body.worker, body.result, body.error)
+
+
+@fleet_router.post("/requeue-stale")
+def fleet_requeue() -> dict:
+    return agent_fleet.requeue_stale()
+
+
+@fleet_router.post("/archive-runs")
+def fleet_archive(limit: int = 200) -> dict:
+    return agent_fleet.archive_runs(limit)
+
+
+@fleet_router.get("/proposals")
+def fleet_proposals(status: str | None = None) -> dict:
+    return agent_fleet.list_proposals(status)
+
+
+@fleet_router.post("/proposals")
+def fleet_propose(body: ProposalRequest) -> dict:
+    result = agent_fleet.propose_code(body.title, body.rationale, body.target_path,
+                                     body.patch, body.risk, body.source)
+    if not result["ok"]:
+        raise HTTPException(status_code=400, detail=result)
+    return result
+
+
+@fleet_router.post("/proposals/{proposal_id}/decide")
+def fleet_decide(proposal_id: int, approve: bool) -> dict:
+    result = agent_fleet.decide_proposal(proposal_id, approve)
+    if not result["ok"]:
+        raise HTTPException(status_code=404, detail=result)
+    return result

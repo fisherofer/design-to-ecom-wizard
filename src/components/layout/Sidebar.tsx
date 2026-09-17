@@ -56,6 +56,7 @@ type NavTo =
   | "/code-studio"
   | "/terminal"
   | "/agents"
+  | "/fleet"
   | "/goose"
   | "/personas"
   | "/system"
@@ -154,6 +155,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/privacy", label: "Privacy & Data", icon: Lock },
       { to: "/treasury", label: "Treasury", icon: Coins },
       { to: "/autonomy", label: "Autonomy Control", icon: Bot },
+      { to: "/fleet", label: "Agent Fleet", icon: Users },
       { to: "/wallets", label: "Payout Wallets", icon: Wallet },
       { to: "/studio", label: "Video Studio", icon: Clapperboard },
       { to: "/terminal", label: "Terminal Logs", icon: Terminal },

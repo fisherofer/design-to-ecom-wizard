@@ -84,6 +84,7 @@ app.include_router(autonomy_routes.engine_router, prefix="/api/engine")
 app.include_router(autonomy_routes.memory_router, prefix="/api/memory")
 app.include_router(autonomy_routes.autopilot_router, prefix="/api/autopilot")
 app.include_router(autonomy_routes.wallet_router, prefix="/api/wallets")
+app.include_router(autonomy_routes.fleet_router, prefix="/api/fleet")
 
 
 
