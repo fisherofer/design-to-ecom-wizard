@@ -19,7 +19,8 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from hub import agent_fleet, ai_memory, autopilot, browser_agent, local_engine, wallet_manager
+from hub import (agent_fleet, ai_memory, autopilot, browser_agent, library_learner,
+                 local_engine, wallet_manager)
 
 browser_router = APIRouter(tags=["browser"])
 engine_router = APIRouter(tags=["local-engine"])
@@ -364,3 +365,32 @@ def fleet_decide(proposal_id: int, approve: bool) -> dict:
     if not result["ok"]:
         raise HTTPException(status_code=404, detail=result)
     return result
+
+
+# ----------------------------------------------------------------- learning
+class LearnRequest(BaseModel):
+    url: str
+    note: str | None = None
+
+
+class LearnManyRequest(BaseModel):
+    urls: list[str]
+    limit: int = 5
+
+
+@fleet_router.get("/learned")
+def fleet_learned(limit: int = 100) -> dict:
+    return library_learner.learned(limit)
+
+
+@fleet_router.post("/learn")
+def fleet_learn(body: LearnRequest) -> dict:
+    result = library_learner.learn(body.url, body.note)
+    if not result["ok"]:
+        raise HTTPException(status_code=400, detail=result)
+    return result
+
+
+@fleet_router.post("/learn-many")
+def fleet_learn_many(body: LearnManyRequest) -> dict:
+    return library_learner.learn_many(body.urls, body.limit)

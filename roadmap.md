@@ -24,3 +24,10 @@
 ## 2026-09-16
 - [x] Analyze backup snapshot ofertradingbot_system_env_clean_backup_2026-09-16_12-59-30.json: findings, code problems, recommendations
 - [x] Autonomy layer: built-in local engine (llama-cpp + GGUF), local research browser, learning memory with owner approval, autopilot scheduler + continuity journal, watch-only payout wallets
+
+## 2026-09-19
+- [x] Agent fleet: worker registry + heartbeat, shared task queue, run digest into lessons, owner-approved code proposal queue (/fleet)
+- [x] Library learner: local browser read + local model summary into memory, proposals queued for approval
+- [x] Code audit document delivered (ofertradingbot_code_audit_v2.pdf)
+- [ ] Vision analysis + video producer agents (agent_vision_analyst / agent_video_producer equivalents)
+- [ ] Agent command interface over the existing Telegram bridge
