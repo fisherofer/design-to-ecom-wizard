@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Archive, Check, Plus, RefreshCw, Trash2, Users, X } from "lucide-react";
+import { Archive, BookOpen, Check, Plus, RefreshCw, Trash2, Users, X } from "lucide-react";
 import { toast } from "sonner";
 import {
-  archiveRuns, decideProposal, fleetStatus, listProposals, listTasks, listWorkers,
-  registerWorker, removeWorker, requeueStale, submitTask,
-  type CodeProposal, type FleetStatus, type FleetTask, type FleetWorker,
+  archiveRuns, decideProposal, fleetStatus, learnFrom, listLearned, listProposals, listTasks,
+  listWorkers, registerWorker, removeWorker, requeueStale, submitTask,
+  type CodeProposal, type FleetStatus, type FleetTask, type FleetWorker, type LearnedItem,
 } from "@/lib/fleet";
 
 export const Route = createFileRoute("/fleet")({
@@ -44,11 +44,17 @@ function FleetPage() {
   const [workerRole, setWorkerRole] = useState("general");
   const [taskTitle, setTaskTitle] = useState("");
   const [taskRole, setTaskRole] = useState("general");
+  const [learnUrl, setLearnUrl] = useState("");
+  const [learned, setLearned] = useState<LearnedItem[]>([]);
+  const [learning, setLearning] = useState(false);
 
   async function load() {
     setLoading(true);
     try {
-      const [s, w, t, p] = await Promise.all([fleetStatus(), listWorkers(), listTasks(), listProposals()]);
+      const [s, w, t, p, l] = await Promise.all([
+        fleetStatus(), listWorkers(), listTasks(), listProposals(), listLearned(),
+      ]);
+      setLearned(l.items);
       setStatus(s);
       setWorkers(w.workers);
       setTasks(t.tasks);
@@ -177,6 +183,48 @@ function FleetPage() {
                   {t.error && <span className="block text-xs text-destructive">{t.error}</span>}
                 </span>
                 <span className="text-xs uppercase text-muted-foreground">{t.status}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className={card}>
+        <h2 className="mb-1 text-sm font-semibold">Learn from open-source code &amp; docs</h2>
+        <p className="mb-3 text-xs text-muted-foreground">
+          The page is read locally and summarised by the local model. Anything worth changing here is
+          queued as a proposal for you — never applied on its own.
+        </p>
+        <div className="mb-3 flex flex-wrap gap-2">
+          <input className={`${input} max-w-xl`} placeholder="https://github.com/… or a docs page"
+            value={learnUrl} onChange={(e) => setLearnUrl(e.target.value)} />
+          <button className={btn} disabled={!learnUrl.trim() || learning}
+            onClick={async () => {
+              setLearning(true);
+              try {
+                const res = await learnFrom(learnUrl.trim());
+                toast.success(res.proposal_id ? "Learned — a proposal is waiting for you" : "Learned and stored");
+                setLearnUrl("");
+                await load();
+              } catch (e) {
+                toast.error((e as Error).message);
+              } finally {
+                setLearning(false);
+              }
+            }}>
+            <BookOpen className={learning ? "h-4 w-4 animate-pulse" : "h-4 w-4"} /> Read &amp; learn
+          </button>
+        </div>
+        {learned.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Nothing learned from external sources yet.</p>
+        ) : (
+          <ul className="divide-y divide-border text-sm">
+            {learned.slice(0, 8).map((l) => (
+              <li key={l.id} className="py-2">
+                <p className="font-medium">{l.topic}</p>
+                <p className="whitespace-pre-line text-xs text-muted-foreground">
+                  {l.content.slice(0, 400)}
+                </p>
               </li>
             ))}
           </ul>

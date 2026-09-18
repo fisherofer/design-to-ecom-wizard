@@ -118,3 +118,29 @@ export const decideProposal = (id: number, approve: boolean) =>
   post<{ ok: boolean; status?: string; note?: string; error?: string }>(
     `/proposals/${id}/decide?approve=${approve ? "true" : "false"}`,
   );
+
+export interface LearnResult {
+  ok: boolean;
+  url?: string;
+  title?: string | null;
+  topic?: string;
+  summary?: string;
+  memory_id?: number;
+  proposal_id?: number | null;
+  model?: string;
+  runtime?: string;
+  stage?: string;
+  error?: string;
+}
+
+export interface LearnedItem {
+  id: number;
+  topic: string;
+  content: string;
+  weight: number;
+  updated_at: number;
+}
+
+export const learnFrom = (url: string, note?: string) => post<LearnResult>("/learn", { url, note });
+export const listLearned = (limit = 100) =>
+  call<{ ok: boolean; items: LearnedItem[] }>(`/learned?limit=${limit}`);
