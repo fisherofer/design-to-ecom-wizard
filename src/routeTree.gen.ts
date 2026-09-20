@@ -39,6 +39,7 @@ import { Route as InsiderRouteImport } from './routes/insider'
 import { Route as HiveRouteImport } from './routes/hive'
 import { Route as GooseRouteImport } from './routes/goose'
 import { Route as FleetRouteImport } from './routes/fleet'
+import { Route as DriveSyncRouteImport } from './routes/drive-sync'
 import { Route as ConfigRouteImport } from './routes/config'
 import { Route as CommandRouteImport } from './routes/command'
 import { Route as CodeStudioRouteImport } from './routes/code-studio'
@@ -203,6 +204,11 @@ const FleetRoute = FleetRouteImport.update({
   path: '/fleet',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DriveSyncRoute = DriveSyncRouteImport.update({
+  id: '/drive-sync',
+  path: '/drive-sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConfigRoute = ConfigRouteImport.update({
   id: '/config',
   path: '/config',
@@ -282,6 +288,7 @@ export interface FileRoutesByFullPath {
   '/code-studio': typeof CodeStudioRoute
   '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
+  '/drive-sync': typeof DriveSyncRoute
   '/fleet': typeof FleetRoute
   '/goose': typeof GooseRoute
   '/hive': typeof HiveRoute
@@ -327,6 +334,7 @@ export interface FileRoutesByTo {
   '/code-studio': typeof CodeStudioRoute
   '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
+  '/drive-sync': typeof DriveSyncRoute
   '/fleet': typeof FleetRoute
   '/goose': typeof GooseRoute
   '/hive': typeof HiveRoute
@@ -373,6 +381,7 @@ export interface FileRoutesById {
   '/code-studio': typeof CodeStudioRoute
   '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
+  '/drive-sync': typeof DriveSyncRoute
   '/fleet': typeof FleetRoute
   '/goose': typeof GooseRoute
   '/hive': typeof HiveRoute
@@ -420,6 +429,7 @@ export interface FileRouteTypes {
     | '/code-studio'
     | '/command'
     | '/config'
+    | '/drive-sync'
     | '/fleet'
     | '/goose'
     | '/hive'
@@ -465,6 +475,7 @@ export interface FileRouteTypes {
     | '/code-studio'
     | '/command'
     | '/config'
+    | '/drive-sync'
     | '/fleet'
     | '/goose'
     | '/hive'
@@ -510,6 +521,7 @@ export interface FileRouteTypes {
     | '/code-studio'
     | '/command'
     | '/config'
+    | '/drive-sync'
     | '/fleet'
     | '/goose'
     | '/hive'
@@ -556,6 +568,7 @@ export interface RootRouteChildren {
   CodeStudioRoute: typeof CodeStudioRoute
   CommandRoute: typeof CommandRoute
   ConfigRoute: typeof ConfigRoute
+  DriveSyncRoute: typeof DriveSyncRoute
   FleetRoute: typeof FleetRoute
   GooseRoute: typeof GooseRoute
   HiveRoute: typeof HiveRoute
@@ -802,6 +815,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FleetRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/drive-sync': {
+      id: '/drive-sync'
+      path: '/drive-sync'
+      fullPath: '/drive-sync'
+      preLoaderRoute: typeof DriveSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/config': {
       id: '/config'
       path: '/config'
@@ -908,6 +928,7 @@ const rootRouteChildren: RootRouteChildren = {
   CodeStudioRoute: CodeStudioRoute,
   CommandRoute: CommandRoute,
   ConfigRoute: ConfigRoute,
+  DriveSyncRoute: DriveSyncRoute,
   FleetRoute: FleetRoute,
   GooseRoute: GooseRoute,
   HiveRoute: HiveRoute,
