@@ -36,6 +36,7 @@ import {
   MessageSquare,
   Lock,
   Coins,
+  CloudUpload,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isTradingRoute, useTradingEnabled } from "@/lib/tradingMode";
@@ -61,6 +62,7 @@ type NavTo =
   | "/personas"
   | "/system"
   | "/backup"
+  | "/drive-sync"
   | "/repo-analyzer"
   | "/live-trading"
   | "/order-ticket"
@@ -155,6 +157,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/privacy", label: "Privacy & Data", icon: Lock },
       { to: "/treasury", label: "Treasury", icon: Coins },
       { to: "/autonomy", label: "Autonomy Control", icon: Bot },
+      { to: "/drive-sync", label: "Drive Sync", icon: CloudUpload },
       { to: "/fleet", label: "Agent Fleet", icon: Users },
       { to: "/wallets", label: "Payout Wallets", icon: Wallet },
       { to: "/studio", label: "Video Studio", icon: Clapperboard },
