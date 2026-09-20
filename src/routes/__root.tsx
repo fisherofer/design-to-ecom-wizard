@@ -2,6 +2,7 @@ import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/r
 import { useEffect } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { initPortableStorage } from "@/lib/portableStorage";
+import { useDriveAutoBackup } from "@/hooks/useDriveAutoBackup";
 
 
 import appCss from "../styles.css?url";
@@ -98,6 +99,9 @@ function RootComponent() {
   useEffect(() => {
     void initPortableStorage();
   }, []);
+
+  // Automatic Google Drive backup on start / after changes (opt-in per machine).
+  useDriveAutoBackup();
 
   return (
     <AppShell>
