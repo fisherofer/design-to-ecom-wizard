@@ -19,8 +19,8 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from hub import (agent_fleet, ai_memory, autopilot, browser_agent, library_learner,
-                 local_engine, wallet_manager)
+from hub import (agent_fleet, agent_vision_analyst, ai_memory, autopilot, browser_agent,
+                 library_learner, local_engine, wallet_manager)
 
 browser_router = APIRouter(tags=["browser"])
 engine_router = APIRouter(tags=["local-engine"])
@@ -28,6 +28,7 @@ memory_router = APIRouter(tags=["ai-memory"])
 autopilot_router = APIRouter(tags=["autopilot"])
 wallet_router = APIRouter(tags=["wallets"])
 fleet_router = APIRouter(tags=["fleet"])
+vision_router = APIRouter(tags=["vision"])
 
 
 # ------------------------------------------------------------------ browser
@@ -394,3 +395,59 @@ def fleet_learn(body: LearnRequest) -> dict:
 @fleet_router.post("/learn-many")
 def fleet_learn_many(body: LearnManyRequest) -> dict:
     return library_learner.learn_many(body.urls, body.limit)
+
+
+# ------------------------------------------------------------------- vision
+class ImagePathRequest(BaseModel):
+    path: str
+    question: str | None = None
+
+
+class VideoScriptRequest(BaseModel):
+    script: str
+    title: str | None = None
+    image_paths: list[str] | None = None
+    scenes: int = 6
+
+
+@vision_router.get("/status")
+def vision_status() -> dict:
+    return agent_vision_analyst.status()
+
+
+@vision_router.get("/images")
+def vision_images(limit: int = 100) -> dict:
+    return agent_vision_analyst.list_images(limit)
+
+
+@vision_router.post("/inspect")
+def vision_inspect(body: ImagePathRequest) -> dict:
+    try:
+        return agent_vision_analyst.inspect(body.path)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail={"ok": False, "error": str(e)}) from e
+
+
+@vision_router.post("/analyze")
+def vision_analyze(body: ImagePathRequest) -> dict:
+    result = agent_vision_analyst.analyze(body.path, body.question)
+    if not result.get("ok"):
+        raise HTTPException(status_code=400, detail=result)
+    return result
+
+
+@vision_router.post("/thumbnail")
+def vision_thumbnail(body: ImagePathRequest) -> dict:
+    result = agent_vision_analyst.thumbnail(body.path)
+    if not result.get("ok"):
+        raise HTTPException(status_code=400, detail=result)
+    return result
+
+
+@vision_router.post("/video-script")
+def vision_video_script(body: VideoScriptRequest) -> dict:
+    result = agent_vision_analyst.to_video_script(body.script, body.title,
+                                                  body.image_paths, body.scenes)
+    if not result.get("ok"):
+        raise HTTPException(status_code=400, detail=result)
+    return result

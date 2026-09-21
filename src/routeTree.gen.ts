@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WatchlistsRouteImport } from './routes/watchlists'
 import { Route as WalletsRouteImport } from './routes/wallets'
+import { Route as VisionRouteImport } from './routes/vision'
 import { Route as TriggersRouteImport } from './routes/triggers'
 import { Route as TreasuryRouteImport } from './routes/treasury'
 import { Route as TradingRouteImport } from './routes/trading'
@@ -62,6 +63,11 @@ const WatchlistsRoute = WatchlistsRouteImport.update({
 const WalletsRoute = WalletsRouteImport.update({
   id: '/wallets',
   path: '/wallets',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VisionRoute = VisionRouteImport.update({
+  id: '/vision',
+  path: '/vision',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TriggersRoute = TriggersRouteImport.update({
@@ -317,6 +323,7 @@ export interface FileRoutesByFullPath {
   '/trading': typeof TradingRoute
   '/treasury': typeof TreasuryRoute
   '/triggers': typeof TriggersRoute
+  '/vision': typeof VisionRoute
   '/wallets': typeof WalletsRoute
   '/watchlists': typeof WatchlistsRoute
   '/ticker/$symbol': typeof TickerSymbolRoute
@@ -363,6 +370,7 @@ export interface FileRoutesByTo {
   '/trading': typeof TradingRoute
   '/treasury': typeof TreasuryRoute
   '/triggers': typeof TriggersRoute
+  '/vision': typeof VisionRoute
   '/wallets': typeof WalletsRoute
   '/watchlists': typeof WatchlistsRoute
   '/ticker/$symbol': typeof TickerSymbolRoute
@@ -410,6 +418,7 @@ export interface FileRoutesById {
   '/trading': typeof TradingRoute
   '/treasury': typeof TreasuryRoute
   '/triggers': typeof TriggersRoute
+  '/vision': typeof VisionRoute
   '/wallets': typeof WalletsRoute
   '/watchlists': typeof WatchlistsRoute
   '/ticker/$symbol': typeof TickerSymbolRoute
@@ -458,6 +467,7 @@ export interface FileRouteTypes {
     | '/trading'
     | '/treasury'
     | '/triggers'
+    | '/vision'
     | '/wallets'
     | '/watchlists'
     | '/ticker/$symbol'
@@ -504,6 +514,7 @@ export interface FileRouteTypes {
     | '/trading'
     | '/treasury'
     | '/triggers'
+    | '/vision'
     | '/wallets'
     | '/watchlists'
     | '/ticker/$symbol'
@@ -550,6 +561,7 @@ export interface FileRouteTypes {
     | '/trading'
     | '/treasury'
     | '/triggers'
+    | '/vision'
     | '/wallets'
     | '/watchlists'
     | '/ticker/$symbol'
@@ -597,6 +609,7 @@ export interface RootRouteChildren {
   TradingRoute: typeof TradingRoute
   TreasuryRoute: typeof TreasuryRoute
   TriggersRoute: typeof TriggersRoute
+  VisionRoute: typeof VisionRoute
   WalletsRoute: typeof WalletsRoute
   WatchlistsRoute: typeof WatchlistsRoute
   TickerSymbolRoute: typeof TickerSymbolRoute
@@ -617,6 +630,13 @@ declare module '@tanstack/react-router' {
       path: '/wallets'
       fullPath: '/wallets'
       preLoaderRoute: typeof WalletsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vision': {
+      id: '/vision'
+      path: '/vision'
+      fullPath: '/vision'
+      preLoaderRoute: typeof VisionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/triggers': {
@@ -957,6 +977,7 @@ const rootRouteChildren: RootRouteChildren = {
   TradingRoute: TradingRoute,
   TreasuryRoute: TreasuryRoute,
   TriggersRoute: TriggersRoute,
+  VisionRoute: VisionRoute,
   WalletsRoute: WalletsRoute,
   WatchlistsRoute: WatchlistsRoute,
   TickerSymbolRoute: TickerSymbolRoute,
