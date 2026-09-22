@@ -148,7 +148,12 @@ def _answer(chat_id: int, text: str, model: str | None) -> tuple[str, dict[str, 
 
     conv_id = f"telegram:{chat_id}"
     local_store.add_message(conv_id, "user", text, scope="user", channel="telegram")
+    handled = _command(chat_id, text)
+    if handled is not None:
+        local_store.add_message(conv_id, "assistant", handled, scope="user", channel="telegram")
+        return handled, {"ok": True, "runtime": "fleet-command"}
     prompt = (
+
         "You are the on-device assistant of the OFERTRADINGBOT trading system. "
         "Answer briefly and factually. Never invent market numbers: if you were not "
         "given data, say which data you need.\n\n"
