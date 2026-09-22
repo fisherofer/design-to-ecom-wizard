@@ -29,5 +29,6 @@
 - [x] Agent fleet: worker registry + heartbeat, shared task queue, run digest into lessons, owner-approved code proposal queue (/fleet)
 - [x] Library learner: local browser read + local model summary into memory, proposals queued for approval
 - [x] Code audit document delivered (ofertradingbot_code_audit_v2.pdf)
-- [ ] Vision analysis + video producer agents (agent_vision_analyst / agent_video_producer equivalents)
+- [x] Vision analysis agent + /vision screen (local images, local AI only, script -> video script)
+- [ ] Video producer agent (full render pipeline; ffmpeg stays external)
 - [ ] Agent command interface over the existing Telegram bridge
