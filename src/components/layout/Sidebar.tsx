@@ -37,6 +37,7 @@ import {
   Lock,
   Coins,
   CloudUpload,
+  Image,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isTradingRoute, useTradingEnabled } from "@/lib/tradingMode";
