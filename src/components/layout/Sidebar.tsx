@@ -63,6 +63,7 @@ type NavTo =
   | "/system"
   | "/backup"
   | "/drive-sync"
+  | "/vision"
   | "/repo-analyzer"
   | "/live-trading"
   | "/order-ticket"
