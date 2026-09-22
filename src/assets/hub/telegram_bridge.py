@@ -66,10 +66,94 @@ def _history(conv_id: str) -> str:
     return "\n".join(lines)
 
 
+HELP = (
+    "Agent commands (local only):\n"
+    "/help - this list\n"
+    "/status - local AI + fleet status\n"
+    "/agents - registered workers\n"
+    "/tasks - queued / running tasks\n"
+    "/task <title> - queue a task for the fleet\n"
+    "/proposals - pending code proposals (approval is UI-only)\n"
+    "/memory - learned-memory stats\n"
+    "Any other text goes to the local model."
+)
+
+
+def _command(chat_id: int, text: str) -> str | None:
+    """Handles /commands against the local fleet. Returns None if not a command."""
+    if not text.startswith("/"):
+        return None
+    parts = text.split(maxsplit=1)
+    cmd = parts[0].lower().split("@")[0]
+    arg = parts[1].strip() if len(parts) > 1 else ""
+    try:
+        from hub import agent_fleet, ai_memory
+        if cmd == "/help":
+            return HELP
+        if cmd == "/status":
+            fs = agent_fleet.status()
+            ai = local_ai_manager.get_status()
+            counts = fs.get("task_counts") or {}
+            runtimes = []
+            if (ai.get("ollama") or {}).get("running"):
+                runtimes.append("ollama")
+            if (ai.get("lmstudio") or {}).get("running"):
+                runtimes.append("lmstudio")
+            if loaded_local := local_ai_manager.loaded_models().get("models"):
+                runtimes.append(f"gguf({len(loaded_local)})")
+            return (
+                f"Fleet: {fs.get('workers_online', 0)}/{fs.get('workers_total', 0)} workers online, "
+                f"tasks {counts}, pending proposals {fs.get('pending_proposals', 0)}\n"
+                f"Local AI: {', '.join(runtimes) if runtimes else 'no runtime available'}"
+            )
+        if cmd == "/agents":
+            rows = agent_fleet.list_workers().get("workers", [])
+            if not rows:
+                return "No workers registered."
+            return "\n".join(
+                f"- {w.get('name')} ({w.get('role')}) {w.get('status')}"
+                + ("" if w.get("online") else " [offline]")
+                for w in rows[:25]
+            )
+        if cmd == "/tasks":
+            rows = agent_fleet.list_tasks(limit=15).get("tasks", [])
+            if not rows:
+                return "Task queue is empty."
+            return "\n".join(f"#{t.get('id')} [{t.get('status')}] {t.get('title')}" for t in rows)
+        if cmd == "/task":
+            if not arg:
+                return "Usage: /task <title>"
+            res = agent_fleet.submit_task(arg, role="general", spec={"source": f"telegram:{chat_id}"})
+            return f"Task queued (#{res.get('id')}): {arg}" if res.get("ok") else f"Failed: {res.get('error')}"
+        if cmd == "/proposals":
+            rows = agent_fleet.list_proposals(status="pending", limit=10).get("proposals", [])
+            if not rows:
+                return "No pending proposals."
+            return "Approve/reject in the app only:\n" + "\n".join(
+                f"#{p.get('id')} {p.get('title')}" for p in rows
+            )
+        if cmd == "/memory":
+            st = ai_memory.stats()
+            by_kind = st.get("by_kind") or {}
+            total = sum(v.get("count", 0) for v in by_kind.values())
+            approved = sum(v.get("approved", 0) for v in by_kind.values())
+            return f"Memory items: {total} (approved: {approved})"
+
+        return f"Unknown command. {HELP}"
+    except Exception as e:
+        return f"Command failed: {e}"
+
+
 def _answer(chat_id: int, text: str, model: str | None) -> tuple[str, dict[str, Any]]:
+
     conv_id = f"telegram:{chat_id}"
     local_store.add_message(conv_id, "user", text, scope="user", channel="telegram")
+    handled = _command(chat_id, text)
+    if handled is not None:
+        local_store.add_message(conv_id, "assistant", handled, scope="user", channel="telegram")
+        return handled, {"ok": True, "runtime": "fleet-command"}
     prompt = (
+
         "You are the on-device assistant of the OFERTRADINGBOT trading system. "
         "Answer briefly and factually. Never invent market numbers: if you were not "
         "given data, say which data you need.\n\n"
