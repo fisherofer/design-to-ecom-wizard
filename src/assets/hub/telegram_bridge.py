@@ -93,11 +93,18 @@ def _command(chat_id: int, text: str) -> str | None:
         if cmd == "/status":
             fs = agent_fleet.status()
             ai = local_ai_manager.get_status()
+            counts = fs.get("task_counts") or {}
+            runtimes = []
+            if (ai.get("ollama") or {}).get("running"):
+                runtimes.append("ollama")
+            if (ai.get("lmstudio") or {}).get("running"):
+                runtimes.append("lmstudio")
+            if loaded_local := local_ai_manager.loaded_models().get("models"):
+                runtimes.append(f"gguf({len(loaded_local)})")
             return (
-                f"Fleet: {fs.get('workers', 0)} workers, "
-                f"{fs.get('queued', 0)} queued, {fs.get('running', 0)} running, "
-                f"{fs.get('pending_proposals', 0)} pending proposals\n"
-                f"Local AI runtime: {ai.get('active_runtime') or 'none loaded'}"
+                f"Fleet: {fs.get('workers_online', 0)}/{fs.get('workers_total', 0)} workers online, "
+                f"tasks {counts}, pending proposals {fs.get('pending_proposals', 0)}\n"
+                f"Local AI: {', '.join(runtimes) if runtimes else 'no runtime available'}"
             )
         if cmd == "/agents":
             rows = agent_fleet.list_workers().get("workers", [])
@@ -105,7 +112,7 @@ def _command(chat_id: int, text: str) -> str | None:
                 return "No workers registered."
             return "\n".join(
                 f"- {w.get('name')} ({w.get('role')}) {w.get('status')}"
-                + (" [stale]" if w.get("stale") else "")
+                + ("" if w.get("online") else " [offline]")
                 for w in rows[:25]
             )
         if cmd == "/tasks":
@@ -116,7 +123,7 @@ def _command(chat_id: int, text: str) -> str | None:
         if cmd == "/task":
             if not arg:
                 return "Usage: /task <title>"
-            res = agent_fleet.submit_task(arg, role="general", created_by=f"telegram:{chat_id}")
+            res = agent_fleet.submit_task(arg, role="general", spec={"source": f"telegram:{chat_id}"})
             return f"Task queued (#{res.get('id')}): {arg}" if res.get("ok") else f"Failed: {res.get('error')}"
         if cmd == "/proposals":
             rows = agent_fleet.list_proposals(status="pending", limit=10).get("proposals", [])
@@ -127,7 +134,11 @@ def _command(chat_id: int, text: str) -> str | None:
             )
         if cmd == "/memory":
             st = ai_memory.stats()
-            return f"Memory items: {st.get('total', 0)} (approved: {st.get('approved', 0)})"
+            by_kind = st.get("by_kind") or {}
+            total = sum(v.get("count", 0) for v in by_kind.values())
+            approved = sum(v.get("approved", 0) for v in by_kind.values())
+            return f"Memory items: {total} (approved: {approved})"
+
         return f"Unknown command. {HELP}"
     except Exception as e:
         return f"Command failed: {e}"
