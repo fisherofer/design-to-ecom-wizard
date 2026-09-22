@@ -31,4 +31,4 @@
 - [x] Code audit document delivered (ofertradingbot_code_audit_v2.pdf)
 - [x] Vision analysis agent + /vision screen (local images, local AI only, script -> video script)
 - [ ] Video producer agent (full render pipeline; ffmpeg stays external)
-- [ ] Agent command interface over the existing Telegram bridge
+- [x] Agent command interface over the existing Telegram bridge (/status /agents /tasks /task /proposals /memory)
