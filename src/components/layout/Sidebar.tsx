@@ -37,7 +37,7 @@ import {
   Lock,
   Coins,
   CloudUpload,
-  Image,
+  ImageIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isTradingRoute, useTradingEnabled } from "@/lib/tradingMode";
@@ -161,7 +161,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/autonomy", label: "Autonomy Control", icon: Bot },
       { to: "/drive-sync", label: "Drive Sync", icon: CloudUpload },
       { to: "/fleet", label: "Agent Fleet", icon: Users },
-      { to: "/vision", label: "Vision Agent", icon: Image },
+      { to: "/vision", label: "Vision Agent", icon: ImageIcon },
       { to: "/wallets", label: "Payout Wallets", icon: Wallet },
       { to: "/studio", label: "Video Studio", icon: Clapperboard },
       { to: "/terminal", label: "Terminal Logs", icon: Terminal },
