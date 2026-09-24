@@ -451,3 +451,20 @@ def vision_video_script(body: VideoScriptRequest) -> dict:
     if not result.get("ok"):
         raise HTTPException(status_code=400, detail=result)
     return result
+
+
+class NewsBriefRequest(BaseModel):
+    sources: list[dict]
+    title: str | None = None
+    image_paths: list[str] | None = None
+    scenes: int = 6
+    limit: int = 12
+
+
+@vision_router.post("/news-brief")
+def vision_news_brief(body: NewsBriefRequest) -> dict:
+    result = agent_vision_analyst.news_brief(body.sources, body.title, body.image_paths,
+                                             body.scenes, body.limit)
+    if not result.get("ok"):
+        raise HTTPException(status_code=400, detail=result)
+    return result

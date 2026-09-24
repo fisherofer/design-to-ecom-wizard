@@ -160,3 +160,32 @@ export function buildVideoScript(input: {
     }),
   });
 }
+
+export interface NewsBriefResult {
+  ok: boolean;
+  script?: string;
+  read: Array<{ name: string; kind: string; region: string; url: string; title: string | null; headlines: string[] }>;
+  failed: Array<{ name: string; url: string; error: string }>;
+  video?: VideoScriptResult;
+  error?: string;
+}
+
+/** Read enabled news sources with the local browser agent and build a video script from them. */
+export function buildNewsBrief(input: {
+  sources: Array<{ name: string; url: string; kind: string; region: string }>;
+  title?: string;
+  imagePaths?: string[];
+  scenes?: number;
+  limit?: number;
+}): Promise<NewsBriefResult> {
+  return call<NewsBriefResult>("/news-brief", {
+    method: "POST",
+    body: JSON.stringify({
+      sources: input.sources,
+      title: input.title ?? null,
+      image_paths: input.imagePaths ?? [],
+      scenes: input.scenes ?? 6,
+      limit: input.limit ?? 12,
+    }),
+  });
+}
