@@ -19,11 +19,13 @@ import { Route as TerminalRouteImport } from './routes/terminal'
 import { Route as SystemRouteImport } from './routes/system'
 import { Route as StudioRouteImport } from './routes/studio'
 import { Route as StrategyRouteImport } from './routes/strategy'
+import { Route as SourcesRouteImport } from './routes/sources'
 import { Route as SituationRoomRouteImport } from './routes/situation-room'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as RiskRouteImport } from './routes/risk'
 import { Route as RepoAnalyzerRouteImport } from './routes/repo-analyzer'
+import { Route as ProductionRouteImport } from './routes/production'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PersonasRouteImport } from './routes/personas'
@@ -44,6 +46,7 @@ import { Route as DriveSyncRouteImport } from './routes/drive-sync'
 import { Route as ConfigRouteImport } from './routes/config'
 import { Route as CommandRouteImport } from './routes/command'
 import { Route as CodeStudioRouteImport } from './routes/code-studio'
+import { Route as CastRouteImport } from './routes/cast'
 import { Route as BackupRouteImport } from './routes/backup'
 import { Route as BacktestingRouteImport } from './routes/backtesting'
 import { Route as AutonomyRouteImport } from './routes/autonomy'
@@ -105,6 +108,11 @@ const StrategyRoute = StrategyRouteImport.update({
   path: '/strategy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SourcesRoute = SourcesRouteImport.update({
+  id: '/sources',
+  path: '/sources',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SituationRoomRoute = SituationRoomRouteImport.update({
   id: '/situation-room',
   path: '/situation-room',
@@ -128,6 +136,11 @@ const RiskRoute = RiskRouteImport.update({
 const RepoAnalyzerRoute = RepoAnalyzerRouteImport.update({
   id: '/repo-analyzer',
   path: '/repo-analyzer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductionRoute = ProductionRouteImport.update({
+  id: '/production',
+  path: '/production',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -230,6 +243,11 @@ const CodeStudioRoute = CodeStudioRouteImport.update({
   path: '/code-studio',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CastRoute = CastRouteImport.update({
+  id: '/cast',
+  path: '/cast',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BackupRoute = BackupRouteImport.update({
   id: '/backup',
   path: '/backup',
@@ -291,6 +309,7 @@ export interface FileRoutesByFullPath {
   '/autonomy': typeof AutonomyRoute
   '/backtesting': typeof BacktestingRoute
   '/backup': typeof BackupRoute
+  '/cast': typeof CastRoute
   '/code-studio': typeof CodeStudioRoute
   '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
@@ -311,11 +330,13 @@ export interface FileRoutesByFullPath {
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
   '/privacy': typeof PrivacyRoute
+  '/production': typeof ProductionRoute
   '/repo-analyzer': typeof RepoAnalyzerRoute
   '/risk': typeof RiskRoute
   '/security': typeof SecurityRoute
   '/settings': typeof SettingsRoute
   '/situation-room': typeof SituationRoomRoute
+  '/sources': typeof SourcesRoute
   '/strategy': typeof StrategyRoute
   '/studio': typeof StudioRoute
   '/system': typeof SystemRoute
@@ -338,6 +359,7 @@ export interface FileRoutesByTo {
   '/autonomy': typeof AutonomyRoute
   '/backtesting': typeof BacktestingRoute
   '/backup': typeof BackupRoute
+  '/cast': typeof CastRoute
   '/code-studio': typeof CodeStudioRoute
   '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
@@ -358,11 +380,13 @@ export interface FileRoutesByTo {
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
   '/privacy': typeof PrivacyRoute
+  '/production': typeof ProductionRoute
   '/repo-analyzer': typeof RepoAnalyzerRoute
   '/risk': typeof RiskRoute
   '/security': typeof SecurityRoute
   '/settings': typeof SettingsRoute
   '/situation-room': typeof SituationRoomRoute
+  '/sources': typeof SourcesRoute
   '/strategy': typeof StrategyRoute
   '/studio': typeof StudioRoute
   '/system': typeof SystemRoute
@@ -386,6 +410,7 @@ export interface FileRoutesById {
   '/autonomy': typeof AutonomyRoute
   '/backtesting': typeof BacktestingRoute
   '/backup': typeof BackupRoute
+  '/cast': typeof CastRoute
   '/code-studio': typeof CodeStudioRoute
   '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
@@ -406,11 +431,13 @@ export interface FileRoutesById {
   '/personas': typeof PersonasRoute
   '/portfolio': typeof PortfolioRoute
   '/privacy': typeof PrivacyRoute
+  '/production': typeof ProductionRoute
   '/repo-analyzer': typeof RepoAnalyzerRoute
   '/risk': typeof RiskRoute
   '/security': typeof SecurityRoute
   '/settings': typeof SettingsRoute
   '/situation-room': typeof SituationRoomRoute
+  '/sources': typeof SourcesRoute
   '/strategy': typeof StrategyRoute
   '/studio': typeof StudioRoute
   '/system': typeof SystemRoute
@@ -435,6 +462,7 @@ export interface FileRouteTypes {
     | '/autonomy'
     | '/backtesting'
     | '/backup'
+    | '/cast'
     | '/code-studio'
     | '/command'
     | '/config'
@@ -455,11 +483,13 @@ export interface FileRouteTypes {
     | '/personas'
     | '/portfolio'
     | '/privacy'
+    | '/production'
     | '/repo-analyzer'
     | '/risk'
     | '/security'
     | '/settings'
     | '/situation-room'
+    | '/sources'
     | '/strategy'
     | '/studio'
     | '/system'
@@ -482,6 +512,7 @@ export interface FileRouteTypes {
     | '/autonomy'
     | '/backtesting'
     | '/backup'
+    | '/cast'
     | '/code-studio'
     | '/command'
     | '/config'
@@ -502,11 +533,13 @@ export interface FileRouteTypes {
     | '/personas'
     | '/portfolio'
     | '/privacy'
+    | '/production'
     | '/repo-analyzer'
     | '/risk'
     | '/security'
     | '/settings'
     | '/situation-room'
+    | '/sources'
     | '/strategy'
     | '/studio'
     | '/system'
@@ -529,6 +562,7 @@ export interface FileRouteTypes {
     | '/autonomy'
     | '/backtesting'
     | '/backup'
+    | '/cast'
     | '/code-studio'
     | '/command'
     | '/config'
@@ -549,11 +583,13 @@ export interface FileRouteTypes {
     | '/personas'
     | '/portfolio'
     | '/privacy'
+    | '/production'
     | '/repo-analyzer'
     | '/risk'
     | '/security'
     | '/settings'
     | '/situation-room'
+    | '/sources'
     | '/strategy'
     | '/studio'
     | '/system'
@@ -577,6 +613,7 @@ export interface RootRouteChildren {
   AutonomyRoute: typeof AutonomyRoute
   BacktestingRoute: typeof BacktestingRoute
   BackupRoute: typeof BackupRoute
+  CastRoute: typeof CastRoute
   CodeStudioRoute: typeof CodeStudioRoute
   CommandRoute: typeof CommandRoute
   ConfigRoute: typeof ConfigRoute
@@ -597,11 +634,13 @@ export interface RootRouteChildren {
   PersonasRoute: typeof PersonasRoute
   PortfolioRoute: typeof PortfolioRoute
   PrivacyRoute: typeof PrivacyRoute
+  ProductionRoute: typeof ProductionRoute
   RepoAnalyzerRoute: typeof RepoAnalyzerRoute
   RiskRoute: typeof RiskRoute
   SecurityRoute: typeof SecurityRoute
   SettingsRoute: typeof SettingsRoute
   SituationRoomRoute: typeof SituationRoomRoute
+  SourcesRoute: typeof SourcesRoute
   StrategyRoute: typeof StrategyRoute
   StudioRoute: typeof StudioRoute
   SystemRoute: typeof SystemRoute
@@ -688,6 +727,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StrategyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sources': {
+      id: '/sources'
+      path: '/sources'
+      fullPath: '/sources'
+      preLoaderRoute: typeof SourcesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/situation-room': {
       id: '/situation-room'
       path: '/situation-room'
@@ -721,6 +767,13 @@ declare module '@tanstack/react-router' {
       path: '/repo-analyzer'
       fullPath: '/repo-analyzer'
       preLoaderRoute: typeof RepoAnalyzerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/production': {
+      id: '/production'
+      path: '/production'
+      fullPath: '/production'
+      preLoaderRoute: typeof ProductionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -863,6 +916,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CodeStudioRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cast': {
+      id: '/cast'
+      path: '/cast'
+      fullPath: '/cast'
+      preLoaderRoute: typeof CastRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/backup': {
       id: '/backup'
       path: '/backup'
@@ -945,6 +1005,7 @@ const rootRouteChildren: RootRouteChildren = {
   AutonomyRoute: AutonomyRoute,
   BacktestingRoute: BacktestingRoute,
   BackupRoute: BackupRoute,
+  CastRoute: CastRoute,
   CodeStudioRoute: CodeStudioRoute,
   CommandRoute: CommandRoute,
   ConfigRoute: ConfigRoute,
@@ -965,11 +1026,13 @@ const rootRouteChildren: RootRouteChildren = {
   PersonasRoute: PersonasRoute,
   PortfolioRoute: PortfolioRoute,
   PrivacyRoute: PrivacyRoute,
+  ProductionRoute: ProductionRoute,
   RepoAnalyzerRoute: RepoAnalyzerRoute,
   RiskRoute: RiskRoute,
   SecurityRoute: SecurityRoute,
   SettingsRoute: SettingsRoute,
   SituationRoomRoute: SituationRoomRoute,
+  SourcesRoute: SourcesRoute,
   StrategyRoute: StrategyRoute,
   StudioRoute: StudioRoute,
   SystemRoute: SystemRoute,

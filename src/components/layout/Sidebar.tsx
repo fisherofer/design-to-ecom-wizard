@@ -65,6 +65,9 @@ type NavTo =
   | "/backup"
   | "/drive-sync"
   | "/vision"
+  | "/cast"
+  | "/production"
+  | "/sources"
   | "/repo-analyzer"
   | "/live-trading"
   | "/order-ticket"
@@ -164,6 +167,9 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/vision", label: "Vision Agent", icon: ImageIcon },
       { to: "/wallets", label: "Payout Wallets", icon: Wallet },
       { to: "/studio", label: "Video Studio", icon: Clapperboard },
+      { to: "/production", label: "Production Board", icon: CalendarClock },
+      { to: "/cast", label: "Cast & Video Queue", icon: Users },
+      { to: "/sources", label: "News Sources", icon: Newspaper },
       { to: "/terminal", label: "Terminal Logs", icon: Terminal },
 
       { to: "/backup", label: "Backup & Restore", icon: Archive },

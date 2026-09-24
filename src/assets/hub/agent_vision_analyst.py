@@ -315,3 +315,57 @@ def to_video_script(script: str, title: str | None = None,
     except Exception:
         pass
     return result
+
+
+# ------------------------------------------------------------ news sources
+def news_brief(sources: list[dict[str, Any]], title: str | None = None,
+               image_paths: list[str] | None = None, scenes: int = 6,
+               limit: int = 12) -> dict[str, Any]:
+    """Read real news sources (X, YouTube channels, analysts, trading sites)
+    with the local browser agent and turn what was actually read into a
+    shot-by-shot video script. Unreadable sources are reported, never filled.
+    """
+    from hub import browser_agent  # local import: optional dependency
+
+    picked = [s for s in (sources or []) if isinstance(s, dict) and s.get("url")][:max(1, min(limit, 30))]
+    if not picked:
+        return {"ok": False, "error": "no enabled sources supplied"}
+    read_ok: list[dict[str, Any]] = []
+    failed: list[dict[str, Any]] = []
+    for src in picked:
+        try:
+            page = browser_agent.fetch(str(src["url"]))
+        except Exception as err:  # explicit failure, never silent
+            page = {"ok": False, "error": str(err)}
+        if page.get("ok") and (page.get("text") or "").strip():
+            read_ok.append({
+                "name": src.get("name"), "kind": src.get("kind"), "region": src.get("region"),
+                "url": src.get("url"), "title": page.get("title"),
+                "excerpt": str(page.get("text"))[:1500],
+                "headlines": [l.get("text") for l in (page.get("links") or []) if l.get("text")][:15],
+            })
+        else:
+            failed.append({"name": src.get("name"), "url": src.get("url"),
+                           "error": page.get("error") or "empty page"})
+    if not read_ok:
+        return {"ok": False, "error": "no source could be read", "failed": failed}
+
+    digest = "\n\n".join(
+        f"[{r['kind']}/{r['region']}] {r['name']} — {r['title'] or ''}\n"
+        f"HEADLINES: {' | '.join(h for h in r['headlines'] if h)}\n{r['excerpt']}"
+        for r in read_ok
+    )
+    prompt = (
+        "You are a markets news editor. From the SOURCE MATERIAL below write a "
+        "tight narration script for a market video. Use ONLY facts present in "
+        "the material and name the source for each item. No invented numbers.\n\n"
+        f"SOURCE MATERIAL:\n{digest[:12000]}\n\nReply with the plain script only."
+    )
+    res = local_ai_manager.generate(prompt, max_tokens=1200, temperature=0.2)
+    if not res.get("ok"):
+        return {"ok": False, "error": res.get("error", "local model unavailable"),
+                "read": read_ok, "failed": failed}
+    script_text = str(res.get("text", "")).strip()
+    video = to_video_script(script_text, title or "Market news brief", image_paths, scenes)
+    return {"ok": bool(video.get("ok")), "script": script_text, "read": read_ok,
+            "failed": failed, "video": video, "error": video.get("error")}
