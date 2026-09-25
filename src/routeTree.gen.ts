@@ -16,6 +16,7 @@ import { Route as TriggersRouteImport } from './routes/triggers'
 import { Route as TreasuryRouteImport } from './routes/treasury'
 import { Route as TradingRouteImport } from './routes/trading'
 import { Route as TerminalRouteImport } from './routes/terminal'
+import { Route as TelegramRouteImport } from './routes/telegram'
 import { Route as SystemRouteImport } from './routes/system'
 import { Route as StudioRouteImport } from './routes/studio'
 import { Route as StrategyRouteImport } from './routes/strategy'
@@ -46,7 +47,10 @@ import { Route as DriveSyncRouteImport } from './routes/drive-sync'
 import { Route as ConfigRouteImport } from './routes/config'
 import { Route as CommandRouteImport } from './routes/command'
 import { Route as CodeStudioRouteImport } from './routes/code-studio'
+import { Route as ClipProducerRouteImport } from './routes/clip-producer'
+import { Route as ChannelScanRouteImport } from './routes/channel-scan'
 import { Route as CastRouteImport } from './routes/cast'
+import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as BackupRouteImport } from './routes/backup'
 import { Route as BacktestingRouteImport } from './routes/backtesting'
 import { Route as AutonomyRouteImport } from './routes/autonomy'
@@ -91,6 +95,11 @@ const TradingRoute = TradingRouteImport.update({
 const TerminalRoute = TerminalRouteImport.update({
   id: '/terminal',
   path: '/terminal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TelegramRoute = TelegramRouteImport.update({
+  id: '/telegram',
+  path: '/telegram',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SystemRoute = SystemRouteImport.update({
@@ -243,9 +252,24 @@ const CodeStudioRoute = CodeStudioRouteImport.update({
   path: '/code-studio',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClipProducerRoute = ClipProducerRouteImport.update({
+  id: '/clip-producer',
+  path: '/clip-producer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChannelScanRoute = ChannelScanRouteImport.update({
+  id: '/channel-scan',
+  path: '/channel-scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CastRoute = CastRouteImport.update({
   id: '/cast',
   path: '/cast',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarRoute = CalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BackupRoute = BackupRouteImport.update({
@@ -309,7 +333,10 @@ export interface FileRoutesByFullPath {
   '/autonomy': typeof AutonomyRoute
   '/backtesting': typeof BacktestingRoute
   '/backup': typeof BackupRoute
+  '/calendar': typeof CalendarRoute
   '/cast': typeof CastRoute
+  '/channel-scan': typeof ChannelScanRoute
+  '/clip-producer': typeof ClipProducerRoute
   '/code-studio': typeof CodeStudioRoute
   '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
@@ -340,6 +367,7 @@ export interface FileRoutesByFullPath {
   '/strategy': typeof StrategyRoute
   '/studio': typeof StudioRoute
   '/system': typeof SystemRoute
+  '/telegram': typeof TelegramRoute
   '/terminal': typeof TerminalRoute
   '/trading': typeof TradingRoute
   '/treasury': typeof TreasuryRoute
@@ -359,7 +387,10 @@ export interface FileRoutesByTo {
   '/autonomy': typeof AutonomyRoute
   '/backtesting': typeof BacktestingRoute
   '/backup': typeof BackupRoute
+  '/calendar': typeof CalendarRoute
   '/cast': typeof CastRoute
+  '/channel-scan': typeof ChannelScanRoute
+  '/clip-producer': typeof ClipProducerRoute
   '/code-studio': typeof CodeStudioRoute
   '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
@@ -390,6 +421,7 @@ export interface FileRoutesByTo {
   '/strategy': typeof StrategyRoute
   '/studio': typeof StudioRoute
   '/system': typeof SystemRoute
+  '/telegram': typeof TelegramRoute
   '/terminal': typeof TerminalRoute
   '/trading': typeof TradingRoute
   '/treasury': typeof TreasuryRoute
@@ -410,7 +442,10 @@ export interface FileRoutesById {
   '/autonomy': typeof AutonomyRoute
   '/backtesting': typeof BacktestingRoute
   '/backup': typeof BackupRoute
+  '/calendar': typeof CalendarRoute
   '/cast': typeof CastRoute
+  '/channel-scan': typeof ChannelScanRoute
+  '/clip-producer': typeof ClipProducerRoute
   '/code-studio': typeof CodeStudioRoute
   '/command': typeof CommandRoute
   '/config': typeof ConfigRoute
@@ -441,6 +476,7 @@ export interface FileRoutesById {
   '/strategy': typeof StrategyRoute
   '/studio': typeof StudioRoute
   '/system': typeof SystemRoute
+  '/telegram': typeof TelegramRoute
   '/terminal': typeof TerminalRoute
   '/trading': typeof TradingRoute
   '/treasury': typeof TreasuryRoute
@@ -462,7 +498,10 @@ export interface FileRouteTypes {
     | '/autonomy'
     | '/backtesting'
     | '/backup'
+    | '/calendar'
     | '/cast'
+    | '/channel-scan'
+    | '/clip-producer'
     | '/code-studio'
     | '/command'
     | '/config'
@@ -493,6 +532,7 @@ export interface FileRouteTypes {
     | '/strategy'
     | '/studio'
     | '/system'
+    | '/telegram'
     | '/terminal'
     | '/trading'
     | '/treasury'
@@ -512,7 +552,10 @@ export interface FileRouteTypes {
     | '/autonomy'
     | '/backtesting'
     | '/backup'
+    | '/calendar'
     | '/cast'
+    | '/channel-scan'
+    | '/clip-producer'
     | '/code-studio'
     | '/command'
     | '/config'
@@ -543,6 +586,7 @@ export interface FileRouteTypes {
     | '/strategy'
     | '/studio'
     | '/system'
+    | '/telegram'
     | '/terminal'
     | '/trading'
     | '/treasury'
@@ -562,7 +606,10 @@ export interface FileRouteTypes {
     | '/autonomy'
     | '/backtesting'
     | '/backup'
+    | '/calendar'
     | '/cast'
+    | '/channel-scan'
+    | '/clip-producer'
     | '/code-studio'
     | '/command'
     | '/config'
@@ -593,6 +640,7 @@ export interface FileRouteTypes {
     | '/strategy'
     | '/studio'
     | '/system'
+    | '/telegram'
     | '/terminal'
     | '/trading'
     | '/treasury'
@@ -613,7 +661,10 @@ export interface RootRouteChildren {
   AutonomyRoute: typeof AutonomyRoute
   BacktestingRoute: typeof BacktestingRoute
   BackupRoute: typeof BackupRoute
+  CalendarRoute: typeof CalendarRoute
   CastRoute: typeof CastRoute
+  ChannelScanRoute: typeof ChannelScanRoute
+  ClipProducerRoute: typeof ClipProducerRoute
   CodeStudioRoute: typeof CodeStudioRoute
   CommandRoute: typeof CommandRoute
   ConfigRoute: typeof ConfigRoute
@@ -644,6 +695,7 @@ export interface RootRouteChildren {
   StrategyRoute: typeof StrategyRoute
   StudioRoute: typeof StudioRoute
   SystemRoute: typeof SystemRoute
+  TelegramRoute: typeof TelegramRoute
   TerminalRoute: typeof TerminalRoute
   TradingRoute: typeof TradingRoute
   TreasuryRoute: typeof TreasuryRoute
@@ -704,6 +756,13 @@ declare module '@tanstack/react-router' {
       path: '/terminal'
       fullPath: '/terminal'
       preLoaderRoute: typeof TerminalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/telegram': {
+      id: '/telegram'
+      path: '/telegram'
+      fullPath: '/telegram'
+      preLoaderRoute: typeof TelegramRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/system': {
@@ -916,11 +975,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CodeStudioRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/clip-producer': {
+      id: '/clip-producer'
+      path: '/clip-producer'
+      fullPath: '/clip-producer'
+      preLoaderRoute: typeof ClipProducerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/channel-scan': {
+      id: '/channel-scan'
+      path: '/channel-scan'
+      fullPath: '/channel-scan'
+      preLoaderRoute: typeof ChannelScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cast': {
       id: '/cast'
       path: '/cast'
       fullPath: '/cast'
       preLoaderRoute: typeof CastRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/backup': {
@@ -1005,7 +1085,10 @@ const rootRouteChildren: RootRouteChildren = {
   AutonomyRoute: AutonomyRoute,
   BacktestingRoute: BacktestingRoute,
   BackupRoute: BackupRoute,
+  CalendarRoute: CalendarRoute,
   CastRoute: CastRoute,
+  ChannelScanRoute: ChannelScanRoute,
+  ClipProducerRoute: ClipProducerRoute,
   CodeStudioRoute: CodeStudioRoute,
   CommandRoute: CommandRoute,
   ConfigRoute: ConfigRoute,
@@ -1036,6 +1119,7 @@ const rootRouteChildren: RootRouteChildren = {
   StrategyRoute: StrategyRoute,
   StudioRoute: StudioRoute,
   SystemRoute: SystemRoute,
+  TelegramRoute: TelegramRoute,
   TerminalRoute: TerminalRoute,
   TradingRoute: TradingRoute,
   TreasuryRoute: TreasuryRoute,
