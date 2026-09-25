@@ -148,6 +148,16 @@ def _answer(chat_id: int, text: str, model: str | None) -> tuple[str, dict[str, 
 
     conv_id = f"telegram:{chat_id}"
     local_store.add_message(conv_id, "user", text, scope="user", channel="telegram")
+    # Every inbound Telegram message is visible in the fleet task queue.
+    if not text.lower().startswith("/task"):
+        try:
+            from hub import agent_fleet
+            agent_fleet.submit_task(
+                f"Telegram: {text[:120]}", role="telegram",
+                spec={"source": f"telegram:{chat_id}", "text": text[:2000]},
+            )
+        except Exception as e:
+            local_store.log_event("telegram_bridge", f"queue log failed: {e}", "warn")
     handled = _command(chat_id, text)
     if handled is not None:
         local_store.add_message(conv_id, "assistant", handled, scope="user", channel="telegram")
