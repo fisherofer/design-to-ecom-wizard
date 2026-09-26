@@ -25,8 +25,8 @@ export function readSettings(): DriveSyncSettings {
   return {
     folderId: portableGet(K_FOLDER_ID) || null,
     folderName: portableGet(K_FOLDER_NAME) || null,
-    backupOnStart: portableGet(K_ON_START) === "1",
-    syncOnChange: portableGet(K_ON_CHANGE) === "1",
+    backupOnStart: portableGet(K_ON_START) !== "0",
+    syncOnChange: portableGet(K_ON_CHANGE) !== "0",
     mirrorFolder: portableGet(K_MIRROR) || "live-mirror",
     lastRunAt: portableGet(K_LAST) || null,
   };

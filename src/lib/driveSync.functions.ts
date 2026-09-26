@@ -401,3 +401,30 @@ export const driveActiveSync = createServerFn({ method: "POST" })
       return { ok: false, ...empty, error: (e as Error).message };
     }
   });
+
+// ------------------------------------------------------------- clip upload ---
+
+/** Upload one rendered clip into <target>/clips/YYYY-MM-DD/ so it leaves the server. */
+export const driveUploadClip = createServerFn({ method: "POST" })
+  .inputValidator((raw: unknown) =>
+    z
+      .object({
+        folderId: z.string().min(1),
+        name: z.string().min(1).max(200),
+        mimeType: z.string().max(80).default("video/webm"),
+        base64: z.string().min(1).max(40_000_000),
+      })
+      .parse(raw),
+  )
+  .handler(async ({ data }): Promise<{ ok: boolean; fileId?: string; path?: string; error?: string }> => {
+    if (!creds()) return { ok: false, error: "Google Drive is not connected yet." };
+    try {
+      const day = new Date().toISOString().slice(0, 10);
+      const parent = await ensureChain(data.folderId, ["clips", day], new Map());
+      const bytes = Uint8Array.from(atob(data.base64), (c) => c.charCodeAt(0));
+      const up = await uploadBytes(parent, data.name.replace(/[\\/]/g, "_"), bytes, data.mimeType);
+      return { ok: true, fileId: up.id, path: `clips/${day}/${up.name}` };
+    } catch (e) {
+      return { ok: false, error: e instanceof Error ? e.message : String(e) };
+    }
+  });

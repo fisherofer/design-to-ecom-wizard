@@ -143,6 +143,11 @@ def kv_set(body: KvIn) -> dict:
     return local_store.kv_set(body.scope, body.key, body.value)
 
 
+@router.get("/kv/{scope}")
+def kv_list(scope: str) -> dict:
+    return local_store.kv_all(scope)
+
+
 @router.get("/kv/{scope}/{key}")
 def kv_get(scope: str, key: str) -> dict:
     return local_store.kv_get(scope, key)
