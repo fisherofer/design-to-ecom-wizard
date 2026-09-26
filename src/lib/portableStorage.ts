@@ -1,3 +1,4 @@
+import { getApiBase } from "@/lib/apiConfig";
 /**
  * portableStorage — one storage surface for both runtimes.
  *
@@ -58,12 +59,7 @@ let sqlTimer: ReturnType<typeof setTimeout> | null = null;
 
 function sqlBase(): string | null {
   if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem("ofer.apiBase") ?? "";
-    return (raw || "http://localhost:8000").replace(/\/$/, "");
-  } catch {
-    return null;
-  }
+  return getApiBase().replace(/\/$/, "");
 }
 
 function sqlEligible(key: string) {
