@@ -46,6 +46,22 @@ function ScanPage() {
     setFound(r.channels);
   };
 
+  const scanAll = async () => {
+    setBusy(true);
+    let added = 0;
+    for (const r of Object.keys(PRESETS) as SourceRegion[]) {
+      const res = await scan({ data: { query: PRESETS[r], limit: 20 } });
+      if (!res.ok) { toast.error(`${LABEL[r]}: ${res.error ?? "נכשל"}`); continue; }
+      for (const c of res.channels) {
+        if (existing(c)) continue;
+        newsSources.add({ name: c.name, url: c.url, kind: "youtube", region: r });
+        added++;
+      }
+    }
+    setBusy(false);
+    toast.success(`נוספו ${added} ערוצים חדשים לכל הקטגוריות`);
+  };
+
   const connect = (c: FoundChannel) => {
     const ex = existing(c);
     if (ex) {
@@ -72,6 +88,7 @@ function ScanPage() {
         ))}
         <input className={`${field} min-w-64 flex-1`} value={query} onChange={(e) => setQuery(e.target.value)} />
         <button disabled={busy} onClick={run} className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-50">{busy ? "סורק..." : "סרוק"}</button>
+        <button disabled={busy} onClick={scanAll} className="rounded-md border border-primary px-3 py-1.5 text-sm text-primary disabled:opacity-50">סרוק הכל וחבר אוטומטית</button>
       </div>
 
       <section className="rounded-lg border border-border bg-card p-4">

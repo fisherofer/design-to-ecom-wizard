@@ -1,3 +1,4 @@
+import { getApiBase } from "@/lib/apiConfig";
 /**
  * portableStorage — one storage surface for both runtimes.
  *
@@ -51,10 +52,79 @@ export function isHydrated(): boolean {
   return hydrated || !isDesktop();
 }
 
+// ---- write-through to the local VENV SQL store (/api/local-store/kv) -------
+const SQL_SKIP = ["ofer.secret.", "ofer.keys.", "ofer.vault.", "ofer.cloudsync.session"];
+const pendingSql = new Map<string, string | null>();
+let sqlTimer: ReturnType<typeof setTimeout> | null = null;
+
+function sqlBase(): string | null {
+  if (typeof window === "undefined") return null;
+  return getApiBase().replace(/\/$/, "");
+}
+
+function sqlEligible(key: string) {
+  return key.startsWith("ofer.") && !SQL_SKIP.some((p) => key.startsWith(p));
+}
+
+function queueSql(key: string, value: string | null) {
+  if (!sqlEligible(key)) return;
+  pendingSql.set(key, value);
+  if (sqlTimer) return;
+  sqlTimer = setTimeout(() => void flushSql(), 800);
+}
+
+async function flushSql() {
+  sqlTimer = null;
+  const base = sqlBase();
+  if (!base) return;
+  const batch = Array.from(pendingSql.entries());
+  pendingSql.clear();
+  for (const [key, value] of batch) {
+    try {
+      const r = await fetch(`${base}/api/local-store/kv`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scope: "system", key, value }),
+        signal: AbortSignal.timeout(5000),
+      });
+      if (!r.ok) throw new Error(String(r.status));
+    } catch {
+      // Local hub offline: keep the value queued for the next write.
+      pendingSql.set(key, value);
+      sqlStatus = "offline";
+      return;
+    }
+  }
+  sqlStatus = "synced";
+}
+
+export let sqlStatus: "unknown" | "synced" | "offline" = "unknown";
+
+/** Pull settings saved in the local SQL store back into this browser. */
+async function hydrateFromSql() {
+  const base = sqlBase();
+  if (!base) return;
+  try {
+    const r = await fetch(`${base}/api/local-store/kv/system`, { signal: AbortSignal.timeout(5000) });
+    if (!r.ok) throw new Error(String(r.status));
+    const data = (await r.json()) as { items?: Record<string, unknown> };
+    for (const [k, v] of Object.entries(data.items ?? {})) {
+      if (!sqlEligible(k) || typeof v !== "string") continue;
+      if (window.localStorage.getItem(k) === null) window.localStorage.setItem(k, v);
+    }
+    sqlStatus = "synced";
+  } catch {
+    sqlStatus = "offline";
+  }
+}
+
 /** Load the whole store into memory once. Call from a top-level useEffect. */
 export async function initPortableStorage(): Promise<PortableInfo | null> {
   const api = bridge();
-  if (!api) return null;
+  if (!api) {
+    await hydrateFromSql();
+    return null;
+  }
   const all = await api.all();
   mirror.clear();
   for (const [k, v] of Object.entries(all)) mirror.set(k, v);
@@ -86,6 +156,7 @@ export function portableSet(key: string, value: string): void {
   } catch {
     /* quota or private mode */
   }
+  queueSql(key, value);
 }
 
 export function portableRemove(key: string): void {
@@ -101,6 +172,7 @@ export function portableRemove(key: string): void {
   } catch {
     /* ignore */
   }
+  queueSql(key, null);
 }
 
 export function portableGetJson<T>(key: string, fallback: T): T {

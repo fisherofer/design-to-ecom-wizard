@@ -386,6 +386,15 @@ def kv_set(scope: str, key: str, value: Any) -> dict[str, Any]:
         conn.close()
 
 
+def kv_all(scope: str) -> dict[str, Any]:
+    conn = connect()
+    try:
+        rows = conn.execute("SELECT key, value, updated_at FROM kv WHERE scope=?", (scope,)).fetchall()
+        return {"ok": True, "items": {r["key"]: json.loads(r["value"]) for r in rows}}
+    finally:
+        conn.close()
+
+
 def kv_get(scope: str, key: str) -> dict[str, Any]:
     conn = connect()
     try:

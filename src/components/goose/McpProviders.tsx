@@ -54,7 +54,17 @@ export function McpProviders() {
     } finally { setLoading(false); }
   };
 
+  const [conn, setConn] = useState<{ url: string; token: string } | null>(null);
+  const [connErr, setConnErr] = useState<string | null>(null);
   useEffect(() => { void scan(); }, []);
+  const loadConn = async () => {
+    try {
+      const r = await fetch(`${getApiBase()}/api/mcp/connection`, { signal: AbortSignal.timeout(4000) });
+      const d = await r.json();
+      if (!d.ok) throw new Error(d.error);
+      setConn({ url: d.url, token: d.token }); setConnErr(null);
+    } catch (e) { setConnErr(e instanceof Error ? e.message : "local hub offline"); }
+  };
 
   const groups: Record<ProviderKind, Provider[]> = {
     coder: providers.filter((p) => p.kind === "coder"),
@@ -81,6 +91,20 @@ export function McpProviders() {
         >
           {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Rescan"}
         </button>
+      </div>
+
+      <div className="mb-4 rounded-lg border border-border bg-card/40 p-3 text-xs">
+        <div className="flex items-center justify-between">
+          <span className="font-semibold">MCP server for Google AI Studio / Antigravity / Claude</span>
+          <button onClick={loadConn} className="rounded border border-border px-2 py-1 font-mono">Show connection</button>
+        </div>
+        {connErr && <p className="mt-2 text-destructive">{connErr}</p>}
+        {conn && (
+          <div className="mt-2 space-y-1 font-mono break-all">
+            <div>URL: {conn.url}</div>
+            <div>Header: Authorization: Bearer {conn.token}</div>
+          </div>
+        )}
       </div>
 
       {(["coder", "runtime", "toolchain"] as ProviderKind[]).map((k) => (

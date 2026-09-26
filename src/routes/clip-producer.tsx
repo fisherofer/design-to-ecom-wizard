@@ -2,7 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { useStudio, type Episode } from "@/lib/videoStudio";
-import { cast } from "@/lib/castStudio";
+import { cast, useCast } from "@/lib/castStudio";
+import { useServerFn } from "@tanstack/react-start";
+import { driveUploadClip } from "@/lib/driveSync.functions";
+import { readSettings } from "@/lib/driveSyncSettings";
 
 export const Route = createFileRoute("/clip-producer")({
   head: () => ({
@@ -41,6 +44,9 @@ function ClipPage() {
   const [progress, setProgress] = useState<string | null>(null);
   const [clipUrl, setClipUrl] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const upload = useServerFn(driveUploadClip);
+  const castState = useCast();
+  const [autoDrive, setAutoDrive] = useState(true);
   const ep: Episode | undefined = episodes.find((e) => e.id === epId);
 
   const render = async () => {
@@ -83,8 +89,19 @@ function ClipPage() {
     setClipUrl(url);
     setProgress(null);
     const fileName = `${ep.title.replace(/[^\w\u0590-\u05FF-]+/g, "_")}_${date.replace(/[:T]/g, "-")}.webm`;
+    let clipPath = fileName;
+    const folderId = readSettings().folderId;
+    if (autoDrive && folderId) {
+      setProgress("מעלה לגוגל דרייב...");
+      const buf = new Uint8Array(await blob.arrayBuffer());
+      let bin = ""; for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+      const r = await upload({ data: { folderId, name: fileName, mimeType: "video/webm", base64: btoa(bin) } });
+      setProgress(null);
+      if (r.ok) { clipPath = `drive:${r.path}`; toast.success("הקליפ נשמר בגוגל דרייב"); }
+      else toast.error(`העלאה לדרייב נכשלה: ${r.error}`);
+    } else if (autoDrive) toast.info("לא נבחרה תיקיית דרייב — הקליפ נשמר מקומית בלבד");
     cast.enqueue({
-      title: ep.title, slotId: slot, episodeId: ep.id, clipPath: fileName,
+      title: ep.title, slotId: slot, episodeId: ep.id, clipPath,
       productionDate: new Date(date).toISOString(),
       seconds: ep.scenes.reduce((a, s) => a + s.seconds, 0), status: "awaiting_approval",
       note: `${ep.scenes.length} סצנות, ${(blob.size / 1e6).toFixed(1)}MB`,
@@ -119,6 +136,10 @@ function ClipPage() {
           </select>
         </label>
       </section>
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" checked={autoDrive} onChange={(e) => setAutoDrive(e.target.checked)} />
+        שמור כל קליפ אוטומטית בגוגל דרייב (clips/תאריך) כדי לחסוך מקום בשרת
+      </label>
       {episodes.length === 0 && <p className="text-sm text-muted-foreground">אין תסריטים עדיין — צור פרק באולפן הווידאו.</p>}
       {ep && (
         <ol className="space-y-1 rounded-lg border border-border bg-card p-4 text-sm">
@@ -135,6 +156,20 @@ function ClipPage() {
           <a href={clipUrl} download={`${ep?.title ?? "clip"}.webm`} className="inline-block rounded-md border border-border px-3 py-2 text-sm">הורד קליפ</a>
         </div>
       )}
+      <section className="rounded-lg border border-border bg-card p-4">
+        <h2 className="mb-2 font-semibold">בקרה מהירה — ממתינים לאישור</h2>
+        {castState.queue.filter((q) => q.status === "awaiting_approval").length === 0 && <p className="text-sm text-muted-foreground">אין קליפים ממתינים.</p>}
+        <ul className="divide-y divide-border text-sm">
+          {castState.queue.filter((q) => q.status === "awaiting_approval").map((q) => (
+            <li key={q.id} className="flex flex-wrap items-center gap-2 py-2">
+              <span className="font-medium">{q.title}</span>
+              <span className="text-xs text-muted-foreground">{new Date(q.productionDate).toLocaleString("he-IL")} · {q.clipPath}</span>
+              <button onClick={() => { cast.patchQueue(q.id, { status: "approved" }); toast.success("אושר"); }} className="mr-auto rounded-md bg-primary px-2 py-1 text-xs text-primary-foreground">אשר</button>
+              <button onClick={() => { cast.removeQueued(q.id); toast.info("נדחה ונמחק"); }} className="rounded-md border border-border px-2 py-1 text-xs">דחה</button>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   );
 }

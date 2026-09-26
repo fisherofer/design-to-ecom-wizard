@@ -17,7 +17,7 @@ import {
 } from "@/lib/driveSyncSettings";
 import { driveActiveSync, driveFullBackup } from "@/lib/driveSync.functions";
 
-const CHECK_MS = 60_000;
+const CHECK_MS = 30_000;
 
 export function useDriveAutoBackup() {
   const running = useRef(false);
@@ -37,8 +37,8 @@ export function useDriveAutoBackup() {
         await driveFullBackup({ data: { folderId: s.folderId, memory, label: `auto:${reason}` } });
         await driveActiveSync({ data: { folderId: s.folderId, mirrorFolder: s.mirrorFolder } });
         markRun();
-      } catch {
-        /* offline or Drive unavailable — the Drive Sync screen reports status */
+      } catch (e) {
+        console.warn("[drive-auto-backup]", e instanceof Error ? e.message : e);
       } finally {
         running.current = false;
       }
