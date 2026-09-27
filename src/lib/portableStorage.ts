@@ -54,6 +54,23 @@ export function isHydrated(): boolean {
 
 // ---- write-through to the local VENV SQL store (/api/local-store/kv) -------
 const SQL_SKIP = ["ofer.secret.", "ofer.keys.", "ofer.vault.", "ofer.cloudsync.session"];
+export type SqlScope = "system" | "hive" | "user" | "media" | "temp";
+export const SQL_SCOPES: SqlScope[] = ["system", "hive", "user", "media", "temp"];
+
+/** Decide which SQL namespace a setting belongs to, from its key prefix. */
+export function scopeForKey(key: string): SqlScope {
+  const k = key.toLowerCase();
+  if (k.startsWith("ofer.temp.") || k.includes(".cache")) return "temp";
+  if (k.startsWith("ofer.hive") || k.startsWith("ofer.fleet") || k.startsWith("ofer.agent")) return "hive";
+  if (
+    k.startsWith("ofer.newssources") || k.startsWith("ofer.cast") || k.startsWith("ofer.studio") ||
+    k.startsWith("ofer.production") || k.startsWith("ofer.youtube") || k.startsWith("ofer.clip")
+  ) return "media";
+  if (k.startsWith("ofer.user") || k.startsWith("ofer.chat") || k.startsWith("ofer.pref") || k.startsWith("ofer.watchlist"))
+    return "user";
+  return "system";
+}
+
 const pendingSql = new Map<string, string | null>();
 let sqlTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -84,7 +101,7 @@ async function flushSql() {
       const r = await fetch(`${base}/api/local-store/kv`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scope: "system", key, value }),
+        body: JSON.stringify({ scope: scopeForKey(key), key, value }),
         signal: AbortSignal.timeout(5000),
       });
       if (!r.ok) throw new Error(String(r.status));
@@ -100,21 +117,38 @@ async function flushSql() {
 
 export let sqlStatus: "unknown" | "synced" | "offline" = "unknown";
 
-/** Pull settings saved in the local SQL store back into this browser. */
+/** Pull settings saved in every local SQL namespace back into this browser. */
 async function hydrateFromSql() {
   const base = sqlBase();
   if (!base) return;
   try {
-    const r = await fetch(`${base}/api/local-store/kv/system`, { signal: AbortSignal.timeout(5000) });
-    if (!r.ok) throw new Error(String(r.status));
-    const data = (await r.json()) as { items?: Record<string, unknown> };
-    for (const [k, v] of Object.entries(data.items ?? {})) {
-      if (!sqlEligible(k) || typeof v !== "string") continue;
-      if (window.localStorage.getItem(k) === null) window.localStorage.setItem(k, v);
+    for (const scope of SQL_SCOPES) {
+      const r = await fetch(`${base}/api/local-store/kv/${scope}`, { signal: AbortSignal.timeout(5000) });
+      if (!r.ok) throw new Error(String(r.status));
+      const data = (await r.json()) as { items?: Record<string, unknown> };
+      for (const [k, v] of Object.entries(data.items ?? {})) {
+        if (!sqlEligible(k) || typeof v !== "string") continue;
+        if (window.localStorage.getItem(k) === null) window.localStorage.setItem(k, v);
+      }
     }
     sqlStatus = "synced";
   } catch {
     sqlStatus = "offline";
+  }
+}
+
+/** Per-namespace key counts in the local SQL database. */
+export async function getSqlScopes(): Promise<
+  { ok: true; scopes: Record<string, { keys: number; updated_at: number | null }> } | { ok: false; error: string }
+> {
+  const base = sqlBase();
+  if (!base) return { ok: false, error: "no local hub" };
+  try {
+    const r = await fetch(`${base}/api/local-store/kv-scopes`, { signal: AbortSignal.timeout(5000) });
+    if (!r.ok) return { ok: false, error: `HTTP ${r.status}` };
+    return (await r.json()) as { ok: true; scopes: Record<string, { keys: number; updated_at: number | null }> };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message };
   }
 }
 
