@@ -42,6 +42,7 @@ import { Route as IntelligenceRouteImport } from './routes/intelligence'
 import { Route as InsiderRouteImport } from './routes/insider'
 import { Route as HiveRouteImport } from './routes/hive'
 import { Route as GooseRouteImport } from './routes/goose'
+import { Route as GeminiExchangeRouteImport } from './routes/gemini-exchange'
 import { Route as FleetRouteImport } from './routes/fleet'
 import { Route as DriveSyncRouteImport } from './routes/drive-sync'
 import { Route as ConfigRouteImport } from './routes/config'
@@ -227,6 +228,11 @@ const GooseRoute = GooseRouteImport.update({
   path: '/goose',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GeminiExchangeRoute = GeminiExchangeRouteImport.update({
+  id: '/gemini-exchange',
+  path: '/gemini-exchange',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FleetRoute = FleetRouteImport.update({
   id: '/fleet',
   path: '/fleet',
@@ -342,6 +348,7 @@ export interface FileRoutesByFullPath {
   '/config': typeof ConfigRoute
   '/drive-sync': typeof DriveSyncRoute
   '/fleet': typeof FleetRoute
+  '/gemini-exchange': typeof GeminiExchangeRoute
   '/goose': typeof GooseRoute
   '/hive': typeof HiveRoute
   '/insider': typeof InsiderRoute
@@ -396,6 +403,7 @@ export interface FileRoutesByTo {
   '/config': typeof ConfigRoute
   '/drive-sync': typeof DriveSyncRoute
   '/fleet': typeof FleetRoute
+  '/gemini-exchange': typeof GeminiExchangeRoute
   '/goose': typeof GooseRoute
   '/hive': typeof HiveRoute
   '/insider': typeof InsiderRoute
@@ -451,6 +459,7 @@ export interface FileRoutesById {
   '/config': typeof ConfigRoute
   '/drive-sync': typeof DriveSyncRoute
   '/fleet': typeof FleetRoute
+  '/gemini-exchange': typeof GeminiExchangeRoute
   '/goose': typeof GooseRoute
   '/hive': typeof HiveRoute
   '/insider': typeof InsiderRoute
@@ -507,6 +516,7 @@ export interface FileRouteTypes {
     | '/config'
     | '/drive-sync'
     | '/fleet'
+    | '/gemini-exchange'
     | '/goose'
     | '/hive'
     | '/insider'
@@ -561,6 +571,7 @@ export interface FileRouteTypes {
     | '/config'
     | '/drive-sync'
     | '/fleet'
+    | '/gemini-exchange'
     | '/goose'
     | '/hive'
     | '/insider'
@@ -615,6 +626,7 @@ export interface FileRouteTypes {
     | '/config'
     | '/drive-sync'
     | '/fleet'
+    | '/gemini-exchange'
     | '/goose'
     | '/hive'
     | '/insider'
@@ -670,6 +682,7 @@ export interface RootRouteChildren {
   ConfigRoute: typeof ConfigRoute
   DriveSyncRoute: typeof DriveSyncRoute
   FleetRoute: typeof FleetRoute
+  GeminiExchangeRoute: typeof GeminiExchangeRoute
   GooseRoute: typeof GooseRoute
   HiveRoute: typeof HiveRoute
   InsiderRoute: typeof InsiderRoute
@@ -940,6 +953,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GooseRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/gemini-exchange': {
+      id: '/gemini-exchange'
+      path: '/gemini-exchange'
+      fullPath: '/gemini-exchange'
+      preLoaderRoute: typeof GeminiExchangeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/fleet': {
       id: '/fleet'
       path: '/fleet'
@@ -1094,6 +1114,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConfigRoute: ConfigRoute,
   DriveSyncRoute: DriveSyncRoute,
   FleetRoute: FleetRoute,
+  GeminiExchangeRoute: GeminiExchangeRoute,
   GooseRoute: GooseRoute,
   HiveRoute: HiveRoute,
   InsiderRoute: InsiderRoute,

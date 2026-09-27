@@ -428,3 +428,96 @@ export const driveUploadClip = createServerFn({ method: "POST" })
       return { ok: false, error: e instanceof Error ? e.message : String(e) };
     }
   });
+
+// ------------------------------------------------ Gemini AI Studio exchange ---
+// My Drive / AI / Gemini aistudio / Active sync live / { Import, Response }
+// Import   = files Gemini (or the user) drops for this system to review.
+// Response = this system's full answer: what was checked, what is wrong, what was done.
+
+const EXCHANGE_PATH = ["AI", "Gemini aistudio", "Active sync live"];
+const TEXT_EXPORT: Record<string, string> = {
+  "application/vnd.google-apps.document": "text/plain",
+  "application/vnd.google-apps.spreadsheet": "text/csv",
+};
+
+async function resolveExchange(): Promise<{ root: string; importId: string | null; responseId: string } | string> {
+  let cur = "root";
+  for (const seg of EXCHANGE_PATH) {
+    const f = await findChild(seg, cur, true);
+    if (!f) return `Folder not found in My Drive: ${EXCHANGE_PATH.join(" / ")} (missing "${seg}")`;
+    cur = f.id;
+  }
+  const imp = await findChild("Import", cur, true);
+  const resp = (await findChild("Response", cur, true))?.id ?? (await createFolder("Response", cur));
+  return { root: cur, importId: imp?.id ?? null, responseId: resp };
+}
+
+async function listIn(folderId: string, limit: number): Promise<DriveEntry[]> {
+  const q = `'${esc(folderId)}' in parents and trashed=false`;
+  const r = await gw(
+    `${DRIVE_V3}/files?q=${encodeURIComponent(q)}&fields=files(id,name,mimeType,size,modifiedTime)&orderBy=modifiedTime desc&pageSize=${limit}`,
+    { headers: headers() },
+  );
+  if (!r.ok) throw new Error(`Drive list ${r.status}: ${(await r.text()).slice(0, 200)}`);
+  return ((await r.json()) as { files?: DriveEntry[] }).files ?? [];
+}
+
+async function readText(f: DriveEntry, maxChars: number): Promise<string | null> {
+  const exp = f.mimeType ? TEXT_EXPORT[f.mimeType] : undefined;
+  const url = exp
+    ? `${DRIVE_V3}/files/${f.id}/export?mimeType=${encodeURIComponent(exp)}`
+    : `${DRIVE_V3}/files/${f.id}?alt=media`;
+  if (!exp && f.mimeType?.startsWith("application/vnd.google-apps")) return null;
+  if (!exp && Number(f.size ?? 0) > 2_000_000) return null;
+  const r = await gw(url, { headers: headers() });
+  if (!r.ok) return null;
+  return (await r.text()).slice(0, maxChars);
+}
+
+export interface ExchangeFile { id: string; name: string; mimeType?: string; modifiedTime?: string; text: string | null }
+
+export const geminiExchangeScan = createServerFn({ method: "POST" })
+  .inputValidator((raw: unknown) =>
+    z.object({ maxFiles: z.number().int().min(1).max(40).default(15), maxChars: z.number().int().max(40000).default(12000) }).parse(raw ?? {}),
+  )
+  .handler(async ({ data }): Promise<{
+    ok: boolean; error?: string; path: string; imports: ExchangeFile[]; liveFiles: { name: string; mimeType?: string; modifiedTime?: string }[];
+  }> => {
+    const path = `My Drive / ${EXCHANGE_PATH.join(" / ")}`;
+    if (!creds()) return { ok: false, error: "Google Drive is not connected yet.", path, imports: [], liveFiles: [] };
+    try {
+      const ex = await resolveExchange();
+      if (typeof ex === "string") return { ok: false, error: ex, path, imports: [], liveFiles: [] };
+      const live = await listIn(ex.root, 200);
+      const imports: ExchangeFile[] = [];
+      if (ex.importId) {
+        for (const f of await listIn(ex.importId, data.maxFiles)) {
+          if (f.mimeType === FOLDER_MIME) continue;
+          imports.push({ id: f.id, name: f.name, mimeType: f.mimeType, modifiedTime: f.modifiedTime, text: await readText(f, data.maxChars) });
+        }
+      }
+      return {
+        ok: true, path, imports,
+        liveFiles: live.map((f) => ({ name: f.name, mimeType: f.mimeType, modifiedTime: f.modifiedTime })),
+        ...(ex.importId ? {} : { error: "No Import folder yet — create 'Import' inside Active sync live." }),
+      };
+    } catch (e) {
+      return { ok: false, error: (e as Error).message, path, imports: [], liveFiles: [] };
+    }
+  });
+
+export const geminiExchangeReply = createServerFn({ method: "POST" })
+  .inputValidator((raw: unknown) => z.object({ name: z.string().min(1).max(200), body: z.string().min(1).max(500_000) }).parse(raw))
+  .handler(async ({ data }): Promise<{ ok: boolean; id?: string; name?: string; error?: string }> => {
+    if (!creds()) return { ok: false, error: "Google Drive is not connected yet." };
+    try {
+      const ex = await resolveExchange();
+      if (typeof ex === "string") return { ok: false, error: ex };
+      const safe = data.name.replace(/[\\/:*?"<>|]/g, "_");
+      const existing = await findChild(safe, ex.responseId, false);
+      const up = await uploadBytes(ex.responseId, safe, data.body, "text/markdown", existing?.id);
+      return { ok: true, id: up.id, name: up.name };
+    } catch (e) {
+      return { ok: false, error: (e as Error).message };
+    }
+  });

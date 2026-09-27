@@ -369,11 +369,31 @@ def list_events(limit: int = 200) -> dict[str, Any]:
         conn.close()
 
 
+# Settings namespaces kept in the internal VENV SQL database.
+#   system  - operational settings (redacted)
+#   hive    - hive / agent-fleet configuration and consensus state
+#   user    - personal preferences, never redacted, never leaves the machine
+#   media   - channels, episodes, cast, production schedule
+#   temp    - scratch data, auto-expired after TEMP_TTL_S
+KV_SCOPES = {"system", "hive", "user", "media", "temp"}
+TEMP_TTL_S = 7 * 24 * 3600
+
+
+def _check_scope(scope: str) -> None:
+    if scope not in KV_SCOPES:
+        raise ValueError(f"unknown scope '{scope}' (allowed: {sorted(KV_SCOPES)})")
+
+
 def kv_set(scope: str, key: str, value: Any) -> dict[str, Any]:
+    _check_scope(scope)
     conn = connect()
     try:
+        if value is None:
+            conn.execute("DELETE FROM kv WHERE scope=? AND key=?", (scope, key))
+            conn.commit()
+            return {"ok": True, "deleted": True}
         payload = json.dumps(value, ensure_ascii=False)
-        if scope == "system":
+        if scope in ("system", "hive"):
             payload = redact(payload)
         conn.execute(
             "INSERT INTO kv(scope, key, value, updated_at) VALUES (?,?,?,?)"
@@ -387,10 +407,25 @@ def kv_set(scope: str, key: str, value: Any) -> dict[str, Any]:
 
 
 def kv_all(scope: str) -> dict[str, Any]:
+    _check_scope(scope)
     conn = connect()
     try:
+        if scope == "temp":
+            conn.execute("DELETE FROM kv WHERE scope='temp' AND updated_at < ?", (time.time() - TEMP_TTL_S,))
+            conn.commit()
         rows = conn.execute("SELECT key, value, updated_at FROM kv WHERE scope=?", (scope,)).fetchall()
-        return {"ok": True, "items": {r["key"]: json.loads(r["value"]) for r in rows}}
+        return {"ok": True, "scope": scope, "items": {r["key"]: json.loads(r["value"]) for r in rows}}
+    finally:
+        conn.close()
+
+
+def kv_scopes() -> dict[str, Any]:
+    conn = connect()
+    try:
+        rows = conn.execute("SELECT scope, COUNT(*) AS n, MAX(updated_at) AS last FROM kv GROUP BY scope").fetchall()
+        found = {r["scope"]: {"keys": r["n"], "updated_at": r["last"]} for r in rows}
+        return {"ok": True, "db": str(DB_PATH) if "DB_PATH" in globals() else None,
+                "scopes": {s: found.get(s, {"keys": 0, "updated_at": None}) for s in sorted(KV_SCOPES)}}
     finally:
         conn.close()
 
