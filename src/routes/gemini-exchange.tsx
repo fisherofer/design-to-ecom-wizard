@@ -68,7 +68,7 @@ function GeminiExchange() {
       const res = await aiComplete({
         system: SYSTEM,
         prompt: `Files in Active sync live: ${live}\n\n--- ${f.name} ---\n${f.text}`,
-        task: "analysis",
+        task: "reasoning",
         sensitivity: "private",
         maxTokens: 1800,
         temperature: 0.2,
