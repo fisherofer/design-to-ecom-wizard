@@ -140,12 +140,23 @@ def events(limit: int = 200) -> dict:
 
 @router.post("/kv")
 def kv_set(body: KvIn) -> dict:
-    return local_store.kv_set(body.scope, body.key, body.value)
+    try:
+        return local_store.kv_set(body.scope, body.key, body.value)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail={"error": str(e)})
+
+
+@router.get("/kv-scopes")
+def kv_scopes() -> dict:
+    return local_store.kv_scopes()
 
 
 @router.get("/kv/{scope}")
 def kv_list(scope: str) -> dict:
-    return local_store.kv_all(scope)
+    try:
+        return local_store.kv_all(scope)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail={"error": str(e)})
 
 
 @router.get("/kv/{scope}/{key}")
