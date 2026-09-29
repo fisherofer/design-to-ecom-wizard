@@ -42,24 +42,50 @@ function TelegramPage() {
     return () => clearInterval(i);
   }, [refresh]);
 
+  const [log, setLog] = useState<{ t: string; level: "ok" | "warn" | "err" | "info"; msg: string }[]>([]);
+  const add = (level: "ok" | "warn" | "err" | "info", msg: string) => {
+    setLog((l) => [{ t: new Date().toLocaleTimeString("he-IL"), level, msg }, ...l].slice(0, 50));
+    (level === "err" ? toast.error : level === "ok" ? toast.success : level === "warn" ? toast.warning : toast.info)(msg);
+  };
+  const explain = (e?: string) => {
+    const s = e ?? "";
+    if (/fetch|network|abort|Failed to fetch|HTTP 5|404/i.test(s))
+      return `השרת המקומי במחשב שלך לא עונה (${s}). הפעל אותו ונסה שוב.`;
+    if (/invalid token|Unauthorized|401|Not Found/i.test(s)) return "הטוקן לא תקין. העתק אותו שוב מ-BotFather במלואו.";
+    if (/consent/i.test(s)) return 'חסר אישור פרטיות. אשר "טלגרם" ו"שמירת שיחות" במסך "פרטיות ונתונים".';
+    if (/no bot token/i.test(s)) return "לא הוזן טוקן ואין טוקן שמור.";
+    return s || "שגיאה לא ידועה";
+  };
+  const tokenTrim = token.trim();
+  const tokenValid = /^\d{6,12}:[A-Za-z0-9_-]{30,}$/.test(tokenTrim);
+  const chatIds = chats.split(/[,\s]+/).filter(Boolean);
+  const chatsValid = chatIds.every((c) => /^-?\d{5,15}$/.test(c));
+
   const start = async () => {
+    if (tokenTrim && !tokenValid) return add("err", "פורמט הטוקן שגוי — צריך להיראות כמו 123456789:AAH...");
+    if (!chatsValid) return add("err", "מספר צ'אט חייב להכיל ספרות בלבד (לחץ \"זהה אותי\").");
+    if (chatIds.length === 0) add("warn", "לא הוזן מספר צ'אט — כל אחד יוכל לדבר עם הבוט.");
     setBusy(true);
-    const ids = chats.split(/[,\s]+/).map(Number).filter((n) => Number.isFinite(n) && n !== 0);
-    const r = await startBridge({ token: token.trim() || undefined, allowedChatIds: ids });
+    add("info", "מפעיל את הבוט...");
+    const r = await startBridge({ token: tokenTrim || undefined, allowedChatIds: chatIds.map(Number) });
     setBusy(false);
-    if (r.ok) { toast.success(`הבוט פעיל: @${r.bot}`); setToken(""); } else toast.error(r.error ?? "נכשל");
+    if (r.ok) { add("ok", `הבוט פעיל: @${r.bot}. שלח לו /status בטלגרם.`); setToken(""); } else add("err", explain(r.error));
     void refresh();
   };
 
   const detect = async () => {
+    if (!tokenTrim && !st?.token_saved) return add("err", "הדבק קודם את הטוקן מ-BotFather.");
+    if (tokenTrim && !tokenValid) return add("err", "פורמט הטוקן שגוי — צריך להיראות כמו 123456789:AAH...");
     setBusy(true);
-    const r = await detectChats(token.trim() || undefined);
+    add("info", "בודק את הטוקן מול טלגרם...");
+    const r = await detectChats(tokenTrim || undefined);
     setBusy(false);
-    if (!r.ok) { toast.error(r.error ?? "נכשל"); return; }
-    if (r.note) { toast.info("עצור את הבוט כדי לזהות צ'אטים"); return; }
-    if (r.chats.length === 0) { toast.warning(`הטוקן תקין (@${r.bot}), אבל עדיין לא התקבלה הודעה. שלח לבוט הודעה ונסה שוב.`); return; }
+    if (!r.ok) return add("err", explain(r.error));
+    add("ok", `הטוקן תקין — הבוט הוא @${r.bot}`);
+    if (r.note) return add("warn", "הבוט כבר פועל. לחץ \"עצור\" ואז \"זהה אותי\" שוב.");
+    if (r.chats.length === 0) return add("warn", `עדיין לא התקבלה הודעה. פתח בטלגרם את @${r.bot}, שלח "שלום" ולחץ שוב "זהה אותי".`);
     setChats(r.chats.map((c) => c.id).join(", "));
-    toast.success(`נמצא: ${r.chats.map((c) => c.username ? "@" + c.username : c.name ?? c.id).join(", ")}`);
+    add("ok", `נמצא הצ'אט שלך: ${r.chats.map((c) => (c.username ? "@" + c.username : c.name ?? "") + ` (${c.id})`).join(", ")}`);
   };
 
   const field = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm";
