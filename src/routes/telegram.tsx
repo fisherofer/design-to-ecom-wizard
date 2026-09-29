@@ -42,24 +42,50 @@ function TelegramPage() {
     return () => clearInterval(i);
   }, [refresh]);
 
+  const [log, setLog] = useState<{ t: string; level: "ok" | "warn" | "err" | "info"; msg: string }[]>([]);
+  const add = (level: "ok" | "warn" | "err" | "info", msg: string) => {
+    setLog((l) => [{ t: new Date().toLocaleTimeString("he-IL"), level, msg }, ...l].slice(0, 50));
+    (level === "err" ? toast.error : level === "ok" ? toast.success : level === "warn" ? toast.warning : toast.info)(msg);
+  };
+  const explain = (e?: string) => {
+    const s = e ?? "";
+    if (/fetch|network|abort|Failed to fetch|HTTP 5|404/i.test(s))
+      return `השרת המקומי במחשב שלך לא עונה (${s}). הפעל אותו ונסה שוב.`;
+    if (/invalid token|Unauthorized|401|Not Found/i.test(s)) return "הטוקן לא תקין. העתק אותו שוב מ-BotFather במלואו.";
+    if (/consent/i.test(s)) return 'חסר אישור פרטיות. אשר "טלגרם" ו"שמירת שיחות" במסך "פרטיות ונתונים".';
+    if (/no bot token/i.test(s)) return "לא הוזן טוקן ואין טוקן שמור.";
+    return s || "שגיאה לא ידועה";
+  };
+  const tokenTrim = token.trim();
+  const tokenValid = /^\d{6,12}:[A-Za-z0-9_-]{30,}$/.test(tokenTrim);
+  const chatIds = chats.split(/[,\s]+/).filter(Boolean);
+  const chatsValid = chatIds.every((c) => /^-?\d{5,15}$/.test(c));
+
   const start = async () => {
+    if (tokenTrim && !tokenValid) return add("err", "פורמט הטוקן שגוי — צריך להיראות כמו 123456789:AAH...");
+    if (!chatsValid) return add("err", "מספר צ'אט חייב להכיל ספרות בלבד (לחץ \"זהה אותי\").");
+    if (chatIds.length === 0) add("warn", "לא הוזן מספר צ'אט — כל אחד יוכל לדבר עם הבוט.");
     setBusy(true);
-    const ids = chats.split(/[,\s]+/).map(Number).filter((n) => Number.isFinite(n) && n !== 0);
-    const r = await startBridge({ token: token.trim() || undefined, allowedChatIds: ids });
+    add("info", "מפעיל את הבוט...");
+    const r = await startBridge({ token: tokenTrim || undefined, allowedChatIds: chatIds.map(Number) });
     setBusy(false);
-    if (r.ok) { toast.success(`הבוט פעיל: @${r.bot}`); setToken(""); } else toast.error(r.error ?? "נכשל");
+    if (r.ok) { add("ok", `הבוט פעיל: @${r.bot}. שלח לו /status בטלגרם.`); setToken(""); } else add("err", explain(r.error));
     void refresh();
   };
 
   const detect = async () => {
+    if (!tokenTrim && !st?.token_saved) return add("err", "הדבק קודם את הטוקן מ-BotFather.");
+    if (tokenTrim && !tokenValid) return add("err", "פורמט הטוקן שגוי — צריך להיראות כמו 123456789:AAH...");
     setBusy(true);
-    const r = await detectChats(token.trim() || undefined);
+    add("info", "בודק את הטוקן מול טלגרם...");
+    const r = await detectChats(tokenTrim || undefined);
     setBusy(false);
-    if (!r.ok) { toast.error(r.error ?? "נכשל"); return; }
-    if (r.note) { toast.info("עצור את הבוט כדי לזהות צ'אטים"); return; }
-    if (r.chats.length === 0) { toast.warning(`הטוקן תקין (@${r.bot}), אבל עדיין לא התקבלה הודעה. שלח לבוט הודעה ונסה שוב.`); return; }
+    if (!r.ok) return add("err", explain(r.error));
+    add("ok", `הטוקן תקין — הבוט הוא @${r.bot}`);
+    if (r.note) return add("warn", "הבוט כבר פועל. לחץ \"עצור\" ואז \"זהה אותי\" שוב.");
+    if (r.chats.length === 0) return add("warn", `עדיין לא התקבלה הודעה. פתח בטלגרם את @${r.bot}, שלח "שלום" ולחץ שוב "זהה אותי".`);
     setChats(r.chats.map((c) => c.id).join(", "));
-    toast.success(`נמצא: ${r.chats.map((c) => c.username ? "@" + c.username : c.name ?? c.id).join(", ")}`);
+    add("ok", `נמצא הצ'אט שלך: ${r.chats.map((c) => (c.username ? "@" + c.username : c.name ?? "") + ` (${c.id})`).join(", ")}`);
   };
 
   const field = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm";
@@ -103,15 +129,43 @@ function TelegramPage() {
 
       <section className="space-y-3 rounded-lg border border-border bg-card p-4">
         <h2 className="font-semibold">חיבור בוט</h2>
-        <input type="password" className={field} placeholder="טוקן מ-BotFather (נשמר רק בשרת המקומי)" value={token} onChange={(e) => setToken(e.target.value)} />
-        <input className={field} placeholder="מזהי צ'אט מורשים (מופרדים בפסיק) — מומלץ" value={chats} onChange={(e) => setChats(e.target.value)} />
+        <label className="block space-y-1 text-sm">
+          <span className="font-medium">1. טוקן הבוט (HTTP API token) — מההודעה של BotFather אחרי /newbot</span>
+          <input type="password" dir="ltr" className={field} placeholder="123456789:AAH..." value={token} onChange={(e) => setToken(e.target.value)} />
+          {tokenTrim ? (
+            <span className={tokenValid ? "text-xs text-success" : "text-xs text-destructive"}>
+              {tokenValid ? "✓ הפורמט תקין. לחץ \"זהה אותי\" כדי לבדוק אותו מול טלגרם." : "✗ הפורמט שגוי: מספר, נקודתיים, ואז כ-35 תווים. העתק את כל השורה מ-BotFather."}
+            </span>
+          ) : (
+            <span className="text-xs text-muted-foreground">{st?.token_saved ? "יש טוקן שמור. אפשר להשאיר ריק." : "ב-BotFather: הטוקן מופיע אחרי \"Use this token to access the HTTP API\"."}</span>
+          )}
+        </label>
+        <label className="block space-y-1 text-sm">
+          <span className="font-medium">2. מספר הצ'אט שלך (Chat ID) — מתמלא לבד בלחיצה על "זהה אותי"</span>
+          <input dir="ltr" className={field} placeholder="למשל 123456789" value={chats} onChange={(e) => setChats(e.target.value)} />
+          <span className={chatsValid ? "text-xs text-muted-foreground" : "text-xs text-destructive"}>
+            {chatsValid ? "זה לא @FISHEROFER — זה מספר. שלח הודעה לבוט שלך ולחץ \"זהה אותי\"." : "✗ ספרות בלבד, מופרדות בפסיק."}
+          </span>
+        </label>
         <div className="flex flex-wrap gap-2">
-          <button disabled={busy} onClick={detect} className="rounded-md border border-primary px-3 py-2 text-sm text-primary disabled:opacity-50">זהה אותי</button>
+          <button disabled={busy} onClick={detect} className="rounded-md border border-primary px-3 py-2 text-sm text-primary disabled:opacity-50">זהה אותי ובדוק טוקן</button>
           <button disabled={busy} onClick={start} className="rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground disabled:opacity-50">הפעל</button>
-          <button onClick={async () => { await stopBridge(); void refresh(); }} className="rounded-md border border-border px-3 py-2 text-sm">עצור</button>
-          <button onClick={async () => { await forgetToken(); void refresh(); }} className="rounded-md border border-border px-3 py-2 text-sm">מחק טוקן</button>
+          <button onClick={async () => { const r = await stopBridge(); r.ok ? add("ok", "הבוט נעצר.") : add("err", explain(r.error)); void refresh(); }} className="rounded-md border border-border px-3 py-2 text-sm">עצור</button>
+          <button onClick={async () => { const r = await forgetToken(); r.ok ? add("ok", "הטוקן נמחק.") : add("err", explain(r.error)); void refresh(); }} className="rounded-md border border-border px-3 py-2 text-sm">מחק טוקן</button>
         </div>
         <p className="text-xs text-muted-foreground">פקודות: /status, /agents, /tasks, /task &lt;תיאור&gt;, /proposals, /memory. כל הודעה נכנסת לתור המשימות.</p>
+      </section>
+
+      <section className="space-y-2 rounded-lg border border-border bg-card p-4">
+        <h2 className="font-semibold">יומן פעולות ושגיאות</h2>
+        {log.length === 0 && <p className="text-sm text-muted-foreground">עדיין לא בוצעה פעולה. כל לחיצה תירשם כאן עם הסבר.</p>}
+        <ul className="space-y-1 text-sm">
+          {log.map((l, i) => (
+            <li key={i} className={l.level === "err" ? "text-destructive" : l.level === "warn" ? "text-warning" : l.level === "ok" ? "text-success" : "text-muted-foreground"}>
+              <span className="font-mono text-xs">{l.t}</span> · {l.msg}
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className="space-y-2 rounded-lg border border-border bg-card p-4">

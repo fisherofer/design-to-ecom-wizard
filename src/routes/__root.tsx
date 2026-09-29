@@ -1,6 +1,7 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { AppShell } from "@/components/layout/AppShell";
+import { Toaster } from "@/components/ui/sonner";
 import { initPortableStorage } from "@/lib/portableStorage";
 import { useDriveAutoBackup } from "@/hooks/useDriveAutoBackup";
 
@@ -106,6 +107,7 @@ function RootComponent() {
   return (
     <AppShell>
       <Outlet />
+      <Toaster richColors position="top-center" />
     </AppShell>
   );
 }
