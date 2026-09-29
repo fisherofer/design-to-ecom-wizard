@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { bridgeStatus, forgetToken, startBridge, stopBridge, type BridgeStatus } from "@/lib/telegramBridge";
+import { bridgeStatus, detectChats, forgetToken, startBridge, stopBridge, type BridgeStatus } from "@/lib/telegramBridge";
 import { listTasks, type FleetTask } from "@/lib/fleet";
 
 export const Route = createFileRoute("/telegram")({
@@ -51,6 +51,17 @@ function TelegramPage() {
     void refresh();
   };
 
+  const detect = async () => {
+    setBusy(true);
+    const r = await detectChats(token.trim() || undefined);
+    setBusy(false);
+    if (!r.ok) { toast.error(r.error ?? "נכשל"); return; }
+    if (r.note) { toast.info("עצור את הבוט כדי לזהות צ'אטים"); return; }
+    if (r.chats.length === 0) { toast.warning(`הטוקן תקין (@${r.bot}), אבל עדיין לא התקבלה הודעה. שלח לבוט הודעה ונסה שוב.`); return; }
+    setChats(r.chats.map((c) => c.id).join(", "));
+    toast.success(`נמצא: ${r.chats.map((c) => c.username ? "@" + c.username : c.name ?? c.id).join(", ")}`);
+  };
+
   const field = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm";
   return (
     <div dir="rtl" className="space-y-6 p-6">
@@ -72,10 +83,30 @@ function TelegramPage() {
       </section>
 
       <section className="space-y-3 rounded-lg border border-border bg-card p-4">
+        <h2 className="font-semibold">הגדרה צעד-אחר-צעד</h2>
+        <ol className="list-decimal space-y-2 pr-5 text-sm">
+          <li>
+            פתח את BotFather ושלח <code>/newbot</code>, בחר שם ושם משתמש שנגמר ב-bot.
+            <div className="mt-1 flex flex-wrap gap-2">
+              <a href="tg://resolve?domain=BotFather" className="rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground">פתח באפליקציית טלגרם</a>
+              <a href="https://t.me/BotFather" target="_blank" rel="noreferrer" className="rounded-md border border-border px-3 py-1.5 text-xs">פתח בדפדפן</a>
+              <button onClick={() => { void navigator.clipboard.writeText("/newbot"); toast.success("הועתק: /newbot"); }} className="rounded-md border border-border px-3 py-1.5 text-xs">העתק /newbot</button>
+            </div>
+          </li>
+          <li>העתק את הטוקן ש-BotFather שולח (נראה כמו <code>123456:AAH…</code>) והדבק בשדה למטה.</li>
+          <li>פתח את הבוט החדש שלך ושלח לו הודעה כלשהי (למשל "שלום").</li>
+          <li>לחץ "זהה אותי" — המערכת תמצא את מספר הצ'אט שלך לבד ותמלא אותו.</li>
+          <li>אשר טלגרם ושמירת שיחות במסך "פרטיות ונתונים", ולחץ "הפעל".</li>
+        </ol>
+        <p className="text-xs text-muted-foreground">הטוקן נשמר במסד המקומי שלך, בחלק של נתוני המשתמש — לא בנתוני המערכת.</p>
+      </section>
+
+      <section className="space-y-3 rounded-lg border border-border bg-card p-4">
         <h2 className="font-semibold">חיבור בוט</h2>
         <input type="password" className={field} placeholder="טוקן מ-BotFather (נשמר רק בשרת המקומי)" value={token} onChange={(e) => setToken(e.target.value)} />
         <input className={field} placeholder="מזהי צ'אט מורשים (מופרדים בפסיק) — מומלץ" value={chats} onChange={(e) => setChats(e.target.value)} />
         <div className="flex flex-wrap gap-2">
+          <button disabled={busy} onClick={detect} className="rounded-md border border-primary px-3 py-2 text-sm text-primary disabled:opacity-50">זהה אותי</button>
           <button disabled={busy} onClick={start} className="rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground disabled:opacity-50">הפעל</button>
           <button onClick={async () => { await stopBridge(); void refresh(); }} className="rounded-md border border-border px-3 py-2 text-sm">עצור</button>
           <button onClick={async () => { await forgetToken(); void refresh(); }} className="rounded-md border border-border px-3 py-2 text-sm">מחק טוקן</button>

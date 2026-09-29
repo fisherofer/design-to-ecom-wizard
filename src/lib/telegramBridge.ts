@@ -83,6 +83,21 @@ export async function stopBridge() {
   }
 }
 
+export interface DetectedChat { id: number; username: string | null; name: string | null }
+
+/** Validates the token and finds chats that already messaged the bot. */
+export async function detectChats(token?: string) {
+  try {
+    const r = await call<{ ok: boolean; bot: string; chats: DetectedChat[]; note?: string }>("/detect", {
+      method: "POST",
+      body: JSON.stringify({ token: token ?? null }),
+    });
+    return { ok: true as const, bot: r.bot, chats: r.chats, note: r.note };
+  } catch (e) {
+    return { ok: false as const, error: (e as Error).message, chats: [] as DetectedChat[] };
+  }
+}
+
 export async function forgetToken() {
   try {
     await call("/token", { method: "DELETE" });
