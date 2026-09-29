@@ -129,15 +129,43 @@ function TelegramPage() {
 
       <section className="space-y-3 rounded-lg border border-border bg-card p-4">
         <h2 className="font-semibold">חיבור בוט</h2>
-        <input type="password" className={field} placeholder="טוקן מ-BotFather (נשמר רק בשרת המקומי)" value={token} onChange={(e) => setToken(e.target.value)} />
-        <input className={field} placeholder="מזהי צ'אט מורשים (מופרדים בפסיק) — מומלץ" value={chats} onChange={(e) => setChats(e.target.value)} />
+        <label className="block space-y-1 text-sm">
+          <span className="font-medium">1. טוקן הבוט (HTTP API token) — מההודעה של BotFather אחרי /newbot</span>
+          <input type="password" dir="ltr" className={field} placeholder="123456789:AAH..." value={token} onChange={(e) => setToken(e.target.value)} />
+          {tokenTrim ? (
+            <span className={tokenValid ? "text-xs text-success" : "text-xs text-destructive"}>
+              {tokenValid ? "✓ הפורמט תקין. לחץ \"זהה אותי\" כדי לבדוק אותו מול טלגרם." : "✗ הפורמט שגוי: מספר, נקודתיים, ואז כ-35 תווים. העתק את כל השורה מ-BotFather."}
+            </span>
+          ) : (
+            <span className="text-xs text-muted-foreground">{st?.token_saved ? "יש טוקן שמור. אפשר להשאיר ריק." : "ב-BotFather: הטוקן מופיע אחרי \"Use this token to access the HTTP API\"."}</span>
+          )}
+        </label>
+        <label className="block space-y-1 text-sm">
+          <span className="font-medium">2. מספר הצ'אט שלך (Chat ID) — מתמלא לבד בלחיצה על "זהה אותי"</span>
+          <input dir="ltr" className={field} placeholder="למשל 123456789" value={chats} onChange={(e) => setChats(e.target.value)} />
+          <span className={chatsValid ? "text-xs text-muted-foreground" : "text-xs text-destructive"}>
+            {chatsValid ? "זה לא @FISHEROFER — זה מספר. שלח הודעה לבוט שלך ולחץ \"זהה אותי\"." : "✗ ספרות בלבד, מופרדות בפסיק."}
+          </span>
+        </label>
         <div className="flex flex-wrap gap-2">
-          <button disabled={busy} onClick={detect} className="rounded-md border border-primary px-3 py-2 text-sm text-primary disabled:opacity-50">זהה אותי</button>
+          <button disabled={busy} onClick={detect} className="rounded-md border border-primary px-3 py-2 text-sm text-primary disabled:opacity-50">זהה אותי ובדוק טוקן</button>
           <button disabled={busy} onClick={start} className="rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground disabled:opacity-50">הפעל</button>
-          <button onClick={async () => { await stopBridge(); void refresh(); }} className="rounded-md border border-border px-3 py-2 text-sm">עצור</button>
-          <button onClick={async () => { await forgetToken(); void refresh(); }} className="rounded-md border border-border px-3 py-2 text-sm">מחק טוקן</button>
+          <button onClick={async () => { const r = await stopBridge(); r.ok ? add("ok", "הבוט נעצר.") : add("err", explain(r.error)); void refresh(); }} className="rounded-md border border-border px-3 py-2 text-sm">עצור</button>
+          <button onClick={async () => { const r = await forgetToken(); r.ok ? add("ok", "הטוקן נמחק.") : add("err", explain(r.error)); void refresh(); }} className="rounded-md border border-border px-3 py-2 text-sm">מחק טוקן</button>
         </div>
         <p className="text-xs text-muted-foreground">פקודות: /status, /agents, /tasks, /task &lt;תיאור&gt;, /proposals, /memory. כל הודעה נכנסת לתור המשימות.</p>
+      </section>
+
+      <section className="space-y-2 rounded-lg border border-border bg-card p-4">
+        <h2 className="font-semibold">יומן פעולות ושגיאות</h2>
+        {log.length === 0 && <p className="text-sm text-muted-foreground">עדיין לא בוצעה פעולה. כל לחיצה תירשם כאן עם הסבר.</p>}
+        <ul className="space-y-1 text-sm">
+          {log.map((l, i) => (
+            <li key={i} className={l.level === "err" ? "text-destructive" : l.level === "warn" ? "text-warning" : l.level === "ok" ? "text-success" : "text-muted-foreground"}>
+              <span className="font-mono text-xs">{l.t}</span> · {l.msg}
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className="space-y-2 rounded-lg border border-border bg-card p-4">
