@@ -379,6 +379,15 @@ KV_SCOPES = {"system", "hive", "user", "media", "temp"}
 TEMP_TTL_S = 7 * 24 * 3600
 
 
+def _sync_record(scope: str, key: str, value: Any) -> None:
+    """Append to the multi-station change log (hive sync)."""
+    try:
+        from hub import station_sync
+        station_sync.record(scope, key, value)
+    except Exception as e:  # never break a local write because of sync
+        print(f"[local_store] sync record failed: {e}")
+
+
 def _check_scope(scope: str) -> None:
     if scope not in KV_SCOPES:
         raise ValueError(f"unknown scope '{scope}' (allowed: {sorted(KV_SCOPES)})")
@@ -391,6 +400,7 @@ def kv_set(scope: str, key: str, value: Any) -> dict[str, Any]:
         if value is None:
             conn.execute("DELETE FROM kv WHERE scope=? AND key=?", (scope, key))
             conn.commit()
+            _sync_record(scope, key, None)
             return {"ok": True, "deleted": True}
         payload = json.dumps(value, ensure_ascii=False)
         if scope in ("system", "hive"):
@@ -401,6 +411,7 @@ def kv_set(scope: str, key: str, value: Any) -> dict[str, Any]:
             (scope, key, payload, time.time()),
         )
         conn.commit()
+        _sync_record(scope, key, value)
         return {"ok": True}
     finally:
         conn.close()

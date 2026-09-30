@@ -120,6 +120,11 @@ RPC_TOOLS = [
           {"prompt": {"type": "string"}, "max_tokens": {"type": "integer"}}, ["prompt"]),
     _tool("local_ai_status", "Local AI runtimes and loaded models."),
     _tool("memory_stats", "Approved agent memory statistics."),
+    _tool("sync_changes", "Hive station sync: list changes after a cursor (secrets never included).",
+          {"cursor": {"type": "integer"}}),
+    _tool("sync_apply", "Hive station sync: apply changes from another station (last-writer-wins).",
+          {"changes": {"type": "array", "items": {"type": "object"}}, "origin": {"type": "string"}},
+          ["changes"], False),
     _tool("get_setting", "Read a system setting from the local SQL store.", {"key": {"type": "string"}}, ["key"]),
 ]
 
@@ -138,6 +143,12 @@ def _call(name: str, a: dict):
         return local_ai_manager.generate(str(a["prompt"]), max_tokens=int(a.get("max_tokens", 512)))
     if name == "local_ai_status": return local_ai_manager.get_status()
     if name == "memory_stats": return ai_memory.stats()
+    if name == "sync_changes":
+        from hub import station_sync
+        return station_sync.changes_since(int(a.get("cursor", 0)))
+    if name == "sync_apply":
+        from hub import station_sync
+        return station_sync.apply_changes(list(a["changes"]), origin=str(a.get("origin", "mcp")))
     if name == "get_setting":
         key = str(a["key"])
         if key.startswith(("ofer.secret.", "ofer.keys.", "mcp.token")):
