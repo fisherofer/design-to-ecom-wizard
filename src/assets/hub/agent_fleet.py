@@ -78,6 +78,16 @@ def _init() -> None:
 
 _init()
 
+def _sync_task(task_id: int | None) -> None:
+    if not task_id:
+        return
+    try:
+        from hub import station_sync
+        station_sync.record_task(int(task_id))
+    except Exception as e:
+        local_store.log_event("sync", f"task {task_id} not queued for station sync: {e}", severity="warn")
+
+
 _TASK_COLS = ["id", "title", "role", "spec", "status", "worker", "result", "error",
               "priority", "created_at", "updated_at"]
 _PROP_COLS = ["id", "title", "target_path", "rationale", "patch", "risk", "source",
@@ -171,6 +181,7 @@ def submit_task(title: str, role: str = "general", spec: dict[str, Any] | None =
             (title, role, json.dumps(spec or {}), max(1, min(9, priority)), now, now),
         )
         conn.commit()
+    _sync_task(cur.lastrowid)
     return {"ok": True, "id": cur.lastrowid, "status": "queued"}
 
 
@@ -197,6 +208,7 @@ def claim_task(worker: str, role: str | None = None) -> dict[str, Any]:
         conn.commit()
         task = _rows(conn, f"SELECT {','.join(_TASK_COLS)} FROM fleet_tasks WHERE id=?",
                      (row[0],), _TASK_COLS)[0]
+    _sync_task(row[0])
     return {"ok": True, "task": task}
 
 
@@ -214,6 +226,7 @@ def complete_task(task_id: int, worker: str, result: Any = None,
         conn.commit()
     if not cur.rowcount:
         return {"ok": False, "error": "task not found for this worker"}
+    _sync_task(task_id)
     return {"ok": True, "status": status}
 
 
