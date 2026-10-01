@@ -26,6 +26,15 @@ class ApplyBody(BaseModel):
     changes: list[dict[str, Any]]
     origin: str = "peer"
     origin_name: str | None = None
+    via: str = "peer"
+    folder: str | None = None
+
+
+class SentBody(BaseModel):
+    changes: list[dict[str, Any]]
+    peer: str = "drive"
+    via: str = "drive"
+    folder: str | None = None
 
 
 class PullBody(BaseModel):
@@ -38,22 +47,45 @@ class PullBody(BaseModel):
 def status(request: Request):
     if not _authorized(request):
         return _deny()
-    return {**station_sync.list_peers(), "head": station_sync.changes_since(0, 1_000_000)["cursor"]}
+    from hub import local_store
+    own = local_store.kv_get("system", "station.drive_folder")
+    return {**station_sync.list_peers(), "head": station_sync.changes_since(0, 1_000_000)["cursor"],
+            "folder": own.get("value") if own.get("ok") else None}
 
 
 @router.get("/changes")
-def changes(request: Request, cursor: int = 0):
+def changes(request: Request, cursor: int = 0, peer: str | None = None):
     if not _authorized(request):
         return _deny()
-    return station_sync.changes_since(cursor)
+    res = station_sync.changes_since(cursor)
+    if peer:  # a remote station pulled — log what left this station
+        station_sync.log_sent(res["changes"], peer, "http")
+    return res
+
+
+@router.post("/sent")
+def sent(body: SentBody, request: Request):
+    if not _authorized(request):
+        return _deny()
+    station_sync.log_sent(body.changes, body.peer, body.via)
+    if body.folder:
+        station_sync.set_own_folder(body.folder)
+    return {"ok": True, "logged": len(body.changes)}
+
+
+@router.get("/log")
+def log(request: Request, limit: int = 300, direction: str | None = None):
+    if not _authorized(request):
+        return _deny()
+    return station_sync.read_log(min(max(limit, 1), 2000), direction)
 
 
 @router.post("/apply")
 def apply(body: ApplyBody, request: Request):
     if not _authorized(request):
         return _deny()
-    res = station_sync.apply_changes(body.changes, origin=body.origin)
-    station_sync.upsert_peer(body.origin, name=body.origin_name)
+    res = station_sync.apply_changes(body.changes, origin=body.origin, via=body.via)
+    station_sync.upsert_peer(body.origin, name=body.origin_name, folder=body.folder, via=body.via)
     return res
 
 

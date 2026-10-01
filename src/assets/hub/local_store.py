@@ -264,7 +264,18 @@ def add_message(conv_id: str, role: str, content: str, scope: str = "user",
             (conv_id, scope, role, body, model, runtime, latency_ms, time.time()),
         )
         conn.commit()
-        return {"ok": True}
+        row_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+    finally:
+        conn.close()
+    try:
+        from hub import station_sync
+        station_sync.record_message(int(row_id))
+    except Exception as e:  # sync must never block a chat turn, but it is logged
+        log_event("sync", f"message not queued for station sync: {e}", severity="warn")
+    return {"ok": True}
+    if False:
+        try:
+            pass
     finally:
         conn.close()
 
