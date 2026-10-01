@@ -521,3 +521,39 @@ export const geminiExchangeReply = createServerFn({ method: "POST" })
       return { ok: false, error: (e as Error).message };
     }
   });
+
+// ------------------------------------------------------- station sync ---
+// Each station uploads its own delta file to <target>/stations/<station_id>.json
+// and reads the other stations' files. Only kv deltas travel; secrets never do.
+
+export const stationDrivePush = createServerFn({ method: "POST" })
+  .inputValidator((d: { folderId: string; stationId: string; payload: string }) => d)
+  .handler(async ({ data }) => {
+    if (!creds()) return { ok: false as const, error: "Google Drive not connected" };
+    const cache = new Map<string, string>();
+    const dir = await ensureChain(data.folderId, ["stations"], cache);
+    const name = `${data.stationId.replace(/[^\w.-]/g, "_")}.json`;
+    const existing = await findChild(name, dir, false);
+    await uploadBytes(dir, name, data.payload, "application/json", existing?.id);
+    return { ok: true as const };
+  });
+
+export const stationDrivePull = createServerFn({ method: "POST" })
+  .inputValidator((d: { folderId: string; stationId: string }) => d)
+  .handler(async ({ data }) => {
+    if (!creds()) return { ok: false as const, error: "Google Drive not connected", files: [] };
+    const dir = await findChild("stations", data.folderId, true);
+    if (!dir) return { ok: true as const, files: [] };
+    const q = `'${dir.id}' in parents and trashed=false`;
+    const r = await gw(`${DRIVE_V3}/files?q=${encodeURIComponent(q)}&fields=files(id,name,modifiedTime)&pageSize=100`, { headers: headers() });
+    if (!r.ok) return { ok: false as const, error: `Drive ${r.status}`, files: [] };
+    const list = ((await r.json()) as { files?: DriveEntry[] }).files ?? [];
+    const self = `${data.stationId.replace(/[^\w.-]/g, "_")}.json`;
+    const files: Array<{ name: string; modifiedTime?: string; content: string }> = [];
+    for (const f of list) {
+      if (f.name === self) continue;
+      const fr = await gw(`${DRIVE_V3}/files/${f.id}?alt=media`, { headers: headers() });
+      if (fr.ok) files.push({ name: f.name, modifiedTime: f.modifiedTime, content: await fr.text() });
+    }
+    return { ok: true as const, files };
+  });
