@@ -20,6 +20,7 @@ import { Route as TelegramRouteImport } from './routes/telegram'
 import { Route as SystemRouteImport } from './routes/system'
 import { Route as StudioRouteImport } from './routes/studio'
 import { Route as StrategyRouteImport } from './routes/strategy'
+import { Route as StationsRouteImport } from './routes/stations'
 import { Route as SourcesRouteImport } from './routes/sources'
 import { Route as SituationRoomRouteImport } from './routes/situation-room'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -116,6 +117,11 @@ const StudioRoute = StudioRouteImport.update({
 const StrategyRoute = StrategyRouteImport.update({
   id: '/strategy',
   path: '/strategy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StationsRoute = StationsRouteImport.update({
+  id: '/stations',
+  path: '/stations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SourcesRoute = SourcesRouteImport.update({
@@ -371,6 +377,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/situation-room': typeof SituationRoomRoute
   '/sources': typeof SourcesRoute
+  '/stations': typeof StationsRoute
   '/strategy': typeof StrategyRoute
   '/studio': typeof StudioRoute
   '/system': typeof SystemRoute
@@ -426,6 +433,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/situation-room': typeof SituationRoomRoute
   '/sources': typeof SourcesRoute
+  '/stations': typeof StationsRoute
   '/strategy': typeof StrategyRoute
   '/studio': typeof StudioRoute
   '/system': typeof SystemRoute
@@ -482,6 +490,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/situation-room': typeof SituationRoomRoute
   '/sources': typeof SourcesRoute
+  '/stations': typeof StationsRoute
   '/strategy': typeof StrategyRoute
   '/studio': typeof StudioRoute
   '/system': typeof SystemRoute
@@ -539,6 +548,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/situation-room'
     | '/sources'
+    | '/stations'
     | '/strategy'
     | '/studio'
     | '/system'
@@ -594,6 +604,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/situation-room'
     | '/sources'
+    | '/stations'
     | '/strategy'
     | '/studio'
     | '/system'
@@ -649,6 +660,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/situation-room'
     | '/sources'
+    | '/stations'
     | '/strategy'
     | '/studio'
     | '/system'
@@ -705,6 +717,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   SituationRoomRoute: typeof SituationRoomRoute
   SourcesRoute: typeof SourcesRoute
+  StationsRoute: typeof StationsRoute
   StrategyRoute: typeof StrategyRoute
   StudioRoute: typeof StudioRoute
   SystemRoute: typeof SystemRoute
@@ -797,6 +810,13 @@ declare module '@tanstack/react-router' {
       path: '/strategy'
       fullPath: '/strategy'
       preLoaderRoute: typeof StrategyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stations': {
+      id: '/stations'
+      path: '/stations'
+      fullPath: '/stations'
+      preLoaderRoute: typeof StationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sources': {
@@ -1137,6 +1157,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   SituationRoomRoute: SituationRoomRoute,
   SourcesRoute: SourcesRoute,
+  StationsRoute: StationsRoute,
   StrategyRoute: StrategyRoute,
   StudioRoute: StudioRoute,
   SystemRoute: SystemRoute,
