@@ -60,6 +60,7 @@ type NavTo =
   | "/agents"
   | "/fleet"
   | "/stations"
+  | "/sync-live"
   | "/goose"
   | "/personas"
   | "/system"
@@ -172,6 +173,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/gemini-exchange", label: "Gemini Exchange", icon: Bot },
       { to: "/fleet", label: "Agent Fleet", icon: Users },
       { to: "/stations", label: "Hive Stations", icon: Users },
+      { to: "/sync-live", label: "Live Sync Log", icon: Users },
       { to: "/vision", label: "Vision Agent", icon: ImageIcon },
       { to: "/wallets", label: "Payout Wallets", icon: Wallet },
       { to: "/studio", label: "Video Studio", icon: Clapperboard },

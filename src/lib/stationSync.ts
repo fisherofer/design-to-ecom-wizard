@@ -2,8 +2,10 @@
 import { getApiBase } from "./apiConfig";
 import { stationDrivePull, stationDrivePush } from "./driveSync.functions";
 
-export interface Peer { station_id: string; name: string | null; url: string | null; last_seen: number; cursor: number }
-export interface SyncStatus { ok: boolean; self: string; peers: Peer[]; head: number }
+export interface Peer { station_id: string; name: string | null; url: string | null; last_seen: number; cursor: number; folder: string | null; via: string | null }
+export interface LogEntry { id: number; ts: number; direction: "in" | "out"; peer: string | null; via: string | null; scope: string; key: string; hlc: number; outcome: string }
+export interface SyncLog { ok: boolean; entries: LogEntry[]; last_in: number | null; last_out: number | null; errors: number }
+export interface SyncStatus { ok: boolean; self: string; peers: Peer[]; head: number; folder: { id: string; name: string | null } | null }
 type Res<T> = { ok: true; data: T } | { ok: false; error: string };
 
 async function call<T>(path: string, init: RequestInit = {}): Promise<Res<T>> {
@@ -23,6 +25,7 @@ async function call<T>(path: string, init: RequestInit = {}): Promise<Res<T>> {
 
 export const stationSync = {
   status: () => call<SyncStatus>("/status"),
+  log: (limit = 300, direction?: "in" | "out") => call<SyncLog>(`/log?limit=${limit}${direction ? `&direction=${direction}` : ""}`),
   pull: (url: string, token: string) => call<{ applied: number; cursor: number }>("/pull", { method: "POST", body: JSON.stringify({ url, token, cursor: 0 }) }),
   /** Push this station's full change log to Drive and apply other stations' logs. */
   async viaDrive(folderId: string): Promise<Res<{ pushed: number; applied: number; stations: number }>> {
@@ -34,12 +37,13 @@ export const stationSync = {
       const sid = st.data.self;
       const push = await stationDrivePush({ data: { folderId, stationId: sid, payload: JSON.stringify({ station_id: sid, changes: ch.data.changes }) } });
       if (!push.ok) return { ok: false, error: push.error };
+      await call("/sent", { method: "POST", body: JSON.stringify({ changes: ch.data.changes, peer: "drive", via: "drive", folder: folderId }) });
       const pulled = await stationDrivePull({ data: { folderId, stationId: sid } });
       if (!pulled.ok) return { ok: false, error: pulled.error };
       let applied = 0;
       for (const f of pulled.files) {
         const j = JSON.parse(f.content) as { station_id: string; changes: unknown[] };
-        const a = await call<{ applied: number }>("/apply", { method: "POST", body: JSON.stringify({ changes: j.changes, origin: j.station_id, origin_name: "drive" }) });
+        const a = await call<{ applied: number }>("/apply", { method: "POST", body: JSON.stringify({ changes: j.changes, origin: j.station_id, origin_name: "drive", via: "drive", folder: folderId }) });
         if (a.ok) applied += a.data.applied;
       }
       return { ok: true, data: { pushed: ch.data.changes.length, applied, stations: pulled.files.length } };

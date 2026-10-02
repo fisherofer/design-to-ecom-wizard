@@ -70,6 +70,7 @@ function Stations() {
           <div className="text-sm text-muted-foreground">התחנה הזאת</div>
           <div className="font-mono text-foreground">{st.self}</div>
           <div className="text-sm text-muted-foreground">שינויים שנרשמו עד כה: {st.head}</div>
+          <div className="text-sm text-muted-foreground">תיקיית דרייב: <span className="font-mono" dir="ltr">{st.folder?.id ?? readSettings().folderId ?? "לא נבחרה"}</span></div>
         </div>
       )}
       <div className="rounded-lg border border-border bg-card p-4 space-y-3">
@@ -86,14 +87,28 @@ function Stations() {
       <div className="rounded-lg border border-border bg-card p-4">
         <h2 className="mb-2 font-semibold text-foreground">תחנות מוכרות</h2>
         {!st?.peers.length ? <p className="text-sm text-muted-foreground">עדיין לא הסתנכרנה אף תחנה אחרת.</p> : (
-          <ul className="space-y-2">
-            {st.peers.map((p) => (
-              <li key={p.station_id} className="flex justify-between text-sm">
-                <span className="font-mono text-foreground">{p.name ? `${p.name} · ` : ""}{p.station_id}</span>
-                <span className="text-muted-foreground">{new Date(p.last_seen * 1000).toLocaleString("he-IL")}</span>
-              </li>
-            ))}
-          </ul>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead><tr className="text-muted-foreground text-right">
+                <th className="p-2">תחנה</th><th className="p-2">מחוברת</th><th className="p-2">סנכרון אחרון</th><th className="p-2">ערוץ</th><th className="p-2">תיקיית דרייב / כתובת</th>
+              </tr></thead>
+              <tbody>
+                {st.peers.map((p) => {
+                  const online = Date.now() / 1000 - p.last_seen < 600;
+                  return (
+                    <tr key={p.station_id} className="border-t border-border">
+                      <td className="p-2 font-mono text-foreground">{p.name && p.name !== "drive" ? `${p.name} · ` : ""}{p.station_id}</td>
+                      <td className="p-2"><span className={online ? "text-primary" : "text-muted-foreground"}>{online ? "● פעילה" : "○ לא פעילה"}</span></td>
+                      <td className="p-2 text-muted-foreground">{new Date(p.last_seen * 1000).toLocaleString("he-IL")}</td>
+                      <td className="p-2 text-muted-foreground">{p.via === "drive" ? "דרייב" : p.via === "http" ? "ישיר" : p.via ?? "—"}</td>
+                      <td className="p-2 font-mono text-xs text-muted-foreground" dir="ltr">{p.folder ?? p.url ?? "—"}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            <p className="mt-2 text-xs text-muted-foreground">"פעילה" = הסתנכרנה ב-10 הדקות האחרונות.</p>
+          </div>
         )}
       </div>
     </div>
