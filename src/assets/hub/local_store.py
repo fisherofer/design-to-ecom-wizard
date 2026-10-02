@@ -273,11 +273,6 @@ def add_message(conv_id: str, role: str, content: str, scope: str = "user",
     except Exception as e:  # sync must never block a chat turn, but it is logged
         log_event("sync", f"message not queued for station sync: {e}", severity="warn")
     return {"ok": True}
-    if False:
-        try:
-            pass
-    finally:
-        conn.close()
 
 
 def list_conversations(scope: str | None = None, limit: int = 50) -> dict[str, Any]:
