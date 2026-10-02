@@ -18,6 +18,7 @@ import { Route as TradingRouteImport } from './routes/trading'
 import { Route as TerminalRouteImport } from './routes/terminal'
 import { Route as TelegramRouteImport } from './routes/telegram'
 import { Route as SystemRouteImport } from './routes/system'
+import { Route as SyncLiveRouteImport } from './routes/sync-live'
 import { Route as StudioRouteImport } from './routes/studio'
 import { Route as StrategyRouteImport } from './routes/strategy'
 import { Route as StationsRouteImport } from './routes/stations'
@@ -107,6 +108,11 @@ const TelegramRoute = TelegramRouteImport.update({
 const SystemRoute = SystemRouteImport.update({
   id: '/system',
   path: '/system',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SyncLiveRoute = SyncLiveRouteImport.update({
+  id: '/sync-live',
+  path: '/sync-live',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StudioRoute = StudioRouteImport.update({
@@ -380,6 +386,7 @@ export interface FileRoutesByFullPath {
   '/stations': typeof StationsRoute
   '/strategy': typeof StrategyRoute
   '/studio': typeof StudioRoute
+  '/sync-live': typeof SyncLiveRoute
   '/system': typeof SystemRoute
   '/telegram': typeof TelegramRoute
   '/terminal': typeof TerminalRoute
@@ -436,6 +443,7 @@ export interface FileRoutesByTo {
   '/stations': typeof StationsRoute
   '/strategy': typeof StrategyRoute
   '/studio': typeof StudioRoute
+  '/sync-live': typeof SyncLiveRoute
   '/system': typeof SystemRoute
   '/telegram': typeof TelegramRoute
   '/terminal': typeof TerminalRoute
@@ -493,6 +501,7 @@ export interface FileRoutesById {
   '/stations': typeof StationsRoute
   '/strategy': typeof StrategyRoute
   '/studio': typeof StudioRoute
+  '/sync-live': typeof SyncLiveRoute
   '/system': typeof SystemRoute
   '/telegram': typeof TelegramRoute
   '/terminal': typeof TerminalRoute
@@ -551,6 +560,7 @@ export interface FileRouteTypes {
     | '/stations'
     | '/strategy'
     | '/studio'
+    | '/sync-live'
     | '/system'
     | '/telegram'
     | '/terminal'
@@ -607,6 +617,7 @@ export interface FileRouteTypes {
     | '/stations'
     | '/strategy'
     | '/studio'
+    | '/sync-live'
     | '/system'
     | '/telegram'
     | '/terminal'
@@ -663,6 +674,7 @@ export interface FileRouteTypes {
     | '/stations'
     | '/strategy'
     | '/studio'
+    | '/sync-live'
     | '/system'
     | '/telegram'
     | '/terminal'
@@ -720,6 +732,7 @@ export interface RootRouteChildren {
   StationsRoute: typeof StationsRoute
   StrategyRoute: typeof StrategyRoute
   StudioRoute: typeof StudioRoute
+  SyncLiveRoute: typeof SyncLiveRoute
   SystemRoute: typeof SystemRoute
   TelegramRoute: typeof TelegramRoute
   TerminalRoute: typeof TerminalRoute
@@ -796,6 +809,13 @@ declare module '@tanstack/react-router' {
       path: '/system'
       fullPath: '/system'
       preLoaderRoute: typeof SystemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sync-live': {
+      id: '/sync-live'
+      path: '/sync-live'
+      fullPath: '/sync-live'
+      preLoaderRoute: typeof SyncLiveRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/studio': {
@@ -1160,6 +1180,7 @@ const rootRouteChildren: RootRouteChildren = {
   StationsRoute: StationsRoute,
   StrategyRoute: StrategyRoute,
   StudioRoute: StudioRoute,
+  SyncLiveRoute: SyncLiveRoute,
   SystemRoute: SystemRoute,
   TelegramRoute: TelegramRoute,
   TerminalRoute: TerminalRoute,
