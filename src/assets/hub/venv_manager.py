@@ -36,7 +36,9 @@ from typing import Any, Optional
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_VENV_DIR = ROOT / ".venv"
-DEFAULT_REQUIREMENTS_FILE = ROOT / "requirements.txt"
+DEFAULT_REQUIREMENTS_FILE = (
+    ROOT / "requirements.txt" if (ROOT / "requirements.txt").exists() else ROOT / "backend" / "requirements.txt"
+)
 
 
 # ============ path resolution (OS-independent) ============
@@ -335,3 +337,15 @@ if __name__ == "__main__":
     else:
         print(json.dumps(get_status(), indent=2, ensure_ascii=False))
 # END CODE | סך הכל שורות: 337
+
+
+# ============ bootstrap helpers (used by system_orchestrator / start.py) ============
+
+def _get_root_dir() -> Path:
+    """Project root that holds hub/ and backend/ — computed from this file, so it moves with the folder."""
+    return ROOT
+
+
+def get_python_executable(venv_dir: Path = DEFAULT_VENV_DIR) -> Path:
+    """Interpreter inside the project venv."""
+    return venv_python_path(venv_dir)

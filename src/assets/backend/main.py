@@ -10,6 +10,14 @@ Security posture:
 """
 
 import os
+import sys
+from pathlib import Path
+
+# Make hub/ and backend/ importable no matter which folder the server is started from.
+_HERE = Path(__file__).resolve().parent
+for _p in (_HERE.parent, _HERE):
+    if str(_p) not in sys.path:
+        sys.path.insert(0, str(_p))
 
 import uvicorn
 from fastapi import FastAPI

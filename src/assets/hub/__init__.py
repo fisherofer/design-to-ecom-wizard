@@ -4,7 +4,7 @@ OFERTRADINGBOT - Hub Package Initializer
 """
 
 from hub.keys_manager import get_key_status, set_key, get_key, delete_key, KNOWN_PROVIDERS
-from hub.venv_manager import heal, get_venv_status, install_package
+from hub.venv_manager import heal, get_status as get_venv_status, install_package
 
 __all__ = [
     "get_key_status",
