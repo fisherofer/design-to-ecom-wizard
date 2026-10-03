@@ -63,10 +63,21 @@ allowed_origins = list(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
+    # Any local port + the hosted app, so the browser UI can reach this station.
+    allow_origin_regex=r"^(https?://(localhost|127\.0\.0\.1)(:\d+)?|https://[a-z0-9-]+\.lovable\.app)$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def private_network_access(request, call_next):
+    """Chrome asks permission before a public page talks to localhost — answer yes."""
+    response = await call_next(request)
+    if request.headers.get("access-control-request-private-network"):
+        response.headers["Access-Control-Allow-Private-Network"] = "true"
+    return response
+
 
 # Connect system and feature module routers
 app.include_router(venv_router)
@@ -118,7 +129,7 @@ def resolve_host() -> str:
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("API_PORT", 8000))
+    port = int(os.environ.get("API_PORT", 8050))
     host = resolve_host()
     if host not in ("127.0.0.1", "localhost", "::1"):
         print(f"[SECURITY WARNING] Binding to non-loopback host '{host}' — the API is network exposed.")
