@@ -9,7 +9,13 @@ import os
 import sys
 import subprocess
 from pathlib import Path
-from dotenv import load_dotenv
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+try:
+    from dotenv import load_dotenv
+except ImportError:  # host python may not have it; the venv installs it
+    def load_dotenv(dotenv_path=None):  # type: ignore[no-redef]
+        return False
 
 from hub.venv_manager import heal, get_python_executable, _get_root_dir
 
@@ -86,7 +92,7 @@ if __name__ == "__main__":
             
     print(f"[SYSTEM] Launching OFERTRADINGBOT Orchestrator on {python_exec}...")
     try:
-        subprocess.Popen([str(python_exec), str(api_server_path)])
+        subprocess.Popen([str(python_exec), str(api_server_path)], cwd=str(root_dir))
         print("[SYSTEM] System backend launched successfully.")
     except Exception as e:
         print(f"[ERROR] Failed to launch backend: {e}")
