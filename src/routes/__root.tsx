@@ -4,6 +4,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Toaster } from "@/components/ui/sonner";
 import { initPortableStorage } from "@/lib/portableStorage";
 import { useDriveAutoBackup } from "@/hooks/useDriveAutoBackup";
+import { useHiveAutoSync } from "@/hooks/useHiveAutoSync";
 
 
 import appCss from "../styles.css?url";
@@ -103,6 +104,8 @@ function RootComponent() {
 
   // Automatic Google Drive backup on start / after changes (opt-in per machine).
   useDriveAutoBackup();
+  // Hive: exchange changes (settings, chats, task queue) with other stations via Drive.
+  useHiveAutoSync();
 
   return (
     <AppShell>

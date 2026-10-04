@@ -17,7 +17,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 const GW = "https://connector-gateway.lovable.dev/google_drive";
-const DRIVE_V3 = `${GW}/drive/v3`;
+export const DRIVE_V3 = `${GW}/drive/v3`;
 const UPLOAD_MULTIPART = `${GW}/upload/drive/v3/files?uploadType=multipart&fields=id,name`;
 const UPLOAD_MEDIA = (id: string) => `${GW}/upload/drive/v3/files/${id}?uploadType=media&fields=id,name`;
 const FOLDER_MIME = "application/vnd.google-apps.folder";
@@ -25,14 +25,14 @@ const TIMEOUT_MS = 45_000;
 
 // ---------------------------------------------------------------- gateway ---
 
-function creds(): { lovable: string; conn: string } | null {
+export function creds(): { lovable: string; conn: string } | null {
   const lovable = process.env["LOVABLE_API_KEY"];
   const conn = process.env["GOOGLE_DRIVE_API_KEY"];
   if (!lovable || !conn) return null;
   return { lovable, conn };
 }
 
-function headers(extra: Record<string, string> = {}): Record<string, string> {
+export function headers(extra: Record<string, string> = {}): Record<string, string> {
   const c = creds();
   return {
     Authorization: `Bearer ${c?.lovable ?? ""}`,
@@ -41,7 +41,7 @@ function headers(extra: Record<string, string> = {}): Record<string, string> {
   };
 }
 
-async function gw(url: string, init: RequestInit = {}): Promise<Response> {
+export async function gw(url: string, init: RequestInit = {}): Promise<Response> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
@@ -57,7 +57,7 @@ function esc(s: string): string {
 
 // ---------------------------------------------------------------- folders ---
 
-interface DriveEntry {
+export interface DriveEntry {
   id: string;
   name: string;
   mimeType?: string;
@@ -66,7 +66,7 @@ interface DriveEntry {
   md5Checksum?: string;
 }
 
-async function findChild(name: string, parentId: string, folderOnly: boolean): Promise<DriveEntry | null> {
+export async function findChild(name: string, parentId: string, folderOnly: boolean): Promise<DriveEntry | null> {
   const q = [
     `name='${esc(name)}'`,
     `'${parentId}' in parents`,
@@ -93,7 +93,7 @@ async function createFolder(name: string, parentId: string): Promise<string> {
 }
 
 /** Resolve (creating as needed) a chain of folder names under a parent. */
-async function ensureChain(parentId: string, segments: string[], cache: Map<string, string>): Promise<string> {
+export async function ensureChain(parentId: string, segments: string[], cache: Map<string, string>): Promise<string> {
   let cur = parentId;
   let key = parentId;
   for (const seg of segments) {
@@ -110,7 +110,7 @@ async function ensureChain(parentId: string, segments: string[], cache: Map<stri
   return cur;
 }
 
-async function uploadBytes(
+export async function uploadBytes(
   parentId: string,
   name: string,
   bytes: Uint8Array | string,

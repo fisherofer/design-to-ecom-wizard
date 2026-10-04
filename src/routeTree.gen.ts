@@ -64,6 +64,7 @@ import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TickerSymbolRouteImport } from './routes/ticker.$symbol'
 import { Route as ApiPublicHooksDriveBackupDailyRouteImport } from './routes/api/public/hooks/drive-backup-daily'
+import { Route as ApiPublicHiveRelayRouteImport } from './routes/api/public/hive/relay'
 
 const WatchlistsRoute = WatchlistsRouteImport.update({
   id: '/watchlists',
@@ -341,6 +342,11 @@ const ApiPublicHooksDriveBackupDailyRoute =
     path: '/api/public/hooks/drive-backup-daily',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHiveRelayRoute = ApiPublicHiveRelayRouteImport.update({
+  id: '/api/public/hive/relay',
+  path: '/api/public/hive/relay',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -397,6 +403,7 @@ export interface FileRoutesByFullPath {
   '/wallets': typeof WalletsRoute
   '/watchlists': typeof WatchlistsRoute
   '/ticker/$symbol': typeof TickerSymbolRoute
+  '/api/public/hive/relay': typeof ApiPublicHiveRelayRoute
   '/api/public/hooks/drive-backup-daily': typeof ApiPublicHooksDriveBackupDailyRoute
 }
 export interface FileRoutesByTo {
@@ -454,6 +461,7 @@ export interface FileRoutesByTo {
   '/wallets': typeof WalletsRoute
   '/watchlists': typeof WatchlistsRoute
   '/ticker/$symbol': typeof TickerSymbolRoute
+  '/api/public/hive/relay': typeof ApiPublicHiveRelayRoute
   '/api/public/hooks/drive-backup-daily': typeof ApiPublicHooksDriveBackupDailyRoute
 }
 export interface FileRoutesById {
@@ -512,6 +520,7 @@ export interface FileRoutesById {
   '/wallets': typeof WalletsRoute
   '/watchlists': typeof WatchlistsRoute
   '/ticker/$symbol': typeof TickerSymbolRoute
+  '/api/public/hive/relay': typeof ApiPublicHiveRelayRoute
   '/api/public/hooks/drive-backup-daily': typeof ApiPublicHooksDriveBackupDailyRoute
 }
 export interface FileRouteTypes {
@@ -571,6 +580,7 @@ export interface FileRouteTypes {
     | '/wallets'
     | '/watchlists'
     | '/ticker/$symbol'
+    | '/api/public/hive/relay'
     | '/api/public/hooks/drive-backup-daily'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -628,6 +638,7 @@ export interface FileRouteTypes {
     | '/wallets'
     | '/watchlists'
     | '/ticker/$symbol'
+    | '/api/public/hive/relay'
     | '/api/public/hooks/drive-backup-daily'
   id:
     | '__root__'
@@ -685,6 +696,7 @@ export interface FileRouteTypes {
     | '/wallets'
     | '/watchlists'
     | '/ticker/$symbol'
+    | '/api/public/hive/relay'
     | '/api/public/hooks/drive-backup-daily'
   fileRoutesById: FileRoutesById
 }
@@ -743,6 +755,7 @@ export interface RootRouteChildren {
   WalletsRoute: typeof WalletsRoute
   WatchlistsRoute: typeof WatchlistsRoute
   TickerSymbolRoute: typeof TickerSymbolRoute
+  ApiPublicHiveRelayRoute: typeof ApiPublicHiveRelayRoute
   ApiPublicHooksDriveBackupDailyRoute: typeof ApiPublicHooksDriveBackupDailyRoute
 }
 
@@ -1133,6 +1146,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksDriveBackupDailyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hive/relay': {
+      id: '/api/public/hive/relay'
+      path: '/api/public/hive/relay'
+      fullPath: '/api/public/hive/relay'
+      preLoaderRoute: typeof ApiPublicHiveRelayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1191,6 +1211,7 @@ const rootRouteChildren: RootRouteChildren = {
   WalletsRoute: WalletsRoute,
   WatchlistsRoute: WatchlistsRoute,
   TickerSymbolRoute: TickerSymbolRoute,
+  ApiPublicHiveRelayRoute: ApiPublicHiveRelayRoute,
   ApiPublicHooksDriveBackupDailyRoute: ApiPublicHooksDriveBackupDailyRoute,
 }
 export const routeTree = rootRouteImport
