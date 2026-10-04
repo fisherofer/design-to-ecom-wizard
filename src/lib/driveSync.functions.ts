@@ -57,7 +57,7 @@ function esc(s: string): string {
 
 // ---------------------------------------------------------------- folders ---
 
-interface DriveEntry {
+export interface DriveEntry {
   id: string;
   name: string;
   mimeType?: string;
