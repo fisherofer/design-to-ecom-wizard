@@ -99,3 +99,37 @@ def pull(body: PullBody, request: Request):
         return station_sync.pull_from_peer(body.url, body.token, body.cursor)
     except Exception as e:
         return JSONResponse({"ok": False, "error": f"peer unreachable: {e}"}, status_code=502)
+
+
+class RelayBody(BaseModel):
+    url: str
+    folder_id: str
+    enabled: bool = True
+    passphrase: str | None = None
+
+
+@router.get("/relay")
+def relay_status(request: Request):
+    if not _authorized(request):
+        return _deny()
+    from hub import hive_relay
+    return hive_relay.status()
+
+
+@router.post("/relay")
+def relay_config(body: RelayBody, request: Request):
+    if not _authorized(request):
+        return _deny()
+    from hub import hive_relay
+    res = hive_relay.set_config(body.url, body.folder_id, body.enabled, body.passphrase)
+    if res.get("ok"):
+        hive_relay.start_background()
+    return res
+
+
+@router.post("/relay/run")
+def relay_run(request: Request):
+    if not _authorized(request):
+        return _deny()
+    from hub import hive_relay
+    return hive_relay.run_once()

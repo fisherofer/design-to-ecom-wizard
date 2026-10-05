@@ -110,6 +110,13 @@ app.include_router(autonomy_routes.vision_router, prefix="/api/vision")
 
 
 
+@app.on_event("startup")
+def _start_hive_relay() -> None:
+    """Headless hive sync: runs every 2 minutes when enabled on the Hive Stations screen."""
+    from hub import hive_relay
+    hive_relay.start_background()
+
+
 @app.get("/api/health")
 def health_check():
     return {
