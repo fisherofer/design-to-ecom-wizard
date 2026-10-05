@@ -32,3 +32,5 @@
 - [x] Vision analysis agent + /vision screen (local images, local AI only, script -> video script)
 - [ ] Video producer agent (full render pipeline; ffmpeg stays external)
 - [x] Agent command interface over the existing Telegram bridge (/status /agents /tasks /task /proposals /memory)
+
+- [ ] Multi-provider consensus protocol (uploaded doc): HIVE_EXCHANGE provider/date/time folders, CONSENSUS_LEDGER.json, PROPOSAL_SPEC.md review flow

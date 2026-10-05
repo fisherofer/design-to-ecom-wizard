@@ -4,14 +4,15 @@ Headless hive sync: the station itself (no browser needed) sends its change log
 to the hosted app's relay, which stores it in the owner's Drive "stations"
 folder and returns the other stations' logs; those are applied locally.
 Covers settings, hive, user, media, conversations and the agents' task queue.
-Config lives in system kv "hive.relay" = {url, folder_id, enabled}; the
-passphrase is kept in the user scope (never synced).
+Config (user kv "hive.relay") and passphrase live in the user scope: the system
+scope redacts number runs, which corrupts URLs. Neither key is synced.
 """
 from __future__ import annotations
 
 import json
 import threading
 import time
+import urllib.error
 import urllib.request
 from typing import Any
 
@@ -30,7 +31,7 @@ def _get(scope: str, key: str) -> Any:
 
 
 def config() -> dict[str, Any]:
-    c = _get("system", CFG_KEY) or {}
+    c = _get("user", CFG_KEY) or {}
     return {"url": c.get("url"), "folder_id": c.get("folder_id"), "enabled": bool(c.get("enabled")),
             "passphrase_set": bool(_get("user", PASS_KEY))}
 
@@ -38,14 +39,14 @@ def config() -> dict[str, Any]:
 def set_config(url: str, folder_id: str, enabled: bool, passphrase: str | None) -> dict[str, Any]:
     if not url.startswith("https://"):
         return {"ok": False, "error": "relay address must start with https://"}
-    local_store.kv_set("system", CFG_KEY, {"url": url.rstrip("/"), "folder_id": folder_id, "enabled": enabled})
+    local_store.kv_set("user", CFG_KEY, {"url": url.rstrip("/"), "folder_id": folder_id, "enabled": enabled})
     if passphrase:
         local_store.kv_set("user", PASS_KEY, passphrase)
     return {"ok": True, **config()}
 
 
 def run_once() -> dict[str, Any]:
-    c = _get("system", CFG_KEY) or {}
+    c = _get("user", CFG_KEY) or {}
     pw = _get("user", PASS_KEY)
     if not (c.get("url") and c.get("folder_id") and pw):
         return {"ok": False, "error": "relay not configured"}
@@ -53,10 +54,11 @@ def run_once() -> dict[str, Any]:
     ch = station_sync.changes_since(0).get("changes", [])
     body = json.dumps({"stationId": sid, "folderId": c["folder_id"],
                        "payload": json.dumps({"station_id": sid, "changes": ch})}).encode()
-    req = urllib.request.Request(f"{c['url']}/api/public/hive/relay", data=body, method="POST",
-                                 headers={"Content-Type": "application/json", "Authorization": f"Bearer {pw}"})
     _state["last_run"] = time.time()
     try:
+        req = urllib.request.Request(f"{c['url']}/api/public/hive/relay", data=body, method="POST",
+                                     headers={"Content-Type": "application/json", "Authorization": f"Bearer {pw}",
+                                              "User-Agent": "OferStation/1.0 (+hive-relay)"})
         with urllib.request.urlopen(req, timeout=90) as res:
             data = json.loads(res.read().decode())
     except urllib.error.HTTPError as e:  # type: ignore[attr-defined]
