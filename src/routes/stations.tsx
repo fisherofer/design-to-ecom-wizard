@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { stationSync, type SyncStatus } from "@/lib/stationSync";
+import { RelayPanel } from "@/components/hive/RelayPanel";
 import { readSettings } from "@/lib/driveSyncSettings";
 
 export const Route = createFileRoute("/stations")({
@@ -32,11 +33,8 @@ function Stations() {
 
   useEffect(() => {
     void load();
-    const auto = setInterval(async () => {
-      const f = readSettings().folderId;
-      if (f) await stationSync.viaDrive(f);
-      void load();
-    }, 120_000);
+    // Drive sync itself now runs app-wide (useHiveAutoSync); this only refreshes the view.
+    const auto = setInterval(() => void load(), 30_000);
     return () => clearInterval(auto);
   }, [load]);
 
@@ -111,6 +109,7 @@ function Stations() {
           </div>
         )}
       </div>
+      <RelayPanel />
     </div>
   );
 }

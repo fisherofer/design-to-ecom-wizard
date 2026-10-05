@@ -6,6 +6,7 @@ export interface Peer { station_id: string; name: string | null; url: string | n
 export interface LogEntry { id: number; ts: number; direction: "in" | "out"; peer: string | null; via: string | null; scope: string; key: string; hlc: number; outcome: string }
 export interface SyncLog { ok: boolean; entries: LogEntry[]; last_in: number | null; last_out: number | null; errors: number }
 export interface SyncStatus { ok: boolean; self: string; peers: Peer[]; head: number; folder: { id: string; name: string | null } | null }
+export interface RelayStatus { ok: boolean; url: string | null; folder_id: string | null; enabled: boolean; passphrase_set: boolean; running?: boolean; last_run?: number | null; last_ok?: boolean | null; last_error?: string | null; pushed?: number; applied?: number; stations?: number }
 type Res<T> = { ok: true; data: T } | { ok: false; error: string };
 
 async function call<T>(path: string, init: RequestInit = {}): Promise<Res<T>> {
@@ -27,6 +28,10 @@ export const stationSync = {
   status: () => call<SyncStatus>("/status"),
   log: (limit = 300, direction?: "in" | "out") => call<SyncLog>(`/log?limit=${limit}${direction ? `&direction=${direction}` : ""}`),
   pull: (url: string, token: string) => call<{ applied: number; cursor: number }>("/pull", { method: "POST", body: JSON.stringify({ url, token, cursor: 0 }) }),
+  relayStatus: () => call<RelayStatus>("/relay"),
+  relaySave: (b: { url: string; folder_id: string; enabled: boolean; passphrase?: string }) =>
+    call<RelayStatus>("/relay", { method: "POST", body: JSON.stringify(b) }),
+  relayRun: () => call<{ ok: boolean; pushed?: number; applied?: number; stations?: number; error?: string }>("/relay/run", { method: "POST" }),
   /** Push this station's full change log to Drive and apply other stations' logs. */
   async viaDrive(folderId: string): Promise<Res<{ pushed: number; applied: number; stations: number }>> {
     const st = await this.status();
