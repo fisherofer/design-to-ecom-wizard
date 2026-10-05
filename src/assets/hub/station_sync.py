@@ -25,7 +25,7 @@ from hub import local_store
 
 SYNC_SCOPES = ("system", "hive", "user", "media", "chat", "fleet")
 ROW_SCOPES = ("chat", "fleet")  # rows of messages / fleet_tasks, not kv
-SECRET_PREFIXES = ("ofer.secret.", "ofer.keys.", "mcp.token", "telegram.token")
+SECRET_PREFIXES = ("ofer.secret.", "ofer.keys.", "mcp.token", "telegram.token", "hive.relay")
 _lock = threading.Lock()
 _last_hlc = 0
 
