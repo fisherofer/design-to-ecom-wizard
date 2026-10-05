@@ -57,7 +57,8 @@ def run_once() -> dict[str, Any]:
     _state["last_run"] = time.time()
     try:
         req = urllib.request.Request(f"{c['url']}/api/public/hive/relay", data=body, method="POST",
-                                     headers={"Content-Type": "application/json", "Authorization": f"Bearer {pw}"})
+                                     headers={"Content-Type": "application/json", "Authorization": f"Bearer {pw}",
+                                              "User-Agent": "OferStation/1.0 (+hive-relay)"})
         with urllib.request.urlopen(req, timeout=90) as res:
             data = json.loads(res.read().decode())
     except urllib.error.HTTPError as e:  # type: ignore[attr-defined]
