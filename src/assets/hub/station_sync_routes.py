@@ -133,3 +133,19 @@ def relay_run(request: Request):
         return _deny()
     from hub import hive_relay
     return hive_relay.run_once()
+
+
+@router.get("/profiles")
+def profiles(request: Request):
+    if not _authorized(request):
+        return _deny()
+    from hub import station_profile
+    return station_profile.all_profiles()
+
+
+@router.post("/profile/refresh")
+def profile_refresh(request: Request):
+    if not _authorized(request):
+        return _deny()
+    from hub import station_profile
+    return station_profile.refresh()
