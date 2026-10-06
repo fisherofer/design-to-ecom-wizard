@@ -89,6 +89,19 @@ function RootShell({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <div
+          id="boot-overlay"
+          style={{ position: "fixed", inset: 0, zIndex: 9999, background: "#0a0e1a", color: "#5eead4", font: "12px 'JetBrains Mono', monospace", display: "flex", alignItems: "center", justifyContent: "center", transition: "opacity .5s" }}
+        >
+          <style>{`@keyframes bootbar{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}`}</style>
+          <div style={{ width: 320 }}>
+            <div>&gt; AI Executive OS · booting</div>
+            <div style={{ opacity: 0.7 }}>&gt; loading interface…</div>
+            <div style={{ marginTop: 12, height: 3, background: "#1e293b", overflow: "hidden" }}>
+              <div style={{ width: "40%", height: "100%", background: "#22d3ee", animation: "bootbar 1.2s ease-in-out infinite" }} />
+            </div>
+          </div>
+        </div>
         {children}
         <Scripts />
       </body>
@@ -100,6 +113,12 @@ function RootComponent() {
   // Hydrate the portable (desktop SQLite) store once, before any tab reads it.
   useEffect(() => {
     void initPortableStorage();
+    const el = document.getElementById("boot-overlay");
+    if (el) {
+      el.style.opacity = "0";
+      el.style.pointerEvents = "none";
+      setTimeout(() => { el.style.display = "none"; }, 600);
+    }
   }, []);
 
   // Automatic Google Drive backup on start / after changes (opt-in per machine).

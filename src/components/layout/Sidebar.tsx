@@ -110,84 +110,107 @@ type NavGroup = {
   items: NavItem[];
 };
 
+// Ten unified hubs — every screen belongs to exactly one.
 const NAV_GROUPS: NavGroup[] = [
   {
-    label: "Overview",
+    label: "1 · Portfolio & Live Trading",
     items: [
       { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
       { to: "/command", label: "Quant Command", icon: Activity },
       { to: "/situation-room", label: "Situation Room", icon: Radar },
-    ],
-  },
-  {
-    label: "Trading",
-    items: [
       { to: "/trading", label: "Trading Hub", icon: TrendingUp },
       { to: "/live-trading", label: "Live Trading Loop", icon: Activity },
       { to: "/order-ticket", label: "Order Ticket", icon: Ticket },
-      { to: "/backtesting", label: "Backtesting Lab", icon: LineChart },
-      { to: "/journal", label: "Trade Journal", icon: NotebookPen },
-      { to: "/microstructure", label: "Microstructure", icon: Layers3 },
       { to: "/portfolio", label: "Portfolio & Dividends", icon: Wallet },
       { to: "/watchlists", label: "Watchlists", icon: Layers },
       { to: "/alerts", label: "Alerts", icon: BellRing },
-      { to: "/triggers", label: "AI Triggers", icon: Zap },
+      { to: "/microstructure", label: "Microstructure", icon: Layers3 },
       { to: "/money-flow", label: "Money Flow", icon: Waves },
       { to: "/insider", label: "Insider & Ownership", icon: Building2 },
-      { to: "/risk", label: "Risk Management", icon: ShieldAlert },
     ],
   },
   {
-    label: "Intelligence",
+    label: "2 · Risk & Kelly Engine",
+    items: [{ to: "/risk", label: "Risk Management", icon: ShieldAlert }],
+  },
+  {
+    label: "3 · Strategy Lab",
     items: [
-      { to: "/intelligence", label: "Intelligence Hub", icon: Brain },
-      { to: "/personas", label: "Personas · Meta-Agent", icon: Users },
-      { to: "/agents", label: "Agent Studio", icon: Bot },
-      { to: "/goose", label: "MCP Control", icon: Bird },
       { to: "/strategy", label: "Strategy Builder", icon: Layers },
-      { to: "/ai-models", label: "AI Model Catalog", icon: Cpu },
-      { to: "/local-chat", label: "Local AI Chat", icon: MessageSquare },
-      { to: "/hive", label: "Hive Consensus", icon: Network },
+      { to: "/backtesting", label: "Backtesting Lab", icon: LineChart },
+      { to: "/triggers", label: "AI Triggers", icon: Zap },
       { to: "/news", label: "News Intelligence", icon: Newspaper },
       { to: "/macro", label: "Macro Calendar", icon: CalendarClock },
     ],
   },
   {
-    label: "Developer",
+    label: "4 · AI Cascade & Models",
     items: [
-      { to: "/code-studio", label: "Code Studio", icon: Code2 },
-      { to: "/repo-analyzer", label: "Repo Analyzer", icon: GitBranch },
-      { to: "/api-vault", label: "API Vault", icon: KeyRound },
-      { to: "/config", label: "System Config", icon: Settings },
+      { to: "/intelligence", label: "Intelligence Hub", icon: Brain },
+      { to: "/ai-models", label: "AI Model Catalog", icon: Cpu },
+      { to: "/local-chat", label: "Local AI Chat", icon: MessageSquare },
+      { to: "/personas", label: "Personas · Meta-Agent", icon: Users },
+      { to: "/agents", label: "Agent Studio", icon: Bot },
+      { to: "/vision", label: "Vision Agent", icon: ImageIcon },
     ],
   },
   {
-    label: "System",
+    label: "5 · System & Infrastructure",
     items: [
       { to: "/system", label: "System Health", icon: ShieldCheck },
-      { to: "/security", label: "Cyber Defence", icon: ShieldHalf },
-      { to: "/privacy", label: "Privacy & Data", icon: Lock },
-      { to: "/treasury", label: "Treasury", icon: Coins },
-      { to: "/autonomy", label: "Autonomy Control", icon: Bot },
+      { to: "/terminal", label: "Terminal Logs", icon: Terminal },
+      { to: "/code-studio", label: "Code Studio", icon: Code2 },
+      { to: "/repo-analyzer", label: "Repo Analyzer", icon: GitBranch },
+      { to: "/config", label: "System Config", icon: Settings },
+      { to: "/backup", label: "Backup & Restore", icon: Archive },
       { to: "/drive-sync", label: "Drive Sync", icon: CloudUpload },
-      { to: "/gemini-exchange", label: "Gemini Exchange", icon: Bot },
-      { to: "/fleet", label: "Agent Fleet", icon: Users },
-      { to: "/stations", label: "Hive Stations", icon: Users },
-      { to: "/sync-live", label: "Live Sync Log", icon: Users },
-      { to: "/vision", label: "Vision Agent", icon: ImageIcon },
-      { to: "/wallets", label: "Payout Wallets", icon: Wallet },
+    ],
+  },
+  {
+    label: "6 · Video Studio & Media",
+    items: [
       { to: "/studio", label: "Video Studio", icon: Clapperboard },
       { to: "/clip-producer", label: "Clip Producer", icon: Clapperboard },
-      { to: "/calendar", label: "Programme Calendar", icon: CalendarClock },
-      { to: "/channel-scan", label: "YouTube Scan", icon: Radar },
-      { to: "/telegram", label: "Telegram Bridge", icon: MessageSquare },
       { to: "/production", label: "Production Board", icon: CalendarClock },
+      { to: "/calendar", label: "Programme Calendar", icon: CalendarClock },
       { to: "/cast", label: "Cast & Video Queue", icon: Users },
+      { to: "/channel-scan", label: "YouTube Scan", icon: Radar },
       { to: "/sources", label: "News Sources", icon: Newspaper },
-      { to: "/terminal", label: "Terminal Logs", icon: Terminal },
-
-      { to: "/backup", label: "Backup & Restore", icon: Archive },
+    ],
+  },
+  {
+    label: "7 · Security",
+    items: [
+      { to: "/security", label: "Cyber Defence", icon: ShieldHalf },
+      { to: "/api-vault", label: "API Vault", icon: KeyRound },
+    ],
+  },
+  {
+    label: "8 · Tax & Compliance",
+    items: [
+      { to: "/journal", label: "Trade Journal", icon: NotebookPen },
+      { to: "/treasury", label: "Treasury", icon: Coins },
+      { to: "/wallets", label: "Payout Wallets", icon: Wallet },
+    ],
+  },
+  {
+    label: "9 · Task Queue & Hive",
+    items: [
+      { to: "/fleet", label: "Agent Fleet", icon: Users },
+      { to: "/autonomy", label: "Autonomy Control", icon: Bot },
+      { to: "/hive", label: "Hive Consensus", icon: Network },
+      { to: "/stations", label: "Hive Stations", icon: Users },
+      { to: "/sync-live", label: "Live Sync Log", icon: Activity },
+      { to: "/gemini-exchange", label: "Gemini Exchange", icon: Bot },
+      { to: "/goose", label: "MCP Control", icon: Bird },
+    ],
+  },
+  {
+    label: "10 · Settings & Integrations",
+    items: [
       { to: "/settings", label: "Settings", icon: SlidersHorizontal },
+      { to: "/telegram", label: "Telegram Bridge", icon: MessageSquare },
+      { to: "/privacy", label: "Privacy & Data", icon: Lock },
     ],
   },
 ];
