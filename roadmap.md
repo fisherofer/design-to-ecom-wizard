@@ -44,3 +44,4 @@
 - [ ] AI failure debug window; Google Workspace link approval window
 - [ ] Israeli 25% tax tracker hub
 - [ ] Master prompts doc (uploaded): enforce invariants — Kelly 5% cap, monotonic trailing stop, 25% Israeli tax on closed trades, bounded buffers
+- [ ] Hive stations: connected user, country, IP, security level, rich cards, clickable detail + hover cards
