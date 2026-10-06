@@ -36,10 +36,10 @@
 - [ ] Multi-provider consensus protocol (uploaded doc): HIVE_EXCHANGE provider/date/time folders, CONSENSUS_LEDGER.json, PROPOSAL_SPEC.md review flow
 
 ## 2026-10-06 — UI/UX brief (uploaded reference)
-- [ ] 10-hub grouped navigation (consolidate 60+ screens)
-- [ ] Pre-boot loading overlay until app is ready
+- [x] 10-hub grouped navigation
+- [x] Pre-boot loading overlay
 - [ ] Ctrl+K global search across screens/actions
-- [ ] Error boundaries per screen/card with retry
+- [x] Error boundaries per screen with retry
 - [ ] Every button: loading state + toast for unfinished actions
 - [ ] AI failure debug window; Google Workspace link approval window
 - [ ] Israeli 25% tax tracker hub

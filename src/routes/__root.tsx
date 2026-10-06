@@ -117,7 +117,7 @@ function RootComponent() {
     if (el) {
       el.style.opacity = "0";
       el.style.pointerEvents = "none";
-      setTimeout(() => el.remove(), 600);
+      setTimeout(() => { el.style.display = "none"; }, 600);
     }
   }, []);
 
