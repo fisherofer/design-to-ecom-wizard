@@ -7,6 +7,13 @@ export interface LogEntry { id: number; ts: number; direction: "in" | "out"; pee
 export interface SyncLog { ok: boolean; entries: LogEntry[]; last_in: number | null; last_out: number | null; errors: number }
 export interface SyncStatus { ok: boolean; self: string; peers: Peer[]; head: number; folder: { id: string; name: string | null } | null }
 export interface RelayStatus { ok: boolean; url: string | null; folder_id: string | null; enabled: boolean; passphrase_set: boolean; running?: boolean; last_run?: number | null; last_ok?: boolean | null; last_error?: string | null; pushed?: number; applied?: number; stations?: number }
+export interface SecurityCheck { name: string; ok: boolean | null; detail: string }
+export interface StationProfile {
+  station_id: string; user: string | null; hostname: string | null; os: string | null; python: string | null;
+  ip: string | null; country: string | null; country_code: string | null; city: string | null; isp: string | null; geo_error: string | null;
+  security: { score: number | null; level: "high" | "medium" | "low" | null; checks: SecurityCheck[] };
+  updated_at: number;
+}
 type Res<T> = { ok: true; data: T } | { ok: false; error: string };
 
 async function call<T>(path: string, init: RequestInit = {}): Promise<Res<T>> {
@@ -26,6 +33,8 @@ async function call<T>(path: string, init: RequestInit = {}): Promise<Res<T>> {
 
 export const stationSync = {
   status: () => call<SyncStatus>("/status"),
+  profiles: () => call<{ ok: boolean; self: string; profiles: StationProfile[] }>("/profiles"),
+  refreshProfile: () => call<{ ok: boolean; profile: StationProfile }>("/profile/refresh", { method: "POST" }),
   log: (limit = 300, direction?: "in" | "out") => call<SyncLog>(`/log?limit=${limit}${direction ? `&direction=${direction}` : ""}`),
   pull: (url: string, token: string) => call<{ applied: number; cursor: number }>("/pull", { method: "POST", body: JSON.stringify({ url, token, cursor: 0 }) }),
   relayStatus: () => call<RelayStatus>("/relay"),
