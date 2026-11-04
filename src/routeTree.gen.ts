@@ -9,316 +9,66 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WatchlistsRouteImport } from './routes/watchlists'
-import { Route as WalletsRouteImport } from './routes/wallets'
-import { Route as VisionRouteImport } from './routes/vision'
-import { Route as TriggersRouteImport } from './routes/triggers'
-import { Route as TreasuryRouteImport } from './routes/treasury'
-import { Route as TradingRouteImport } from './routes/trading'
-import { Route as TerminalRouteImport } from './routes/terminal'
-import { Route as TelegramRouteImport } from './routes/telegram'
-import { Route as SystemRouteImport } from './routes/system'
-import { Route as SyncLiveRouteImport } from './routes/sync-live'
-import { Route as StudioRouteImport } from './routes/studio'
-import { Route as StrategyRouteImport } from './routes/strategy'
-import { Route as StationsRouteImport } from './routes/stations'
-import { Route as SourcesRouteImport } from './routes/sources'
-import { Route as SituationRoomRouteImport } from './routes/situation-room'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as SecurityRouteImport } from './routes/security'
-import { Route as RiskRouteImport } from './routes/risk'
-import { Route as RepoAnalyzerRouteImport } from './routes/repo-analyzer'
-import { Route as ProductionRouteImport } from './routes/production'
-import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as PortfolioRouteImport } from './routes/portfolio'
-import { Route as PersonasRouteImport } from './routes/personas'
-import { Route as OrderTicketRouteImport } from './routes/order-ticket'
-import { Route as NewsRouteImport } from './routes/news'
-import { Route as MoneyFlowRouteImport } from './routes/money-flow'
-import { Route as MicrostructureRouteImport } from './routes/microstructure'
-import { Route as MacroRouteImport } from './routes/macro'
-import { Route as LocalChatRouteImport } from './routes/local-chat'
-import { Route as LiveTradingRouteImport } from './routes/live-trading'
-import { Route as JournalRouteImport } from './routes/journal'
-import { Route as IntelligenceRouteImport } from './routes/intelligence'
-import { Route as InsiderRouteImport } from './routes/insider'
-import { Route as HiveRouteImport } from './routes/hive'
-import { Route as GooseRouteImport } from './routes/goose'
-import { Route as GeminiExchangeRouteImport } from './routes/gemini-exchange'
-import { Route as FleetRouteImport } from './routes/fleet'
-import { Route as DriveSyncRouteImport } from './routes/drive-sync'
-import { Route as ConfigRouteImport } from './routes/config'
-import { Route as CommandRouteImport } from './routes/command'
-import { Route as CodeStudioRouteImport } from './routes/code-studio'
-import { Route as ClipProducerRouteImport } from './routes/clip-producer'
-import { Route as ChannelScanRouteImport } from './routes/channel-scan'
-import { Route as CastRouteImport } from './routes/cast'
-import { Route as CalendarRouteImport } from './routes/calendar'
-import { Route as BackupRouteImport } from './routes/backup'
-import { Route as BacktestingRouteImport } from './routes/backtesting'
-import { Route as AutonomyRouteImport } from './routes/autonomy'
-import { Route as ApiVaultRouteImport } from './routes/api-vault'
-import { Route as AlertsRouteImport } from './routes/alerts'
-import { Route as AiModelsRouteImport } from './routes/ai-models'
-import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AgentsRouteImport } from './routes/agents'
+import { Route as AiModelsRouteImport } from './routes/ai-models'
+import { Route as AlertsRouteImport } from './routes/alerts'
+import { Route as ApiVaultRouteImport } from './routes/api-vault'
+import { Route as AutonomyRouteImport } from './routes/autonomy'
+import { Route as BacktestingRouteImport } from './routes/backtesting'
+import { Route as BackupRouteImport } from './routes/backup'
+import { Route as CalendarRouteImport } from './routes/calendar'
+import { Route as CastRouteImport } from './routes/cast'
+import { Route as ChannelScanRouteImport } from './routes/channel-scan'
+import { Route as ClipProducerRouteImport } from './routes/clip-producer'
+import { Route as CodeStudioRouteImport } from './routes/code-studio'
+import { Route as CommandRouteImport } from './routes/command'
+import { Route as ConfigRouteImport } from './routes/config'
+import { Route as DriveSyncRouteImport } from './routes/drive-sync'
+import { Route as FleetRouteImport } from './routes/fleet'
+import { Route as GeminiExchangeRouteImport } from './routes/gemini-exchange'
+import { Route as GooseRouteImport } from './routes/goose'
+import { Route as HiveRouteImport } from './routes/hive'
+import { Route as InsiderRouteImport } from './routes/insider'
+import { Route as IntelligenceRouteImport } from './routes/intelligence'
+import { Route as JournalRouteImport } from './routes/journal'
+import { Route as LiveTradingRouteImport } from './routes/live-trading'
+import { Route as LocalChatRouteImport } from './routes/local-chat'
+import { Route as MacroRouteImport } from './routes/macro'
+import { Route as MicrostructureRouteImport } from './routes/microstructure'
+import { Route as MoneyFlowRouteImport } from './routes/money-flow'
+import { Route as NewsRouteImport } from './routes/news'
+import { Route as OrderTicketRouteImport } from './routes/order-ticket'
+import { Route as PersonasRouteImport } from './routes/personas'
+import { Route as PortfolioRouteImport } from './routes/portfolio'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ProductionRouteImport } from './routes/production'
+import { Route as RepoAnalyzerRouteImport } from './routes/repo-analyzer'
+import { Route as RiskRouteImport } from './routes/risk'
+import { Route as SecurityRouteImport } from './routes/security'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SituationRoomRouteImport } from './routes/situation-room'
+import { Route as SourcesRouteImport } from './routes/sources'
+import { Route as StationsRouteImport } from './routes/stations'
+import { Route as StrategyRouteImport } from './routes/strategy'
+import { Route as StudioRouteImport } from './routes/studio'
+import { Route as SyncLiveRouteImport } from './routes/sync-live'
+import { Route as SystemRouteImport } from './routes/system'
+import { Route as TelegramRouteImport } from './routes/telegram'
+import { Route as TerminalRouteImport } from './routes/terminal'
+import { Route as TradingRouteImport } from './routes/trading'
+import { Route as TreasuryRouteImport } from './routes/treasury'
+import { Route as TriggersRouteImport } from './routes/triggers'
+import { Route as VisionRouteImport } from './routes/vision'
+import { Route as WalletsRouteImport } from './routes/wallets'
+import { Route as WatchlistsRouteImport } from './routes/watchlists'
 import { Route as TickerSymbolRouteImport } from './routes/ticker.$symbol'
-import { Route as ApiPublicHooksDriveBackupDailyRouteImport } from './routes/api/public/hooks/drive-backup-daily'
 import { Route as ApiPublicHiveRelayRouteImport } from './routes/api/public/hive/relay'
+import { Route as ApiPublicHooksDriveBackupDailyRouteImport } from './routes/api/public/hooks/drive-backup-daily'
 
-const WatchlistsRoute = WatchlistsRouteImport.update({
-  id: '/watchlists',
-  path: '/watchlists',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const WalletsRoute = WalletsRouteImport.update({
-  id: '/wallets',
-  path: '/wallets',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const VisionRoute = VisionRouteImport.update({
-  id: '/vision',
-  path: '/vision',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TriggersRoute = TriggersRouteImport.update({
-  id: '/triggers',
-  path: '/triggers',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TreasuryRoute = TreasuryRouteImport.update({
-  id: '/treasury',
-  path: '/treasury',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TradingRoute = TradingRouteImport.update({
-  id: '/trading',
-  path: '/trading',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TerminalRoute = TerminalRouteImport.update({
-  id: '/terminal',
-  path: '/terminal',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TelegramRoute = TelegramRouteImport.update({
-  id: '/telegram',
-  path: '/telegram',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SystemRoute = SystemRouteImport.update({
-  id: '/system',
-  path: '/system',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SyncLiveRoute = SyncLiveRouteImport.update({
-  id: '/sync-live',
-  path: '/sync-live',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const StudioRoute = StudioRouteImport.update({
-  id: '/studio',
-  path: '/studio',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const StrategyRoute = StrategyRouteImport.update({
-  id: '/strategy',
-  path: '/strategy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const StationsRoute = StationsRouteImport.update({
-  id: '/stations',
-  path: '/stations',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SourcesRoute = SourcesRouteImport.update({
-  id: '/sources',
-  path: '/sources',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SituationRoomRoute = SituationRoomRouteImport.update({
-  id: '/situation-room',
-  path: '/situation-room',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SecurityRoute = SecurityRouteImport.update({
-  id: '/security',
-  path: '/security',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RiskRoute = RiskRouteImport.update({
-  id: '/risk',
-  path: '/risk',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RepoAnalyzerRoute = RepoAnalyzerRouteImport.update({
-  id: '/repo-analyzer',
-  path: '/repo-analyzer',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProductionRoute = ProductionRouteImport.update({
-  id: '/production',
-  path: '/production',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrivacyRoute = PrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PortfolioRoute = PortfolioRouteImport.update({
-  id: '/portfolio',
-  path: '/portfolio',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PersonasRoute = PersonasRouteImport.update({
-  id: '/personas',
-  path: '/personas',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OrderTicketRoute = OrderTicketRouteImport.update({
-  id: '/order-ticket',
-  path: '/order-ticket',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NewsRoute = NewsRouteImport.update({
-  id: '/news',
-  path: '/news',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MoneyFlowRoute = MoneyFlowRouteImport.update({
-  id: '/money-flow',
-  path: '/money-flow',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MicrostructureRoute = MicrostructureRouteImport.update({
-  id: '/microstructure',
-  path: '/microstructure',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MacroRoute = MacroRouteImport.update({
-  id: '/macro',
-  path: '/macro',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LocalChatRoute = LocalChatRouteImport.update({
-  id: '/local-chat',
-  path: '/local-chat',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LiveTradingRoute = LiveTradingRouteImport.update({
-  id: '/live-trading',
-  path: '/live-trading',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const JournalRoute = JournalRouteImport.update({
-  id: '/journal',
-  path: '/journal',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IntelligenceRoute = IntelligenceRouteImport.update({
-  id: '/intelligence',
-  path: '/intelligence',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InsiderRoute = InsiderRouteImport.update({
-  id: '/insider',
-  path: '/insider',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HiveRoute = HiveRouteImport.update({
-  id: '/hive',
-  path: '/hive',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GooseRoute = GooseRouteImport.update({
-  id: '/goose',
-  path: '/goose',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GeminiExchangeRoute = GeminiExchangeRouteImport.update({
-  id: '/gemini-exchange',
-  path: '/gemini-exchange',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FleetRoute = FleetRouteImport.update({
-  id: '/fleet',
-  path: '/fleet',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DriveSyncRoute = DriveSyncRouteImport.update({
-  id: '/drive-sync',
-  path: '/drive-sync',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConfigRoute = ConfigRouteImport.update({
-  id: '/config',
-  path: '/config',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CommandRoute = CommandRouteImport.update({
-  id: '/command',
-  path: '/command',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CodeStudioRoute = CodeStudioRouteImport.update({
-  id: '/code-studio',
-  path: '/code-studio',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ClipProducerRoute = ClipProducerRouteImport.update({
-  id: '/clip-producer',
-  path: '/clip-producer',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChannelScanRoute = ChannelScanRouteImport.update({
-  id: '/channel-scan',
-  path: '/channel-scan',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CastRoute = CastRouteImport.update({
-  id: '/cast',
-  path: '/cast',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CalendarRoute = CalendarRouteImport.update({
-  id: '/calendar',
-  path: '/calendar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BackupRoute = BackupRouteImport.update({
-  id: '/backup',
-  path: '/backup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BacktestingRoute = BacktestingRouteImport.update({
-  id: '/backtesting',
-  path: '/backtesting',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AutonomyRoute = AutonomyRouteImport.update({
-  id: '/autonomy',
-  path: '/autonomy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiVaultRoute = ApiVaultRouteImport.update({
-  id: '/api-vault',
-  path: '/api-vault',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AlertsRoute = AlertsRouteImport.update({
-  id: '/alerts',
-  path: '/alerts',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AiModelsRoute = AiModelsRouteImport.update({
-  id: '/ai-models',
-  path: '/ai-models',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AgentsRoute = AgentsRouteImport.update({
@@ -326,14 +76,269 @@ const AgentsRoute = AgentsRouteImport.update({
   path: '/agents',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AiModelsRoute = AiModelsRouteImport.update({
+  id: '/ai-models',
+  path: '/ai-models',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlertsRoute = AlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVaultRoute = ApiVaultRouteImport.update({
+  id: '/api-vault',
+  path: '/api-vault',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AutonomyRoute = AutonomyRouteImport.update({
+  id: '/autonomy',
+  path: '/autonomy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BacktestingRoute = BacktestingRouteImport.update({
+  id: '/backtesting',
+  path: '/backtesting',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BackupRoute = BackupRouteImport.update({
+  id: '/backup',
+  path: '/backup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarRoute = CalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CastRoute = CastRouteImport.update({
+  id: '/cast',
+  path: '/cast',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChannelScanRoute = ChannelScanRouteImport.update({
+  id: '/channel-scan',
+  path: '/channel-scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClipProducerRoute = ClipProducerRouteImport.update({
+  id: '/clip-producer',
+  path: '/clip-producer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CodeStudioRoute = CodeStudioRouteImport.update({
+  id: '/code-studio',
+  path: '/code-studio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommandRoute = CommandRouteImport.update({
+  id: '/command',
+  path: '/command',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfigRoute = ConfigRouteImport.update({
+  id: '/config',
+  path: '/config',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DriveSyncRoute = DriveSyncRouteImport.update({
+  id: '/drive-sync',
+  path: '/drive-sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FleetRoute = FleetRouteImport.update({
+  id: '/fleet',
+  path: '/fleet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GeminiExchangeRoute = GeminiExchangeRouteImport.update({
+  id: '/gemini-exchange',
+  path: '/gemini-exchange',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GooseRoute = GooseRouteImport.update({
+  id: '/goose',
+  path: '/goose',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HiveRoute = HiveRouteImport.update({
+  id: '/hive',
+  path: '/hive',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InsiderRoute = InsiderRouteImport.update({
+  id: '/insider',
+  path: '/insider',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntelligenceRoute = IntelligenceRouteImport.update({
+  id: '/intelligence',
+  path: '/intelligence',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JournalRoute = JournalRouteImport.update({
+  id: '/journal',
+  path: '/journal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LiveTradingRoute = LiveTradingRouteImport.update({
+  id: '/live-trading',
+  path: '/live-trading',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LocalChatRoute = LocalChatRouteImport.update({
+  id: '/local-chat',
+  path: '/local-chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MacroRoute = MacroRouteImport.update({
+  id: '/macro',
+  path: '/macro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MicrostructureRoute = MicrostructureRouteImport.update({
+  id: '/microstructure',
+  path: '/microstructure',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MoneyFlowRoute = MoneyFlowRouteImport.update({
+  id: '/money-flow',
+  path: '/money-flow',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsRoute = NewsRouteImport.update({
+  id: '/news',
+  path: '/news',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrderTicketRoute = OrderTicketRouteImport.update({
+  id: '/order-ticket',
+  path: '/order-ticket',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PersonasRoute = PersonasRouteImport.update({
+  id: '/personas',
+  path: '/personas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortfolioRoute = PortfolioRouteImport.update({
+  id: '/portfolio',
+  path: '/portfolio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductionRoute = ProductionRouteImport.update({
+  id: '/production',
+  path: '/production',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RepoAnalyzerRoute = RepoAnalyzerRouteImport.update({
+  id: '/repo-analyzer',
+  path: '/repo-analyzer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RiskRoute = RiskRouteImport.update({
+  id: '/risk',
+  path: '/risk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecurityRoute = SecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SituationRoomRoute = SituationRoomRouteImport.update({
+  id: '/situation-room',
+  path: '/situation-room',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SourcesRoute = SourcesRouteImport.update({
+  id: '/sources',
+  path: '/sources',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StationsRoute = StationsRouteImport.update({
+  id: '/stations',
+  path: '/stations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StrategyRoute = StrategyRouteImport.update({
+  id: '/strategy',
+  path: '/strategy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudioRoute = StudioRouteImport.update({
+  id: '/studio',
+  path: '/studio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SyncLiveRoute = SyncLiveRouteImport.update({
+  id: '/sync-live',
+  path: '/sync-live',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SystemRoute = SystemRouteImport.update({
+  id: '/system',
+  path: '/system',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TelegramRoute = TelegramRouteImport.update({
+  id: '/telegram',
+  path: '/telegram',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TerminalRoute = TerminalRouteImport.update({
+  id: '/terminal',
+  path: '/terminal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TradingRoute = TradingRouteImport.update({
+  id: '/trading',
+  path: '/trading',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TreasuryRoute = TreasuryRouteImport.update({
+  id: '/treasury',
+  path: '/treasury',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TriggersRoute = TriggersRouteImport.update({
+  id: '/triggers',
+  path: '/triggers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VisionRoute = VisionRouteImport.update({
+  id: '/vision',
+  path: '/vision',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WalletsRoute = WalletsRouteImport.update({
+  id: '/wallets',
+  path: '/wallets',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WatchlistsRoute = WatchlistsRouteImport.update({
+  id: '/watchlists',
+  path: '/watchlists',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TickerSymbolRoute = TickerSymbolRouteImport.update({
   id: '/ticker/$symbol',
   path: '/ticker/$symbol',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicHiveRelayRoute = ApiPublicHiveRelayRouteImport.update({
+  id: '/api/public/hive/relay',
+  path: '/api/public/hive/relay',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicHooksDriveBackupDailyRoute =
@@ -342,11 +347,6 @@ const ApiPublicHooksDriveBackupDailyRoute =
     path: '/api/public/hooks/drive-backup-daily',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicHiveRelayRoute = ApiPublicHiveRelayRouteImport.update({
-  id: '/api/public/hive/relay',
-  path: '/api/public/hive/relay',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -761,361 +761,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/watchlists': {
-      id: '/watchlists'
-      path: '/watchlists'
-      fullPath: '/watchlists'
-      preLoaderRoute: typeof WatchlistsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/wallets': {
-      id: '/wallets'
-      path: '/wallets'
-      fullPath: '/wallets'
-      preLoaderRoute: typeof WalletsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/vision': {
-      id: '/vision'
-      path: '/vision'
-      fullPath: '/vision'
-      preLoaderRoute: typeof VisionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/triggers': {
-      id: '/triggers'
-      path: '/triggers'
-      fullPath: '/triggers'
-      preLoaderRoute: typeof TriggersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/treasury': {
-      id: '/treasury'
-      path: '/treasury'
-      fullPath: '/treasury'
-      preLoaderRoute: typeof TreasuryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/trading': {
-      id: '/trading'
-      path: '/trading'
-      fullPath: '/trading'
-      preLoaderRoute: typeof TradingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/terminal': {
-      id: '/terminal'
-      path: '/terminal'
-      fullPath: '/terminal'
-      preLoaderRoute: typeof TerminalRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/telegram': {
-      id: '/telegram'
-      path: '/telegram'
-      fullPath: '/telegram'
-      preLoaderRoute: typeof TelegramRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/system': {
-      id: '/system'
-      path: '/system'
-      fullPath: '/system'
-      preLoaderRoute: typeof SystemRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sync-live': {
-      id: '/sync-live'
-      path: '/sync-live'
-      fullPath: '/sync-live'
-      preLoaderRoute: typeof SyncLiveRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/studio': {
-      id: '/studio'
-      path: '/studio'
-      fullPath: '/studio'
-      preLoaderRoute: typeof StudioRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/strategy': {
-      id: '/strategy'
-      path: '/strategy'
-      fullPath: '/strategy'
-      preLoaderRoute: typeof StrategyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/stations': {
-      id: '/stations'
-      path: '/stations'
-      fullPath: '/stations'
-      preLoaderRoute: typeof StationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sources': {
-      id: '/sources'
-      path: '/sources'
-      fullPath: '/sources'
-      preLoaderRoute: typeof SourcesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/situation-room': {
-      id: '/situation-room'
-      path: '/situation-room'
-      fullPath: '/situation-room'
-      preLoaderRoute: typeof SituationRoomRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/security': {
-      id: '/security'
-      path: '/security'
-      fullPath: '/security'
-      preLoaderRoute: typeof SecurityRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/risk': {
-      id: '/risk'
-      path: '/risk'
-      fullPath: '/risk'
-      preLoaderRoute: typeof RiskRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/repo-analyzer': {
-      id: '/repo-analyzer'
-      path: '/repo-analyzer'
-      fullPath: '/repo-analyzer'
-      preLoaderRoute: typeof RepoAnalyzerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/production': {
-      id: '/production'
-      path: '/production'
-      fullPath: '/production'
-      preLoaderRoute: typeof ProductionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/portfolio': {
-      id: '/portfolio'
-      path: '/portfolio'
-      fullPath: '/portfolio'
-      preLoaderRoute: typeof PortfolioRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/personas': {
-      id: '/personas'
-      path: '/personas'
-      fullPath: '/personas'
-      preLoaderRoute: typeof PersonasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/order-ticket': {
-      id: '/order-ticket'
-      path: '/order-ticket'
-      fullPath: '/order-ticket'
-      preLoaderRoute: typeof OrderTicketRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/news': {
-      id: '/news'
-      path: '/news'
-      fullPath: '/news'
-      preLoaderRoute: typeof NewsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/money-flow': {
-      id: '/money-flow'
-      path: '/money-flow'
-      fullPath: '/money-flow'
-      preLoaderRoute: typeof MoneyFlowRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/microstructure': {
-      id: '/microstructure'
-      path: '/microstructure'
-      fullPath: '/microstructure'
-      preLoaderRoute: typeof MicrostructureRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/macro': {
-      id: '/macro'
-      path: '/macro'
-      fullPath: '/macro'
-      preLoaderRoute: typeof MacroRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/local-chat': {
-      id: '/local-chat'
-      path: '/local-chat'
-      fullPath: '/local-chat'
-      preLoaderRoute: typeof LocalChatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/live-trading': {
-      id: '/live-trading'
-      path: '/live-trading'
-      fullPath: '/live-trading'
-      preLoaderRoute: typeof LiveTradingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/journal': {
-      id: '/journal'
-      path: '/journal'
-      fullPath: '/journal'
-      preLoaderRoute: typeof JournalRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/intelligence': {
-      id: '/intelligence'
-      path: '/intelligence'
-      fullPath: '/intelligence'
-      preLoaderRoute: typeof IntelligenceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/insider': {
-      id: '/insider'
-      path: '/insider'
-      fullPath: '/insider'
-      preLoaderRoute: typeof InsiderRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/hive': {
-      id: '/hive'
-      path: '/hive'
-      fullPath: '/hive'
-      preLoaderRoute: typeof HiveRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/goose': {
-      id: '/goose'
-      path: '/goose'
-      fullPath: '/goose'
-      preLoaderRoute: typeof GooseRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gemini-exchange': {
-      id: '/gemini-exchange'
-      path: '/gemini-exchange'
-      fullPath: '/gemini-exchange'
-      preLoaderRoute: typeof GeminiExchangeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/fleet': {
-      id: '/fleet'
-      path: '/fleet'
-      fullPath: '/fleet'
-      preLoaderRoute: typeof FleetRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/drive-sync': {
-      id: '/drive-sync'
-      path: '/drive-sync'
-      fullPath: '/drive-sync'
-      preLoaderRoute: typeof DriveSyncRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/config': {
-      id: '/config'
-      path: '/config'
-      fullPath: '/config'
-      preLoaderRoute: typeof ConfigRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/command': {
-      id: '/command'
-      path: '/command'
-      fullPath: '/command'
-      preLoaderRoute: typeof CommandRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/code-studio': {
-      id: '/code-studio'
-      path: '/code-studio'
-      fullPath: '/code-studio'
-      preLoaderRoute: typeof CodeStudioRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/clip-producer': {
-      id: '/clip-producer'
-      path: '/clip-producer'
-      fullPath: '/clip-producer'
-      preLoaderRoute: typeof ClipProducerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/channel-scan': {
-      id: '/channel-scan'
-      path: '/channel-scan'
-      fullPath: '/channel-scan'
-      preLoaderRoute: typeof ChannelScanRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cast': {
-      id: '/cast'
-      path: '/cast'
-      fullPath: '/cast'
-      preLoaderRoute: typeof CastRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/calendar': {
-      id: '/calendar'
-      path: '/calendar'
-      fullPath: '/calendar'
-      preLoaderRoute: typeof CalendarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/backup': {
-      id: '/backup'
-      path: '/backup'
-      fullPath: '/backup'
-      preLoaderRoute: typeof BackupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/backtesting': {
-      id: '/backtesting'
-      path: '/backtesting'
-      fullPath: '/backtesting'
-      preLoaderRoute: typeof BacktestingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/autonomy': {
-      id: '/autonomy'
-      path: '/autonomy'
-      fullPath: '/autonomy'
-      preLoaderRoute: typeof AutonomyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api-vault': {
-      id: '/api-vault'
-      path: '/api-vault'
-      fullPath: '/api-vault'
-      preLoaderRoute: typeof ApiVaultRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/alerts': {
-      id: '/alerts'
-      path: '/alerts'
-      fullPath: '/alerts'
-      preLoaderRoute: typeof AlertsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ai-models': {
-      id: '/ai-models'
-      path: '/ai-models'
-      fullPath: '/ai-models'
-      preLoaderRoute: typeof AiModelsRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/agents': {
@@ -1125,11 +775,361 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgentsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/ai-models': {
+      id: '/ai-models'
+      path: '/ai-models'
+      fullPath: '/ai-models'
+      preLoaderRoute: typeof AiModelsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alerts': {
+      id: '/alerts'
+      path: '/alerts'
+      fullPath: '/alerts'
+      preLoaderRoute: typeof AlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api-vault': {
+      id: '/api-vault'
+      path: '/api-vault'
+      fullPath: '/api-vault'
+      preLoaderRoute: typeof ApiVaultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/autonomy': {
+      id: '/autonomy'
+      path: '/autonomy'
+      fullPath: '/autonomy'
+      preLoaderRoute: typeof AutonomyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/backtesting': {
+      id: '/backtesting'
+      path: '/backtesting'
+      fullPath: '/backtesting'
+      preLoaderRoute: typeof BacktestingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/backup': {
+      id: '/backup'
+      path: '/backup'
+      fullPath: '/backup'
+      preLoaderRoute: typeof BackupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cast': {
+      id: '/cast'
+      path: '/cast'
+      fullPath: '/cast'
+      preLoaderRoute: typeof CastRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/channel-scan': {
+      id: '/channel-scan'
+      path: '/channel-scan'
+      fullPath: '/channel-scan'
+      preLoaderRoute: typeof ChannelScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/clip-producer': {
+      id: '/clip-producer'
+      path: '/clip-producer'
+      fullPath: '/clip-producer'
+      preLoaderRoute: typeof ClipProducerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/code-studio': {
+      id: '/code-studio'
+      path: '/code-studio'
+      fullPath: '/code-studio'
+      preLoaderRoute: typeof CodeStudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/command': {
+      id: '/command'
+      path: '/command'
+      fullPath: '/command'
+      preLoaderRoute: typeof CommandRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/config': {
+      id: '/config'
+      path: '/config'
+      fullPath: '/config'
+      preLoaderRoute: typeof ConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/drive-sync': {
+      id: '/drive-sync'
+      path: '/drive-sync'
+      fullPath: '/drive-sync'
+      preLoaderRoute: typeof DriveSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fleet': {
+      id: '/fleet'
+      path: '/fleet'
+      fullPath: '/fleet'
+      preLoaderRoute: typeof FleetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gemini-exchange': {
+      id: '/gemini-exchange'
+      path: '/gemini-exchange'
+      fullPath: '/gemini-exchange'
+      preLoaderRoute: typeof GeminiExchangeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/goose': {
+      id: '/goose'
+      path: '/goose'
+      fullPath: '/goose'
+      preLoaderRoute: typeof GooseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hive': {
+      id: '/hive'
+      path: '/hive'
+      fullPath: '/hive'
+      preLoaderRoute: typeof HiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/insider': {
+      id: '/insider'
+      path: '/insider'
+      fullPath: '/insider'
+      preLoaderRoute: typeof InsiderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/intelligence': {
+      id: '/intelligence'
+      path: '/intelligence'
+      fullPath: '/intelligence'
+      preLoaderRoute: typeof IntelligenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/journal': {
+      id: '/journal'
+      path: '/journal'
+      fullPath: '/journal'
+      preLoaderRoute: typeof JournalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/live-trading': {
+      id: '/live-trading'
+      path: '/live-trading'
+      fullPath: '/live-trading'
+      preLoaderRoute: typeof LiveTradingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/local-chat': {
+      id: '/local-chat'
+      path: '/local-chat'
+      fullPath: '/local-chat'
+      preLoaderRoute: typeof LocalChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/macro': {
+      id: '/macro'
+      path: '/macro'
+      fullPath: '/macro'
+      preLoaderRoute: typeof MacroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/microstructure': {
+      id: '/microstructure'
+      path: '/microstructure'
+      fullPath: '/microstructure'
+      preLoaderRoute: typeof MicrostructureRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/money-flow': {
+      id: '/money-flow'
+      path: '/money-flow'
+      fullPath: '/money-flow'
+      preLoaderRoute: typeof MoneyFlowRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/news': {
+      id: '/news'
+      path: '/news'
+      fullPath: '/news'
+      preLoaderRoute: typeof NewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/order-ticket': {
+      id: '/order-ticket'
+      path: '/order-ticket'
+      fullPath: '/order-ticket'
+      preLoaderRoute: typeof OrderTicketRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/personas': {
+      id: '/personas'
+      path: '/personas'
+      fullPath: '/personas'
+      preLoaderRoute: typeof PersonasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portfolio': {
+      id: '/portfolio'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof PortfolioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/production': {
+      id: '/production'
+      path: '/production'
+      fullPath: '/production'
+      preLoaderRoute: typeof ProductionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/repo-analyzer': {
+      id: '/repo-analyzer'
+      path: '/repo-analyzer'
+      fullPath: '/repo-analyzer'
+      preLoaderRoute: typeof RepoAnalyzerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/risk': {
+      id: '/risk'
+      path: '/risk'
+      fullPath: '/risk'
+      preLoaderRoute: typeof RiskRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/security': {
+      id: '/security'
+      path: '/security'
+      fullPath: '/security'
+      preLoaderRoute: typeof SecurityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/situation-room': {
+      id: '/situation-room'
+      path: '/situation-room'
+      fullPath: '/situation-room'
+      preLoaderRoute: typeof SituationRoomRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sources': {
+      id: '/sources'
+      path: '/sources'
+      fullPath: '/sources'
+      preLoaderRoute: typeof SourcesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stations': {
+      id: '/stations'
+      path: '/stations'
+      fullPath: '/stations'
+      preLoaderRoute: typeof StationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/strategy': {
+      id: '/strategy'
+      path: '/strategy'
+      fullPath: '/strategy'
+      preLoaderRoute: typeof StrategyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/studio': {
+      id: '/studio'
+      path: '/studio'
+      fullPath: '/studio'
+      preLoaderRoute: typeof StudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sync-live': {
+      id: '/sync-live'
+      path: '/sync-live'
+      fullPath: '/sync-live'
+      preLoaderRoute: typeof SyncLiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/system': {
+      id: '/system'
+      path: '/system'
+      fullPath: '/system'
+      preLoaderRoute: typeof SystemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/telegram': {
+      id: '/telegram'
+      path: '/telegram'
+      fullPath: '/telegram'
+      preLoaderRoute: typeof TelegramRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terminal': {
+      id: '/terminal'
+      path: '/terminal'
+      fullPath: '/terminal'
+      preLoaderRoute: typeof TerminalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trading': {
+      id: '/trading'
+      path: '/trading'
+      fullPath: '/trading'
+      preLoaderRoute: typeof TradingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/treasury': {
+      id: '/treasury'
+      path: '/treasury'
+      fullPath: '/treasury'
+      preLoaderRoute: typeof TreasuryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/triggers': {
+      id: '/triggers'
+      path: '/triggers'
+      fullPath: '/triggers'
+      preLoaderRoute: typeof TriggersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vision': {
+      id: '/vision'
+      path: '/vision'
+      fullPath: '/vision'
+      preLoaderRoute: typeof VisionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wallets': {
+      id: '/wallets'
+      path: '/wallets'
+      fullPath: '/wallets'
+      preLoaderRoute: typeof WalletsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/watchlists': {
+      id: '/watchlists'
+      path: '/watchlists'
+      fullPath: '/watchlists'
+      preLoaderRoute: typeof WatchlistsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ticker/$symbol': {
@@ -1139,18 +1139,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TickerSymbolRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/hooks/drive-backup-daily': {
-      id: '/api/public/hooks/drive-backup-daily'
-      path: '/api/public/hooks/drive-backup-daily'
-      fullPath: '/api/public/hooks/drive-backup-daily'
-      preLoaderRoute: typeof ApiPublicHooksDriveBackupDailyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/hive/relay': {
       id: '/api/public/hive/relay'
       path: '/api/public/hive/relay'
       fullPath: '/api/public/hive/relay'
       preLoaderRoute: typeof ApiPublicHiveRelayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/drive-backup-daily': {
+      id: '/api/public/hooks/drive-backup-daily'
+      path: '/api/public/hooks/drive-backup-daily'
+      fullPath: '/api/public/hooks/drive-backup-daily'
+      preLoaderRoute: typeof ApiPublicHooksDriveBackupDailyRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
