@@ -1,5 +1,9 @@
 # Roadmap
 
+## 2026-11-04 — Gemini documents and chat archive
+- [ ] Archive available conversation in My Drive/AI/LOVEABLE/CHATS, with explicit coverage and no secrets.
+- [ ] Fully read Gemini Markdown documents in Drive, compare actionable claims with this project, and publish a findings/follow-up report.
+
 ## Done
 - [x] Telegram relay (real bot API), webhook relay, dispatcher wiring
 - [x] Android background Web Push (VAPID, service worker, device registry)
