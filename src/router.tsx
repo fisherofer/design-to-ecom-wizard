@@ -27,7 +27,7 @@ function DefaultErrorComponent({ error, reset }: ErrorComponentProps) {
         <p className="mt-2 text-sm text-muted-foreground">
           This screen crashed. The rest of the system keeps running — try again or go home.
         </p>
-        {error?.message && (
+        {error instanceof Error && error.message && (
           <pre className="mt-4 max-h-40 overflow-auto rounded-md bg-muted p-3 text-left font-mono text-xs text-destructive">
             {error.message}
           </pre>
